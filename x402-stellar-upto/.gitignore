@@ -1,0 +1,10 @@
+/target/
+/harness/node_modules/
+**/test_snapshots/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.secret
+.stellar/

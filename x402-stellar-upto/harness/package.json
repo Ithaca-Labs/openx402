@@ -1,0 +1,16 @@
+{
+  "name": "x402-stellar-upto-live-tests",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test binding.test.js",
+    "test:bindings": "node --test binding.test.js",
+    "test:testnet": "node live-test.js",
+    "test:oz-policy": "ONLY_OZ_POLICY=1 node live-test.js"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "16.2.0"
+  }
+}

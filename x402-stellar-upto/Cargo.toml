@@ -1,0 +1,31 @@
+[workspace]
+resolver = "2"
+members = [
+    "contracts/ed25519-verifier",
+    "contracts/oz-agent-account",
+    "contracts/reconciling-policy",
+    "contracts/test-settlement-hook",
+    "contracts/upto-settlement",
+]
+
+[workspace.package]
+edition = "2021"
+license = "Apache-2.0"
+rust-version = "1.84"
+
+[workspace.dependencies]
+soroban-sdk = "=26.1.1"
+stellar-accounts = { git = "https://github.com/OpenZeppelin/stellar-contracts.git", rev = "56d6e5b91aed828051163cebd92dab6c3ca2fa92" }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true

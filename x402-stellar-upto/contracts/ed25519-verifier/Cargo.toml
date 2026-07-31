@@ -1,0 +1,15 @@
+[package]
+name = "x402-ed25519-verifier"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = "=27.0.2"
+stellar-accounts.workspace = true

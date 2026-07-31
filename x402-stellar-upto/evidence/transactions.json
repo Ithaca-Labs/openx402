@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "network": "stellar:testnet",
+  "networkPassphrase": "Test SDF Network ; September 2015",
+  "settlementContract": {
+    "id": "CDEI3W6ZFW6BFSU37VL265OSOGKSM3BR3TZVUR5NZ4UER6FOMVJUKOOT",
+    "wasmSha256": "2416d2b4d524908031b4b43cc0947898c506f8b769ff889bb78bae03cebe6419",
+    "deploymentTransaction": "6e3bf23dd7cfcab66db684c4fce4089b5b05e6f845b67c8d7040114fc1496da8",
+    "deploymentLedger": 3895887
+  },
+  "transactions": [
+    { "case": "zero", "status": "SUCCESS", "hash": "e6b3b9012ebe5e7808c2c7fa74e47c7386fb3a9e11a76f4fba8358b4397c76ba", "feeCharged": 45178 },
+    { "case": "partial", "status": "SUCCESS", "hash": "f80ade7fb080337392d11fd60535d0c37f296447c1aa4cf3ca3f9310224d7920", "feeCharged": 48811 },
+    { "case": "maximum", "status": "SUCCESS", "hash": "662d3863e78632a335d73e758050150e4522a1aeb43efee8e657ef899bdeb60e", "feeCharged": 47807 },
+    { "case": "changed_actual_first_use", "status": "SUCCESS", "hash": "b5292911043c47fcbaca195dc2a4bb283cb8c720e5bb8dcd8c31c81f3a2c423d", "feeCharged": 48811 },
+    { "case": "concurrent_winner", "status": "SUCCESS", "hash": "4d3d6805e0fb0c827d4f9dfca339978d43b6aae3dda2c4ccda06ef61f05e445c", "feeCharged": 48811 },
+    { "case": "concurrent_loser", "status": "FAILED", "hash": "0bd51e4eb8f81be9003aeb04fc2cc448bdac7f7780fddb9e31b83eff3df082ab", "feeCharged": 34815 },
+    { "case": "forced_insufficient_balance", "status": "FAILED", "hash": "701b9350e13c2d2f8e7c16d6f2eb1517ea74326cc5774485624bfceb0bf7e5ad", "feeCharged": 34815 },
+    { "case": "retry_after_failed", "status": "SUCCESS", "hash": "330249fd9a281a5f27a005a1642e108f91cce6a5a40387e25ac09baea6c62dac", "feeCharged": 48811 },
+    { "case": "custom_account", "status": "SUCCESS", "hash": "1edaefd90de512ee00a198fbc762981c3a0082a5c68a869ba42ccc8eedd0e685", "feeCharged": 47409 },
+    { "case": "oz_policy_partial", "status": "SUCCESS", "hash": "9569422fd4fed8bdff13432e729ef1287f0ecec8ea1e9bffcaa7bb46a098da65", "feeCharged": 916115 },
+    { "case": "oz_policy_zero", "status": "SUCCESS", "hash": "6d239761641c2f58f70b25e108ae768a61e8ec1a573cae296c1d6947dbec2ee4", "feeCharged": 912472 },
+    { "case": "facilitator_partial", "status": "SUCCESS", "hash": "638384dfc73e28c8736a7699b04caa7920b3ea247f269a82eec1f9832f4c504f" },
+    { "case": "facilitator_zero", "status": "SUCCESS", "hash": "cc9c93d527e125674e5db01d23d38db56aa2cf736012a1bfbcb9597525ade0cb" },
+    { "case": "extend_contract_instance_ttl", "status": "SUCCESS", "hash": "976f86fa60a5d6b9ec2122380435171f9e89a1e3c9ebc47981d24e88af9b1f2d", "feeCharged": 5544, "liveUntilLedger": 4024794 },
+    { "case": "extend_contract_code_ttl", "status": "SUCCESS", "hash": "54beeee989334342f9d75e6987ef3d4d70042d9108c5864b5140e258fc2092e2", "feeCharged": 281808, "liveUntilLedger": 4024803 }
+  ]
+}
