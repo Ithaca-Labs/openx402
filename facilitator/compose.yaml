@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: facilitator
+      POSTGRES_USER: facilitator
+      POSTGRES_PASSWORD: facilitator-development-only
+    volumes:
+      - facilitator_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U facilitator -d facilitator"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+
+  facilitator:
+    build: .
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://facilitator:facilitator-development-only@postgres:5432/facilitator
+      FACILITATOR_CONFIG: config/self-hosted.yaml
+    ports:
+      - "4022:4022"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  facilitator_postgres:

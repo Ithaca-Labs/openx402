@@ -1,0 +1,80 @@
+server:
+  port: 4022
+
+database_url_env: DATABASE_URL
+api_keys_env: FACILITATOR_API_KEYS
+key_encryption_key_env: FACILITATOR_KEY_ENCRYPTION_KEY
+
+limits:
+  max_request_bytes: 262144
+  max_concurrent_simulations: 20
+  max_simulations_per_key_per_minute: 30
+  max_sponsored_stroops_per_key_per_day: "5000000"
+  max_global_sponsored_stroops_per_day: "200000000"
+  max_pending_settlements: 1000
+  channel_lease_ms: 30000
+  settle_poll_ms: 1000
+  settle_timeout_ms: 30000
+
+networks:
+  stellar:testnet:
+    enabled: true
+    rpc_url: https://soroban-testnet.stellar.org
+    horizon_url: https://horizon-testnet.stellar.org
+    friendbot_url: https://friendbot.stellar.org
+    development_auto_fund: true
+    # These ceilings cover the measured testnet profiles in tests/live/testnet.ts.
+    fee_ceilings_calibrated: true
+    channel_account_count: 3
+    channel_min_balance_stroops: "50000000"
+    upto_contract: CDEI3W6ZFW6BFSU37VL265OSOGKSM3BR3TZVUR5NZ4UER6FOMVJUKOOT
+    allowed_settlement_hooks: []
+    max_timeout_seconds: 300
+    assets:
+      - contract: CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
+        symbol: XLM
+        decimals: 7
+        max_payment: "1000000000"
+      - contract: CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA
+        symbol: USDC
+        decimals: 7
+        max_payment: "1000000000"
+    fees:
+      exact:
+        max_resource_fee_stroops: "50000"
+        max_inclusion_fee_stroops: "200"
+        max_total_fee_stroops: "50200"
+      upto:
+        max_resource_fee_stroops: "150000"
+        max_inclusion_fee_stroops: "200"
+        max_total_fee_stroops: "150200"
+
+  stellar:pubnet:
+    enabled: false
+    rpc_url: https://mainnet.sorobanrpc.com
+    horizon_url: https://horizon.stellar.org
+    development_auto_fund: false
+    # Disabled example values are not production defaults. Measure pubnet p99,
+    # replace all fee ceilings, then set this to true before enabling.
+    fee_ceilings_calibrated: false
+    channel_account_count: 10
+    channel_min_balance_stroops: "50000000"
+    sponsor_secret_env: STELLAR_PUBNET_SPONSOR_SECRET
+    channel_secrets_env: STELLAR_PUBNET_CHANNEL_SECRETS
+    upto_contract_env: STELLAR_PUBNET_UPTO_CONTRACT
+    allowed_settlement_hooks: []
+    max_timeout_seconds: 300
+    assets:
+      - contract: CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75
+        symbol: USDC
+        decimals: 7
+        max_payment: "1000000000"
+    fees:
+      exact:
+        max_resource_fee_stroops: "50000"
+        max_inclusion_fee_stroops: "200"
+        max_total_fee_stroops: "50200"
+      upto:
+        max_resource_fee_stroops: "150000"
+        max_inclusion_fee_stroops: "200"
+        max_total_fee_stroops: "150200"
