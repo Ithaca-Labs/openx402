@@ -1,0 +1,15 @@
+# Reference clones (external repos, tracked separately upstream — not vendored here)
+/reference/x402/
+/reference/x402-stellar/
+/reference/x402scan/
+/reference/stellar-docs/
+/reference/stellar-contracts/
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Dependencies / build output
+node_modules/
+dist/
+target/
