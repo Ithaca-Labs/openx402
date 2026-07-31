@@ -1,0 +1,18 @@
+{
+  "dataset_version": "v1.0.0",
+  "snapshot_timestamp": "2026-07-31T00:00:00Z",
+  "catalog_schema_version": "1.0.0",
+  "query_schema_version": "1.0.0",
+  "qrel_schema_version": "1.0.0",
+  "seed": "stellar-bazaar-golden-v1",
+  "resource_count": 1000,
+  "http_count": 800,
+  "mcp_count": 200,
+  "query_count": 200,
+  "development_count": 140,
+  "release_gate_count": 60,
+  "judge_model": "openai/gpt-5",
+  "judge_model_revision": "codex-session-2026-08-01",
+  "judge_prompt_version": "judge-v1.0.0",
+  "judged_at": "2026-08-01T00:00:00Z"
+}
