@@ -34,6 +34,47 @@ export interface NetworkConfig {
   uptoFee: FeeProfile;
 }
 
+/** Bazaar cataloging policy. None of it can change payment semantics. */
+export interface CatalogConfig {
+  autoCatalog: boolean;
+  indexOn: "verified" | "settled";
+  requireValidSchema: boolean;
+  duplicateChanged: "version_and_verify" | "reject";
+  staleAfterHours: number;
+  maxMetadataBytes: number;
+  maxDescriptionLength: number;
+  maxSchemaBytes: number;
+  maxExampleBytes: number;
+  maxJsonDepth: number;
+  maxTags: number;
+  maxTagLength: number;
+  maxIconUrlLength: number;
+  maxServiceNameLength: number;
+  maxRouteTemplateLength: number;
+  fetchIcons: false;
+  requireHttpsOrigins: boolean;
+  allowLocalOrigins: boolean;
+  inactiveVersionRetentionDays: number;
+  observationRetentionDays: number;
+}
+
+export interface DiscoveryConfig {
+  enabled: boolean;
+  defaultPageSize: number;
+  maxPageSize: number;
+  cursorTtlMinutes: number;
+  includeStale: boolean;
+  includeUnverified: boolean;
+  cursorHmacKey: Buffer;
+}
+
+export interface AnalyticsConfig {
+  enabled: boolean;
+  maxPageSize: number;
+  defaultPageSize: number;
+  redactAddresses: boolean;
+}
+
 export interface AppConfig {
   port: number;
   databaseUrl: string;
@@ -41,6 +82,9 @@ export interface AppConfig {
   keyEncryptionKey: Buffer;
   instanceId: string;
   networks: Map<StellarNetwork, NetworkConfig>;
+  catalog: CatalogConfig;
+  discovery: DiscoveryConfig;
+  analytics: AnalyticsConfig;
   limits: {
     maxRequestBytes: number;
     maxConcurrentSimulations: number;

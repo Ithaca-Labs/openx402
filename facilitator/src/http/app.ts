@@ -5,6 +5,11 @@ import { ZodError } from "zod";
 import type { AppConfig, RequestEnvelope } from "../types.js";
 import { BusyError, ConflictError, FacilitatorCore } from "../orchestrator.js";
 import { StateStore } from "../db/state.js";
+import type { CatalogStore } from "../db/catalog.js";
+import type { AnalyticsStore } from "../db/analytics.js";
+import { encodeExtensionResponses } from "../bazaar/cataloger.js";
+import { createDiscoveryRouter } from "./discovery.js";
+import { createAnalyticsRouter } from "./analytics.js";
 import { parseEnvelope } from "./schema.js";
 
 declare global {
@@ -45,7 +50,12 @@ function requestId(req: Request, res: Response, next: NextFunction): void {
   next();
 }
 
-export function createApp(config: AppConfig, core: FacilitatorCore, state: StateStore): express.Express {
+export function createApp(
+  config: AppConfig,
+  core: FacilitatorCore,
+  state: StateStore,
+  stores?: { catalog: CatalogStore; analytics: AnalyticsStore },
+): express.Express {
   const app = express();
   app.disable("x-powered-by");
   app.set("trust proxy", false);
@@ -62,11 +72,21 @@ export function createApp(config: AppConfig, core: FacilitatorCore, state: State
   });
   app.get("/supported", authenticate, (_req, res) => res.json(core.supported()));
 
+  if (stores) {
+    // Discovery is public and read-only; analytics carries operator-only fields
+    // and is behind the same bearer authentication as the payment routes.
+    app.use("/discovery", createDiscoveryRouter(config, stores.catalog));
+    app.use("/analytics/v1", authenticate, createAnalyticsRouter(config, stores.analytics, stores.catalog));
+  }
+
   app.post("/verify", authenticate, async (req, res, next) => {
     try {
       const request = parseEnvelope(req.body);
       const result = await core.verify(request, req.facilitatorPrincipal!);
-      res.json(result);
+      if (result.extensionResponses) {
+        res.setHeader("EXTENSION-RESPONSES", encodeExtensionResponses(result.extensionResponses));
+      }
+      res.json(result.response);
     } catch (error) {
       next(error);
     }
@@ -77,7 +97,10 @@ export function createApp(config: AppConfig, core: FacilitatorCore, state: State
     try {
       request = parseEnvelope(req.body);
       const result = await core.settle(request, req.facilitatorPrincipal!);
-      res.json(result);
+      if (result.extensionResponses) {
+        res.setHeader("EXTENSION-RESPONSES", encodeExtensionResponses(result.extensionResponses));
+      }
+      res.json(result.response);
     } catch (error) {
       if (error instanceof ConflictError) {
         res.status(409).json({ error: "payment_identifier_conflict", message: error.message });

@@ -4,7 +4,10 @@ import { hostname } from "node:os";
 import { resolve } from "node:path";
 import YAML from "yaml";
 import { z } from "zod";
-import type { AppConfig, FeeProfile, NetworkConfig, StellarNetwork } from "./types.js";
+import type {
+  AnalyticsConfig, AppConfig, CatalogConfig, DiscoveryConfig,
+  FeeProfile, NetworkConfig, StellarNetwork,
+} from "./types.js";
 
 const feeSchema = z.object({
   max_resource_fee_stroops: z.union([z.string(), z.number().int().positive()]),
@@ -36,11 +39,58 @@ const networkSchema = z.object({
   fees: z.object({ exact: feeSchema, upto: feeSchema }),
 });
 
+const indexingSchema = z.object({
+  auto_catalog: z.boolean().default(true),
+  index_on: z.enum(["verified", "settled"]).default("verified"),
+  require_valid_schema: z.boolean().default(true),
+  duplicate_changed: z.enum(["version_and_verify", "reject"]).default("version_and_verify"),
+  stale_after_hours: z.number().int().positive().max(87_600).default(168),
+  max_metadata_bytes: z.number().int().positive().max(4_194_304).default(131_072),
+  max_description_length: z.number().int().positive().max(65_536).default(4_000),
+  max_schema_bytes: z.number().int().positive().max(1_048_576).default(65_536),
+  max_example_bytes: z.number().int().positive().max(1_048_576).default(16_384),
+  max_json_depth: z.number().int().positive().max(64).default(32),
+  max_tags: z.number().int().positive().max(5).default(5),
+  max_tag_length: z.number().int().positive().max(32).default(32),
+  max_icon_url_length: z.number().int().positive().max(2048).default(2048),
+  max_service_name_length: z.number().int().positive().max(32).default(32),
+  max_route_template_length: z.number().int().positive().max(2048).default(512),
+  fetch_icons: z.literal(false).default(false),
+  inactive_version_retention_days: z.number().int().positive().default(365),
+  catalog_observation_retention_days: z.number().int().positive().default(90),
+}).default({});
+
+const catalogSecuritySchema = z.object({
+  require_https_origins: z.boolean().default(true),
+  allow_local_origins: z.boolean().default(false),
+}).default({});
+
+const discoverySchema = z.object({
+  enabled: z.boolean().default(true),
+  default_page_size: z.number().int().positive().max(200).default(20),
+  max_page_size: z.number().int().positive().max(200).default(50),
+  cursor_ttl_minutes: z.number().int().positive().max(1440).default(15),
+  include_stale: z.boolean().default(false),
+  include_unverified: z.boolean().default(false),
+  cursor_hmac_key_env: z.string().default("FACILITATOR_CURSOR_HMAC_KEY"),
+}).default({});
+
+const analyticsSchema = z.object({
+  enabled: z.boolean().default(true),
+  default_page_size: z.number().int().positive().max(500).default(50),
+  max_page_size: z.number().int().positive().max(500).default(200),
+  redact_addresses: z.boolean().default(false),
+}).default({});
+
 const rawSchema = z.object({
   server: z.object({ port: z.number().int().min(1).max(65535).default(4022) }).default({}),
   database_url_env: z.string().default("DATABASE_URL"),
   api_keys_env: z.string().default("FACILITATOR_API_KEYS"),
   key_encryption_key_env: z.string().default("FACILITATOR_KEY_ENCRYPTION_KEY"),
+  indexing: indexingSchema,
+  catalog_security: catalogSecuritySchema,
+  discovery: discoverySchema,
+  analytics: analyticsSchema,
   limits: z.object({
     max_request_bytes: z.number().int().positive().default(262_144),
     max_concurrent_simulations: z.number().int().positive().default(20),
@@ -81,6 +131,73 @@ function encryptionKey(envName: string): Buffer {
   const decoded = Buffer.from(configured, "base64");
   if (decoded.length !== 32) throw new Error(`${envName} must be a base64-encoded 32-byte key`);
   return decoded;
+}
+
+function cursorKey(envName: string, encryptionKey: Buffer): Buffer {
+  const configured = process.env[envName];
+  if (!configured) {
+    // Derived from shared key material so every replica signs identical cursors
+    // without a second mandatory secret.
+    return createHash("sha256").update("x402-discovery-cursor-v1\0").update(encryptionKey).digest();
+  }
+  const decoded = Buffer.from(configured, "base64");
+  if (decoded.length < 32) throw new Error(`${envName} must be a base64-encoded 32-byte key`);
+  return decoded;
+}
+
+function mapCatalog(
+  indexing: z.infer<typeof indexingSchema>,
+  security: z.infer<typeof catalogSecuritySchema>,
+): CatalogConfig {
+  return {
+    autoCatalog: indexing.auto_catalog,
+    indexOn: indexing.index_on,
+    requireValidSchema: indexing.require_valid_schema,
+    duplicateChanged: indexing.duplicate_changed,
+    staleAfterHours: indexing.stale_after_hours,
+    maxMetadataBytes: indexing.max_metadata_bytes,
+    maxDescriptionLength: indexing.max_description_length,
+    maxSchemaBytes: indexing.max_schema_bytes,
+    maxExampleBytes: indexing.max_example_bytes,
+    maxJsonDepth: indexing.max_json_depth,
+    maxTags: indexing.max_tags,
+    maxTagLength: indexing.max_tag_length,
+    maxIconUrlLength: indexing.max_icon_url_length,
+    maxServiceNameLength: indexing.max_service_name_length,
+    maxRouteTemplateLength: indexing.max_route_template_length,
+    fetchIcons: false,
+    requireHttpsOrigins: security.require_https_origins,
+    allowLocalOrigins: security.allow_local_origins,
+    inactiveVersionRetentionDays: indexing.inactive_version_retention_days,
+    observationRetentionDays: indexing.catalog_observation_retention_days,
+  };
+}
+
+function mapDiscovery(value: z.infer<typeof discoverySchema>, encryptionKey: Buffer): DiscoveryConfig {
+  if (value.default_page_size > value.max_page_size) {
+    throw new Error("discovery.default_page_size must not exceed discovery.max_page_size");
+  }
+  return {
+    enabled: value.enabled,
+    defaultPageSize: value.default_page_size,
+    maxPageSize: value.max_page_size,
+    cursorTtlMinutes: value.cursor_ttl_minutes,
+    includeStale: value.include_stale,
+    includeUnverified: value.include_unverified,
+    cursorHmacKey: cursorKey(value.cursor_hmac_key_env, encryptionKey),
+  };
+}
+
+function mapAnalytics(value: z.infer<typeof analyticsSchema>): AnalyticsConfig {
+  if (value.default_page_size > value.max_page_size) {
+    throw new Error("analytics.default_page_size must not exceed analytics.max_page_size");
+  }
+  return {
+    enabled: value.enabled,
+    defaultPageSize: value.default_page_size,
+    maxPageSize: value.max_page_size,
+    redactAddresses: value.redact_addresses,
+  };
 }
 
 function mapNetwork(id: StellarNetwork, value: z.infer<typeof networkSchema>): NetworkConfig {
@@ -139,6 +256,19 @@ export function loadConfig(path = process.env.FACILITATOR_CONFIG ?? "config/self
   if (networks.get("stellar:pubnet")?.enabled && apiKeys.length === 0) {
     throw new Error("pubnet requires at least one facilitator API key");
   }
+  const catalog = mapCatalog(raw.indexing, raw.catalog_security);
+  const discovery = mapDiscovery(raw.discovery, encryptionKey(raw.key_encryption_key_env));
+  if (networks.get("stellar:pubnet")?.enabled) {
+    if (catalog.allowLocalOrigins) {
+      throw new Error("catalog_security.allow_local_origins is forbidden while stellar:pubnet is enabled");
+    }
+    if (!catalog.requireHttpsOrigins) {
+      throw new Error("catalog_security.require_https_origins is required while stellar:pubnet is enabled");
+    }
+    if (discovery.includeUnverified) {
+      throw new Error("discovery.include_unverified is forbidden while stellar:pubnet is enabled");
+    }
+  }
   return {
     port: process.env.PORT ? z.coerce.number().int().min(1).max(65535).parse(process.env.PORT) : raw.server.port,
     databaseUrl,
@@ -146,6 +276,9 @@ export function loadConfig(path = process.env.FACILITATOR_CONFIG ?? "config/self
     keyEncryptionKey: encryptionKey(raw.key_encryption_key_env),
     instanceId: process.env.FACILITATOR_INSTANCE_ID ?? `${hostname()}-${process.pid}-${randomBytes(4).toString("hex")}`,
     networks,
+    catalog,
+    discovery,
+    analytics: mapAnalytics(raw.analytics),
     limits: {
       maxRequestBytes: raw.limits.max_request_bytes,
       maxConcurrentSimulations: raw.limits.max_concurrent_simulations,

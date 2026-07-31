@@ -5,6 +5,49 @@ database_url_env: DATABASE_URL
 api_keys_env: FACILITATOR_API_KEYS
 key_encryption_key_env: FACILITATOR_KEY_ENCRYPTION_KEY
 
+indexing:
+  auto_catalog: true
+  index_on: verified
+  require_valid_schema: true
+  duplicate_changed: version_and_verify
+  stale_after_hours: 168
+  max_metadata_bytes: 131072
+  max_description_length: 4000
+  max_schema_bytes: 65536
+  max_example_bytes: 16384
+  max_json_depth: 32
+  max_tags: 5
+  max_tag_length: 32
+  max_icon_url_length: 2048
+  max_service_name_length: 32
+  max_route_template_length: 512
+  # Icons are never fetched during request processing; only the URL is stored.
+  fetch_icons: false
+  inactive_version_retention_days: 365
+  catalog_observation_retention_days: 90
+
+catalog_security:
+  require_https_origins: true
+  # This checked-in profile is the local testnet/E2E profile, where servers run
+  # on loopback. Both of the following must stay false on pubnet, and startup
+  # refuses to enable pubnet while allow_local_origins is true.
+  allow_local_origins: true
+
+discovery:
+  enabled: true
+  default_page_size: 20
+  max_page_size: 50
+  cursor_ttl_minutes: 15
+  include_stale: false
+  include_unverified: false
+  cursor_hmac_key_env: FACILITATOR_CURSOR_HMAC_KEY
+
+analytics:
+  enabled: true
+  default_page_size: 50
+  max_page_size: 200
+  redact_addresses: false
+
 limits:
   max_request_bytes: 262144
   max_concurrent_simulations: 20

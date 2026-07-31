@@ -2,13 +2,16 @@
   "name": "@openx402/stellar-facilitator",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && npm run build -w @openx402/bazaar-sdk",
     "dev": "tsx watch src/server.ts",
     "start": "node dist/src/server.js",
     "migrate": "tsx src/cli/migrate.ts",
@@ -18,12 +21,15 @@
     "test:integration": "vitest run tests/integration",
     "test:live": "tsx tests/live/testnet.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "licenses": "node scripts/check-licenses.mjs"
+    "licenses": "node scripts/check-licenses.mjs",
+    "test:sdk": "vitest run packages"
   },
   "dependencies": {
     "@stellar/stellar-sdk": "16.2.0",
     "@x402/core": "2.20.0",
+    "@x402/extensions": "^2.20.0",
     "@x402/stellar": "2.20.0",
+    "ajv": "^8.20.0",
     "express": "5.1.0",
     "helmet": "8.1.0",
     "pg": "8.16.3",

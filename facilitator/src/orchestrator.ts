@@ -3,6 +3,8 @@ import type { SettleResponse, VerifyResponse } from "@x402/core/types";
 import type { AppConfig, Mechanism, RequestEnvelope, SettlementOutcome, StellarNetwork } from "./types.js";
 import type { RuntimeRegistry } from "./runtime.js";
 import { StateStore, type SettlementRecord } from "./db/state.js";
+import type { AnalyticsStore } from "./db/analytics.js";
+import { toWireResponse, type Cataloger } from "./bazaar/cataloger.js";
 import { idempotencyData, paymentIdentifierError, paymentScope, principalScope } from "./idempotency.js";
 import { ExactMechanism } from "./stellar/exact.js";
 import { UptoMechanism } from "./stellar/upto.js";
@@ -11,6 +13,17 @@ import { Semaphore } from "./semaphore.js";
 
 export class ConflictError extends Error {}
 export class BusyError extends Error {}
+
+/** Payment result plus any extension responses to encode in EXTENSION-RESPONSES. */
+export interface VerifyOutcome {
+  response: VerifyResponse;
+  extensionResponses?: Record<string, unknown>;
+}
+
+export interface SettleOutcome {
+  response: SettlementOutcome;
+  extensionResponses?: Record<string, unknown>;
+}
 
 function failed(request: RequestEnvelope, reason: string, payer?: string, transaction = ""): SettleResponse {
   return {
@@ -33,6 +46,8 @@ export class FacilitatorCore {
     private readonly config: AppConfig,
     private readonly registry: RuntimeRegistry,
     private readonly state: StateStore,
+    private readonly cataloger?: Cataloger,
+    private readonly analytics?: AnalyticsStore,
   ) {
     this.simulations = new Semaphore(config.limits.maxConcurrentSimulations);
   }
@@ -49,10 +64,41 @@ export class FacilitatorCore {
       if (runtime.config.uptoContract) kinds.push({ x402Version: 2, scheme: "upto", network, extra: { areFeesSponsored: true } });
       signers.add(runtime.sponsor.address);
     }
-    return { kinds, extensions: ["payment-identifier"], signers: { "stellar:*": [...signers] } };
+    const extensions = ["payment-identifier"];
+    if (this.config.catalog.autoCatalog) extensions.push("bazaar");
+    return { kinds, extensions, signers: { "stellar:*": [...signers] } };
   }
 
-  async verify(request: RequestEnvelope, principal: string): Promise<VerifyResponse> {
+  /**
+   * Verifies a payment and then, as a separate soft-failing step, catalogs the
+   * observation. Cataloging never changes `response`.
+   */
+  async verify(request: RequestEnvelope, principal: string): Promise<VerifyOutcome> {
+    const response = await this.runVerify(request, principal);
+    const extensionResponses = await this.catalog(request, "verified", {
+      succeeded: response.isValid === true,
+      ...(response.payer ? { payer: response.payer } : {}),
+    });
+    return { response, ...(extensionResponses ? { extensionResponses } : {}) };
+  }
+
+  /**
+   * Settles a payment and then, as a separate soft-failing step, catalogs the
+   * observation and records the analytics fact.
+   */
+  async settle(request: RequestEnvelope, principal: string): Promise<SettleOutcome> {
+    const response = await this.runSettle(request, principal);
+    const succeeded = "success" in response && response.success === true;
+    const payer = "payer" in response && typeof response.payer === "string" ? response.payer : undefined;
+    const extensionResponses = await this.catalog(request, "settled", {
+      succeeded,
+      ...(payer ? { payer } : {}),
+      response: response as SettleResponse,
+    });
+    return { response, ...(extensionResponses ? { extensionResponses } : {}) };
+  }
+
+  private async runVerify(request: RequestEnvelope, principal: string): Promise<VerifyResponse> {
     const identifierError = paymentIdentifierError(request.paymentPayload);
     if (identifierError) return { isValid: false, invalidReason: identifierError };
     const context = this.context(request);
@@ -67,7 +113,7 @@ export class FacilitatorCore {
     return this.simulations.run(async () => (await context.mechanism.verify(request, context.runtime)).response);
   }
 
-  async settle(request: RequestEnvelope, principal: string): Promise<SettlementOutcome> {
+  private async runSettle(request: RequestEnvelope, principal: string): Promise<SettlementOutcome> {
     const identifierError = paymentIdentifierError(request.paymentPayload);
     if (identifierError) return failed(request, identifierError);
     const context = this.context(request);
@@ -155,6 +201,79 @@ export class FacilitatorCore {
     for (const record of await this.state.listUnresolved()) {
       if (!record.transactionHash || !this.registry.networks.has(record.network)) continue;
       await this.pollRecordWithoutRequest(record).catch(() => undefined);
+    }
+  }
+
+  /**
+   * Cataloging and analytics side channel.
+   *
+   * Runs only after the payment itself has been decided, catches everything,
+   * and returns the official extension responses. A catalog failure produces a
+   * `rejected` bazaar status, never an internal server error.
+   */
+  private async catalog(
+    request: RequestEnvelope,
+    stage: "verified" | "settled",
+    outcome: { succeeded: boolean; payer?: string; response?: SettleResponse },
+  ): Promise<Record<string, unknown> | undefined> {
+    try {
+      const network = request.paymentRequirements.network as StellarNetwork;
+      const runtime = this.registry.networks.get(network);
+      let settlementRecordId: number | undefined;
+      let feeStroops: string | undefined;
+      if (stage === "settled" && runtime) {
+        const { key } = idempotencyData(request);
+        const record = await this.state.findRecord(
+          paymentScope(network, runtime.sponsor.address, request.paymentPayload.accepted.payTo),
+          key,
+        ).catch(() => undefined);
+        settlementRecordId = record?.id;
+        feeStroops = record?.estimatedFeeStroops?.toString();
+      }
+
+      let bazaar;
+      if (outcome.succeeded && this.cataloger) {
+        bazaar = await this.cataloger.observe(request, {
+          stage,
+          ...(outcome.payer ? { payer: outcome.payer } : {}),
+          ...(settlementRecordId !== undefined ? { settlementRecordId } : {}),
+        });
+      }
+
+      if (this.analytics && runtime && (stage === "settled" || outcome.succeeded)) {
+        const asset = runtime.config.allowedAssets.get(request.paymentRequirements.asset);
+        const response = outcome.response;
+        const status = stage === "verified"
+          ? "valid" as const
+          : outcome.succeeded ? "success" as const
+            : response?.errorReason === "settle_stellar_transaction_status_unknown"
+              ? "unknown" as const : "failed" as const;
+        await this.analytics.record({
+          ...(settlementRecordId !== undefined ? { settlementRecordId } : {}),
+          stage,
+          status,
+          network,
+          scheme: request.paymentRequirements.scheme,
+          asset: request.paymentRequirements.asset,
+          ...(asset ? { assetSymbol: asset.symbol, assetDecimals: asset.decimals } : {}),
+          ...(outcome.payer ? { payer: outcome.payer } : {}),
+          payTo: request.paymentRequirements.payTo,
+          maxAmount: String(request.paymentRequirements.amount),
+          ...(outcome.succeeded ? { amount: String(response?.amount ?? request.paymentRequirements.amount) } : {}),
+          ...(feeStroops ? { feeStroops } : {}),
+          ...(response?.transaction ? { transactionHash: response.transaction } : {}),
+          facilitatorId: runtime.sponsor.address,
+          ...(bazaar?.resourceId ? { resourceId: bazaar.resourceId } : {}),
+          ...(bazaar?.versionId ? { resourceVersionId: bazaar.versionId } : {}),
+          ...(bazaar?.paymentOptionId ? { paymentOptionId: bazaar.paymentOptionId } : {}),
+          ...(request.paymentPayload.resource?.url ? { resourceUrl: request.paymentPayload.resource.url } : {}),
+          ...(response?.errorReason ? { errorReason: response.errorReason } : {}),
+        });
+      }
+      return bazaar ? { bazaar: toWireResponse(bazaar) } : undefined;
+    } catch {
+      // Cataloging and analytics are strictly best-effort.
+      return undefined;
     }
   }
 

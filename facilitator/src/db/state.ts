@@ -18,6 +18,7 @@ export interface SettlementRecord {
   fencingToken?: bigint;
   envelopeXdr?: string;
   transactionHash?: string;
+  estimatedFeeStroops?: bigint;
   response?: SettlementOutcome;
 }
 
@@ -41,6 +42,9 @@ function mapRecord(row: Record<string, unknown>): SettlementRecord {
   if (row.fencing_token !== null && row.fencing_token !== undefined) record.fencingToken = BigInt(String(row.fencing_token));
   if (typeof row.envelope_xdr === "string") record.envelopeXdr = row.envelope_xdr;
   if (typeof row.transaction_hash === "string") record.transactionHash = row.transaction_hash;
+  if (row.estimated_fee_stroops !== null && row.estimated_fee_stroops !== undefined) {
+    record.estimatedFeeStroops = BigInt(String(row.estimated_fee_stroops));
+  }
   if (row.response_json && typeof row.response_json === "object") record.response = row.response_json as SettlementOutcome;
   return record;
 }
@@ -316,6 +320,15 @@ export class StateStore {
          AND status IN ('submitting', 'pending', 'unknown') ORDER BY updated_at`,
     );
     return result.rows.map(mapRecord);
+  }
+
+  /** Read-only lookup used by analytics; never participates in settlement flow. */
+  async findRecord(scope: string, key: string): Promise<SettlementRecord | undefined> {
+    const result = await this.pool.query<Record<string, unknown>>(
+      "SELECT * FROM idempotency_records WHERE scope = $1 AND idempotency_key = $2",
+      [scope, key],
+    );
+    return result.rows[0] ? mapRecord(result.rows[0]) : undefined;
   }
 
   async getRecord(recordId: number): Promise<SettlementRecord | undefined> {

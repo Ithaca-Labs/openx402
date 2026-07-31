@@ -20,6 +20,8 @@ const rejected = [];
 const counts = new Map();
 for (const [path, metadata] of Object.entries(lock.packages)) {
   if (!path.includes("node_modules/")) continue;
+  // Workspace symlinks carry their metadata in their own lock entry.
+  if (metadata.link === true) continue;
 
   const name = path.split("node_modules/").at(-1);
   const license = metadata.license;

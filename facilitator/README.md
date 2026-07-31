@@ -31,6 +31,43 @@ One stateless HTTP process owns protocol parsing and orchestration. PostgreSQL o
 
 The upto path binds payer, recipient, token, network passphrase, settlement contract, maximum, ledger window, facilitator, settlement ID, and optional versioned hook. Actual may vary from zero through maximum. Zero uses a real contract transaction, consumes the nonce, and returns a real hash. The facilitator requires the exact pull/pay/refund event sequence. Settlement hooks are allowlisted, cannot be the settlement or token contract, and execute inside enforcing simulation and its fee gate.
 
+## Bazaar catalog and discovery
+
+A payment that carries the `bazaar` extension is also a catalog observation.
+Cataloging runs after the payment has been decided, in a step that catches
+everything: a bad declaration produces an official `EXTENSION-RESPONSES` header
+with `bazaar.status = "rejected"` and a stable reason, never a failed payment.
+`index_on` defaults to `verified`; `settled` records a candidate at verify time
+and activates it only after a confirmed settlement.
+
+`GET /discovery/resources` and `GET /discovery/search` serve the official browse
+and search shapes. Filters are the specification set (`type`, `network`,
+`scheme`, `payTo`, `extensions`) plus `asset`, and there is no price filter —
+both divergences are documented as upstream proposals. Search is PostgreSQL
+full-text ranking, so lexical discovery works with zero API keys and no external
+service. Cursors are opaque HMAC tokens pinning a catalog watermark;
+`catalog_next_version()` assigns versions under a row lock held to commit, so
+version order equals commit order and a page cannot shift, duplicate or skip a
+row while other replicas write.
+
+Seller metadata is untrusted, client-echoed data. It is bounded, validated with
+the official `@x402/extensions/bazaar` helpers, percent-decoded before traversal
+checks, stripped of control and bidi characters for display, and stored with
+`provenance = 'seller_declared'`. Icons are never fetched. One `payTo` can never
+silently replace another's active listing. See
+[catalog trust boundary](docs/CATALOG-TRUST.md).
+
+`/analytics/v1` serves the operator dashboard data (overview, timeseries,
+breakdowns, transactions, buyers, sellers, concentration, origins, resources,
+observability) behind the same bearer authentication as the payment routes.
+Operator-only status, verification and provenance fields live only there and
+never enter a Bazaar wire response. See the
+[x402scan field inventory](docs/X402SCAN-INVENTORY.md).
+
+Sellers declare their metadata with [`@openx402/bazaar-sdk`](packages/bazaar-sdk),
+whose `bazaar.http()` and `bazaar.mcp()` compile readable configuration into the
+official wire format by delegating to the upstream builders.
+
 ## Fee sponsorship
 
 The channel signs the rebuilt inner transaction. The sponsor signs a fee-bump envelope and pays both resource and inclusion fees; it is never payer or recipient. Enforcing simulation executes custom accounts and settlement hooks before a budget is reserved. PostgreSQL enforces per-principal and global daily budgets across replicas. Failed submitted transactions still consume the reserved budget because they still charge network fees.
@@ -50,7 +87,9 @@ npm run keys -- disable-channel stellar:pubnet G...
 
 Run all replicas with the same PostgreSQL database and encryption key. Back up the database with `pg_dump`; restore it with `pg_restore` before starting any facilitator replica. Rotate encryption material using an offline database re-encryption procedure, not by changing the environment variable under existing ciphertext.
 
-See [configuration](docs/CONFIGURATION.md) and [dependency licences](THIRD_PARTY_LICENSES.md).
+See [configuration](docs/CONFIGURATION.md), [catalog trust boundary](docs/CATALOG-TRUST.md),
+[x402scan field inventory](docs/X402SCAN-INVENTORY.md) and
+[dependency licences](THIRD_PARTY_LICENSES.md).
 
 ## Verification
 
@@ -63,11 +102,22 @@ npm audit --omit=dev
 npm run test:live
 ```
 
-The live test uses the stock `@x402/stellar` exact client and canonical HTTP facilitator client, then exercises partial and zero Stellar upto settlements. Published testnet hashes from the latest run:
+Integration tests need PostgreSQL 17 at `TEST_DATABASE_URL` (default
+`postgresql://postgres:test@127.0.0.1:55432/facilitator_test`):
 
-- exact: `c544dbceaedebd08429f29d42cd9834e47e4a611450e09a0980d38fa4a4beb31`
-- upto partial: `0d30bcb75ba420d94f68aee0bac609d1496e9b56ecf1b203877334931c887740`
-- upto zero: `7ff23e2e8b004365e9910a136ecd8778dd16c36dd8c4d598edeaf5432cdb1fef`
+```sh
+docker run -d --name x402-test-pg -e POSTGRES_PASSWORD=test \
+  -e POSTGRES_DB=facilitator_test -p 55432:5432 postgres:17-alpine
+```
+
+The live test uses the stock `@x402/stellar` exact client and canonical HTTP facilitator client, exercises partial and zero Stellar upto settlements, and then makes a fourth exact payment carrying seller Bazaar metadata to check the `EXTENSION-RESPONSES` header and both discovery endpoints. Published testnet hashes from the latest run:
+
+- exact: `0f231cf28791e5acda291d728a3837ef0d7b67baa9c45b80e1bfa764ecd5770b`
+- upto partial: `638384dfc73e28c8736a7699b04caa7920b3ea247f269a82eec1f9832f4c504f`
+- upto zero: `cc9c93d527e125674e5db01d23d38db56aa2cf736012a1bfbcb9597525ade0cb`
+- cataloged exact: `3ee7fe173162619211a736a3b3c3f0b1f60b6a6ea5cb0d25f2140eca98e11887`
+
+That last payment returned `bazaar.status = "success"` on both `/verify` and `/settle`, and its resource was then returned by `GET /discovery/resources` and matched by `GET /discovery/search?query=weather` with the accepts entry equal to the terms actually paid.
 
 The official x402 E2E runner also passed with its unmodified TypeScript fetch client, HTTP payment middleware, and `ExactStellarScheme`. Its testnet transaction is `efa579ad8a9b2fb456dcf7803955d0cf5fc32f8db33329508885f96d493aa532`. Upstream does not yet provide a canonical Stellar upto client, so upto is covered by the wire-compatible live fixture rather than claimed as an official-suite case.
 
