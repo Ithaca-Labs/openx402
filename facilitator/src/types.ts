@@ -68,6 +68,76 @@ export interface DiscoveryConfig {
   cursorHmacKey: Buffer;
 }
 
+export type ProviderKind = "disabled" | "local" | "remote" | "fake";
+
+/** Semantic search configuration. Every branch is independently disableable. */
+export interface SearchConfig {
+  lexical: {
+    enabled: boolean;
+    /** PostgreSQL text-search configuration; `simple` avoids language guessing. */
+    language: string;
+    weight: number;
+    candidateCount: number;
+  };
+  semantic: {
+    enabled: boolean;
+    provider: ProviderKind;
+    /** Logical identity recorded on every vector, e.g. `BAAI/bge-m3`. */
+    modelId: string;
+    /** Repository holding the loadable artifact, e.g. `Xenova/bge-m3`. */
+    repo: string;
+    /** Immutable revision: a commit sha locally, an API version remotely. */
+    revision: string;
+    dimension: number;
+    pooling: "cls" | "mean";
+    normalization: "l2" | "none";
+    weight: number;
+    timeoutMs: number;
+    candidateCount: number;
+    remoteUrl?: string;
+    remoteApiKey?: string;
+  };
+  reranking: {
+    enabled: boolean;
+    provider: ProviderKind;
+    modelId: string;
+    repo: string;
+    revision: string;
+    topK: number;
+    timeoutMs: number;
+    fallbackToHybrid: boolean;
+    remoteUrl?: string;
+    remoteApiKey?: string;
+  };
+  /** Reciprocal-rank-fusion constant. See `src/search/fusion.ts`. */
+  rrfK: number;
+  minimumRelevanceScore: number;
+  defaultResultLimit: number;
+  maximumResultLimit: number;
+  originDiversityLimit: number;
+  impressions: {
+    enabled: boolean;
+    retainQueryText: boolean;
+    retentionDays: number;
+  };
+  models: {
+    cacheDir: string;
+    offline: boolean;
+    dtype: string;
+    requirePinnedRevision: boolean;
+  };
+  indexing: {
+    batchSize: number;
+    workerConcurrency: number;
+    pollMs: number;
+    leaseMs: number;
+    maxAttempts: number;
+    backoffBaseMs: number;
+    backoffMaxMs: number;
+    reindexSchedule: "manual" | "startup";
+  };
+}
+
 export interface AnalyticsConfig {
   enabled: boolean;
   maxPageSize: number;
@@ -84,6 +154,7 @@ export interface AppConfig {
   networks: Map<StellarNetwork, NetworkConfig>;
   catalog: CatalogConfig;
   discovery: DiscoveryConfig;
+  search: SearchConfig;
   analytics: AnalyticsConfig;
   limits: {
     maxRequestBytes: number;

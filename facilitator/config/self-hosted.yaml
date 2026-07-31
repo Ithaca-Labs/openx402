@@ -42,6 +42,70 @@ discovery:
   include_unverified: false
   cursor_hmac_key_env: FACILITATOR_CURSOR_HMAC_KEY
 
+search:
+  lexical:
+    enabled: true
+    # `simple` avoids language guessing; set `english` for stemming and stopword
+    # removal on a mostly-English catalog.
+    language: simple
+    weight: 0.35
+    candidate_count: 100
+  semantic:
+    enabled: true
+    # disabled | local | remote. `local` needs the optional runtime:
+    #   npm install @huggingface/transformers
+    # Without it the facilitator boots and serves lexical results, and
+    # /health/ready reports exactly what is missing.
+    provider: local
+    model: BAAI/bge-m3
+    # transformers.js ONNX export of BAAI/bge-m3 (MIT), pinned by commit sha.
+    repo: Xenova/bge-m3
+    revision: 4de13258303883538bd53b696b452bf8099f0858
+    dimension: 1024
+    pooling: cls
+    normalization: l2
+    weight: 0.65
+    timeout_ms: 500
+    candidate_count: 100
+    remote_url_env: FACILITATOR_EMBEDDING_URL
+    remote_api_key_env: FACILITATOR_EMBEDDING_API_KEY
+  reranking:
+    # Off by default. No ONNX export of BAAI/bge-reranker-v2-m3 is published for
+    # the local runtime, so `repo` must point at your own export or `provider`
+    # must be `remote`. See docs/SEARCH.md.
+    enabled: false
+    provider: local
+    model: BAAI/bge-reranker-v2-m3
+    repo: ""
+    revision: 953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e
+    top_k: 30
+    timeout_ms: 800
+    fallback_to_hybrid: true
+    remote_url_env: FACILITATOR_RERANKER_URL
+    remote_api_key_env: FACILITATOR_RERANKER_API_KEY
+  rrf_k: 60
+  minimum_relevance_score: 0
+  # Omitted: inherits discovery.default_page_size / discovery.max_page_size.
+  origin_diversity_limit: 3
+  impressions:
+    enabled: true
+    retain_query_text: false
+    retention_days: 90
+  models:
+    cache_dir: .models
+    offline: false
+    dtype: q8
+    require_pinned_revision: true
+  indexing:
+    batch_size: 32
+    worker_concurrency: 1
+    poll_ms: 500
+    lease_ms: 30000
+    max_attempts: 5
+    backoff_base_ms: 1000
+    backoff_max_ms: 300000
+    reindex_schedule: manual
+
 analytics:
   enabled: true
   default_page_size: 50

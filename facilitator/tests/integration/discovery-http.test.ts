@@ -13,7 +13,7 @@ import type { FacilitatorCore } from "../../src/orchestrator.js";
 import type { AppConfig, NetworkConfig, StellarNetwork } from "../../src/types.js";
 import {
   ASSET, RIVAL_SELLER, SELLER, analyticsConfig, catalogConfig, discoveryConfig,
-  mcpMetadata, payload, requirements,
+  mcpMetadata, payload, requirements, searchConfig,
 } from "../helpers/bazaar.js";
 
 const databaseUrl = process.env.TEST_DATABASE_URL ?? "postgresql://postgres:test@127.0.0.1:55432/facilitator_test";
@@ -44,6 +44,7 @@ function config(overrides: Partial<AppConfig> = {}): AppConfig {
     networks,
     catalog: catalogConfig(),
     discovery: discoveryConfig({ defaultPageSize: 2, maxPageSize: 10 }),
+    search: searchConfig({ defaultResultLimit: 2, maximumResultLimit: 10 }),
     analytics: analyticsConfig(),
     limits: {
       maxRequestBytes: 262_144, maxConcurrentSimulations: 1, maxSimulationsPerKeyPerMinute: 10,

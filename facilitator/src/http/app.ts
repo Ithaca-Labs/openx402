@@ -7,6 +7,9 @@ import { BusyError, ConflictError, FacilitatorCore } from "../orchestrator.js";
 import { StateStore } from "../db/state.js";
 import type { CatalogStore } from "../db/catalog.js";
 import type { AnalyticsStore } from "../db/analytics.js";
+import type { SearchStore } from "../db/search.js";
+import type { ImpressionRecorder, SearchService } from "../search/service.js";
+import type { EmbeddingWorker } from "../search/worker.js";
 import { encodeExtensionResponses } from "../bazaar/cataloger.js";
 import { createDiscoveryRouter } from "./discovery.js";
 import { createAnalyticsRouter } from "./analytics.js";
@@ -54,7 +57,14 @@ export function createApp(
   config: AppConfig,
   core: FacilitatorCore,
   state: StateStore,
-  stores?: { catalog: CatalogStore; analytics: AnalyticsStore },
+  stores?: {
+    catalog: CatalogStore;
+    analytics: AnalyticsStore;
+    search?: SearchStore;
+    searchService?: SearchService;
+    impressions?: ImpressionRecorder;
+    worker?: EmbeddingWorker;
+  },
 ): express.Express {
   const app = express();
   app.disable("x-powered-by");
@@ -68,15 +78,39 @@ export function createApp(
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
   app.get("/health/ready", async (_req, res) => {
     const ready = await state.ready().catch(() => false);
-    res.status(ready ? 200 : 503).json({ status: ready ? "ready" : "not_ready" });
+    // Search health is reported but never gates readiness: a missing model is a
+    // degraded search path, not an unhealthy facilitator.
+    const worker = stores?.worker?.status();
+    res.status(ready ? 200 : 503).json({
+      status: ready ? "ready" : "not_ready",
+      ...(worker
+        ? {
+            search: {
+              lexical: config.search.lexical.enabled ? "ready" : "disabled",
+              semantic: worker.provider.status,
+              vectorSupport: worker.vectorSupport,
+              ...(worker.provider.detail ? { detail: worker.provider.detail } : {}),
+              ...(worker.generation
+                ? { generation: { id: worker.generation.id, model: worker.generation.modelId,
+                                  revision: worker.generation.modelRevision,
+                                  dimension: worker.generation.dimension } }
+                : {}),
+            },
+          }
+        : {}),
+    });
   });
   app.get("/supported", authenticate, (_req, res) => res.json(core.supported()));
 
   if (stores) {
     // Discovery is public and read-only; analytics carries operator-only fields
     // and is behind the same bearer authentication as the payment routes.
-    app.use("/discovery", createDiscoveryRouter(config, stores.catalog));
-    app.use("/analytics/v1", authenticate, createAnalyticsRouter(config, stores.analytics, stores.catalog));
+    app.use("/discovery", createDiscoveryRouter(
+      config, stores.catalog, stores.searchService, stores.impressions,
+    ));
+    app.use("/analytics/v1", authenticate, createAnalyticsRouter(
+      config, stores.analytics, stores.catalog, stores.search, stores.worker,
+    ));
   }
 
   app.post("/verify", authenticate, async (req, res, next) => {

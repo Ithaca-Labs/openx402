@@ -6,7 +6,7 @@ import YAML from "yaml";
 import { z } from "zod";
 import type {
   AnalyticsConfig, AppConfig, CatalogConfig, DiscoveryConfig,
-  FeeProfile, NetworkConfig, StellarNetwork,
+  FeeProfile, NetworkConfig, SearchConfig, StellarNetwork,
 } from "./types.js";
 
 const feeSchema = z.object({
@@ -75,6 +75,74 @@ const discoverySchema = z.object({
   cursor_hmac_key_env: z.string().default("FACILITATOR_CURSOR_HMAC_KEY"),
 }).default({});
 
+const providerKind = z.enum(["disabled", "local", "remote", "fake"]);
+
+const searchSchema = z.object({
+  lexical: z.object({
+    enabled: z.boolean().default(true),
+    language: z.string().min(1).default("simple"),
+    weight: z.number().min(0).max(1).default(0.35),
+    candidate_count: z.number().int().positive().max(1000).default(100),
+  }).default({}),
+  semantic: z.object({
+    enabled: z.boolean().default(true),
+    provider: providerKind.default("local"),
+    model: z.string().min(1).default("BAAI/bge-m3"),
+    repo: z.string().default("Xenova/bge-m3"),
+    revision: z.string().default("4de13258303883538bd53b696b452bf8099f0858"),
+    dimension: z.number().int().min(1).max(16_000).default(1024),
+    pooling: z.enum(["cls", "mean"]).default("cls"),
+    normalization: z.enum(["l2", "none"]).default("l2"),
+    weight: z.number().min(0).max(1).default(0.65),
+    timeout_ms: z.number().int().positive().max(60_000).default(500),
+    candidate_count: z.number().int().positive().max(1000).default(100),
+    remote_url_env: z.string().default("FACILITATOR_EMBEDDING_URL"),
+    remote_api_key_env: z.string().default("FACILITATOR_EMBEDDING_API_KEY"),
+  }).default({}),
+  reranking: z.object({
+    enabled: z.boolean().default(false),
+    provider: providerKind.default("local"),
+    model: z.string().min(1).default("BAAI/bge-reranker-v2-m3"),
+    // Empty by default: no ONNX export of the default model is published for the
+    // local runtime. See docs/SEARCH.md.
+    repo: z.string().default(""),
+    revision: z.string().default("953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"),
+    top_k: z.number().int().positive().max(500).default(30),
+    timeout_ms: z.number().int().positive().max(60_000).default(800),
+    fallback_to_hybrid: z.boolean().default(true),
+    remote_url_env: z.string().default("FACILITATOR_RERANKER_URL"),
+    remote_api_key_env: z.string().default("FACILITATOR_RERANKER_API_KEY"),
+  }).default({}),
+  rrf_k: z.number().int().positive().max(10_000).default(60),
+  minimum_relevance_score: z.number().min(0).default(0),
+  // When omitted these inherit the discovery page sizes, so browse and search
+  // agree unless an operator deliberately separates them.
+  default_result_limit: z.number().int().positive().max(200).optional(),
+  maximum_result_limit: z.number().int().positive().max(200).optional(),
+  origin_diversity_limit: z.number().int().positive().max(100).default(3),
+  impressions: z.object({
+    enabled: z.boolean().default(true),
+    retain_query_text: z.boolean().default(false),
+    retention_days: z.number().int().positive().max(3650).default(90),
+  }).default({}),
+  models: z.object({
+    cache_dir: z.string().default(".models"),
+    offline: z.boolean().default(false),
+    dtype: z.string().default("q8"),
+    require_pinned_revision: z.boolean().default(true),
+  }).default({}),
+  indexing: z.object({
+    batch_size: z.number().int().positive().max(512).default(32),
+    worker_concurrency: z.number().int().positive().max(16).default(1),
+    poll_ms: z.number().int().positive().max(600_000).default(500),
+    lease_ms: z.number().int().positive().max(600_000).default(30_000),
+    max_attempts: z.number().int().positive().max(50).default(5),
+    backoff_base_ms: z.number().int().positive().max(600_000).default(1_000),
+    backoff_max_ms: z.number().int().positive().max(3_600_000).default(300_000),
+    reindex_schedule: z.enum(["manual", "startup"]).default("manual"),
+  }).default({}),
+}).default({});
+
 const analyticsSchema = z.object({
   enabled: z.boolean().default(true),
   default_page_size: z.number().int().positive().max(500).default(50),
@@ -90,6 +158,7 @@ const rawSchema = z.object({
   indexing: indexingSchema,
   catalog_security: catalogSecuritySchema,
   discovery: discoverySchema,
+  search: searchSchema,
   analytics: analyticsSchema,
   limits: z.object({
     max_request_bytes: z.number().int().positive().default(262_144),
@@ -188,6 +257,98 @@ function mapDiscovery(value: z.infer<typeof discoverySchema>, encryptionKey: Buf
   };
 }
 
+function mapSearch(value: z.infer<typeof searchSchema>, discovery: DiscoveryConfig): SearchConfig {
+  const defaultLimit = value.default_result_limit ?? discovery.defaultPageSize;
+  const maximumLimit = value.maximum_result_limit ?? discovery.maxPageSize;
+  if (defaultLimit > maximumLimit) {
+    throw new Error("search.default_result_limit must not exceed search.maximum_result_limit");
+  }
+  if (value.lexical.weight === 0 && value.semantic.weight === 0) {
+    throw new Error("at least one of search.lexical.weight and search.semantic.weight must be positive");
+  }
+  const fakeAllowed = process.env.FACILITATOR_ALLOW_FAKE_PROVIDERS === "1";
+  for (const [name, provider] of [["semantic", value.semantic.provider], ["reranking", value.reranking.provider]] as const) {
+    if (provider === "fake" && !fakeAllowed) {
+      throw new Error(`search.${name}.provider "fake" is only allowed when FACILITATOR_ALLOW_FAKE_PROVIDERS=1`);
+    }
+  }
+  if (value.semantic.enabled && value.semantic.provider === "local"
+      && value.models.require_pinned_revision && !/^[0-9a-f]{40}$/.test(value.semantic.revision)) {
+    throw new Error("search.semantic.revision must be a full 40-character commit sha when models.require_pinned_revision is set");
+  }
+  const semanticUrl = process.env[value.semantic.remote_url_env];
+  const semanticKey = process.env[value.semantic.remote_api_key_env];
+  const rerankUrl = process.env[value.reranking.remote_url_env];
+  const rerankKey = process.env[value.reranking.remote_api_key_env];
+  if (value.semantic.enabled && value.semantic.provider === "remote" && !semanticUrl) {
+    throw new Error(`${value.semantic.remote_url_env} is required for a remote embedding provider`);
+  }
+  if (value.reranking.enabled && value.reranking.provider === "remote" && !rerankUrl) {
+    throw new Error(`${value.reranking.remote_url_env} is required for a remote reranker`);
+  }
+  return {
+    lexical: {
+      enabled: value.lexical.enabled,
+      language: value.lexical.language,
+      weight: value.lexical.weight,
+      candidateCount: value.lexical.candidate_count,
+    },
+    semantic: {
+      enabled: value.semantic.enabled,
+      provider: value.semantic.provider,
+      modelId: value.semantic.model,
+      repo: value.semantic.repo,
+      revision: value.semantic.revision,
+      dimension: value.semantic.dimension,
+      pooling: value.semantic.pooling,
+      normalization: value.semantic.normalization,
+      weight: value.semantic.weight,
+      timeoutMs: value.semantic.timeout_ms,
+      candidateCount: value.semantic.candidate_count,
+      ...(semanticUrl ? { remoteUrl: semanticUrl } : {}),
+      ...(semanticKey ? { remoteApiKey: semanticKey } : {}),
+    },
+    reranking: {
+      enabled: value.reranking.enabled,
+      provider: value.reranking.provider,
+      modelId: value.reranking.model,
+      repo: value.reranking.repo,
+      revision: value.reranking.revision,
+      topK: value.reranking.top_k,
+      timeoutMs: value.reranking.timeout_ms,
+      fallbackToHybrid: value.reranking.fallback_to_hybrid,
+      ...(rerankUrl ? { remoteUrl: rerankUrl } : {}),
+      ...(rerankKey ? { remoteApiKey: rerankKey } : {}),
+    },
+    rrfK: value.rrf_k,
+    minimumRelevanceScore: value.minimum_relevance_score,
+    defaultResultLimit: defaultLimit,
+    maximumResultLimit: maximumLimit,
+    originDiversityLimit: value.origin_diversity_limit,
+    impressions: {
+      enabled: value.impressions.enabled,
+      retainQueryText: value.impressions.retain_query_text,
+      retentionDays: value.impressions.retention_days,
+    },
+    models: {
+      cacheDir: value.models.cache_dir,
+      offline: value.models.offline,
+      dtype: value.models.dtype,
+      requirePinnedRevision: value.models.require_pinned_revision,
+    },
+    indexing: {
+      batchSize: value.indexing.batch_size,
+      workerConcurrency: value.indexing.worker_concurrency,
+      pollMs: value.indexing.poll_ms,
+      leaseMs: value.indexing.lease_ms,
+      maxAttempts: value.indexing.max_attempts,
+      backoffBaseMs: value.indexing.backoff_base_ms,
+      backoffMaxMs: value.indexing.backoff_max_ms,
+      reindexSchedule: value.indexing.reindex_schedule,
+    },
+  };
+}
+
 function mapAnalytics(value: z.infer<typeof analyticsSchema>): AnalyticsConfig {
   if (value.default_page_size > value.max_page_size) {
     throw new Error("analytics.default_page_size must not exceed analytics.max_page_size");
@@ -278,6 +439,7 @@ export function loadConfig(path = process.env.FACILITATOR_CONFIG ?? "config/self
     networks,
     catalog,
     discovery,
+    search: mapSearch(raw.search, discovery),
     analytics: mapAnalytics(raw.analytics),
     limits: {
       maxRequestBytes: raw.limits.max_request_bytes,

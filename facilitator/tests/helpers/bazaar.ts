@@ -1,6 +1,6 @@
 import type { PaymentPayload, PaymentRequirements } from "@x402/core/types";
 import { bazaar, type BazaarMetadata } from "@openx402/bazaar-sdk";
-import type { AnalyticsConfig, CatalogConfig, DiscoveryConfig } from "../../src/types.js";
+import type { AnalyticsConfig, CatalogConfig, DiscoveryConfig, SearchConfig } from "../../src/types.js";
 
 export const SELLER = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
 export const RIVAL_SELLER = "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H";
@@ -41,6 +41,38 @@ export function discoveryConfig(overrides: Partial<DiscoveryConfig> = {}): Disco
     includeStale: false,
     includeUnverified: false,
     cursorHmacKey: Buffer.alloc(32, 7),
+    ...overrides,
+  };
+}
+
+/**
+ * Search configuration for tests. Semantic and reranking default to the
+ * deterministic fake providers so the whole pipeline is exercised without
+ * downloading weights or reaching a network.
+ */
+export function searchConfig(overrides: Partial<SearchConfig> = {}): SearchConfig {
+  return {
+    lexical: { enabled: true, language: "simple", weight: 0.35, candidateCount: 100 },
+    semantic: {
+      enabled: true, provider: "fake", modelId: "fake/deterministic-hash", repo: "",
+      revision: "v1", dimension: 64, pooling: "mean", normalization: "l2",
+      weight: 0.65, timeoutMs: 500, candidateCount: 100,
+    },
+    reranking: {
+      enabled: false, provider: "fake", modelId: "fake/token-overlap", repo: "",
+      revision: "v1", topK: 30, timeoutMs: 800, fallbackToHybrid: true,
+    },
+    rrfK: 60,
+    minimumRelevanceScore: 0,
+    defaultResultLimit: 20,
+    maximumResultLimit: 50,
+    originDiversityLimit: 3,
+    impressions: { enabled: true, retainQueryText: true, retentionDays: 90 },
+    models: { cacheDir: ".models", offline: true, dtype: "q8", requirePinnedRevision: false },
+    indexing: {
+      batchSize: 8, workerConcurrency: 1, pollMs: 50, leaseMs: 5_000,
+      maxAttempts: 3, backoffBaseMs: 10, backoffMaxMs: 100, reindexSchedule: "manual",
+    },
     ...overrides,
   };
 }

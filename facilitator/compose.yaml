@@ -1,6 +1,9 @@
 services:
   postgres:
-    image: postgres:17-alpine
+    # pgvector ships the extension semantic search needs. Plain postgres:17
+    # also works: the facilitator then runs lexical-only and says so in
+    # /health/ready.
+    image: pgvector/pgvector:pg17
     environment:
       POSTGRES_DB: facilitator
       POSTGRES_USER: facilitator
@@ -19,6 +22,9 @@ services:
       NODE_ENV: development
       DATABASE_URL: postgresql://facilitator:facilitator-development-only@postgres:5432/facilitator
       FACILITATOR_CONFIG: config/self-hosted.yaml
+    volumes:
+      # Model cache. Persisting it keeps restarts offline-capable.
+      - facilitator_models:/app/.models
     ports:
       - "4022:4022"
     depends_on:
@@ -28,3 +34,4 @@ services:
 
 volumes:
   facilitator_postgres:
+  facilitator_models:

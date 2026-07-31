@@ -2,6 +2,8 @@ import { Router, type Request } from "express";
 import type { AppConfig } from "../types.js";
 import type { AnalyticsStore } from "../db/analytics.js";
 import type { CatalogStore } from "../db/catalog.js";
+import type { SearchStore } from "../db/search.js";
+import type { EmbeddingWorker } from "../search/worker.js";
 
 /**
  * Operator analytics. These routes are internal: they carry provenance, status
@@ -39,6 +41,8 @@ export function createAnalyticsRouter(
   config: AppConfig,
   analytics: AnalyticsStore,
   catalog: CatalogStore,
+  search?: SearchStore,
+  worker?: EmbeddingWorker,
 ): Router {
   const router = Router();
 
@@ -144,6 +148,58 @@ export function createAnalyticsRouter(
       } catch (error) { next(error); }
     });
   }
+
+  /** Indexing health: generations, queue depth and the exact degraded reason. */
+  router.get("/search/status", async (_req, res, next) => {
+    try {
+      const status = worker?.status();
+      const generation = search ? await search.activeGeneration() : undefined;
+      res.json({
+        lexical: {
+          enabled: config.search.lexical.enabled,
+          language: config.search.lexical.language,
+          weight: config.search.lexical.weight,
+          // PostgreSQL FTS with ts_rank_cd. This is not BM25.
+          ranking: "postgresql_fts_ts_rank_cd",
+        },
+        semantic: {
+          enabled: config.search.semantic.enabled,
+          provider: config.search.semantic.provider,
+          model: config.search.semantic.modelId,
+          revision: config.search.semantic.revision,
+          dimension: config.search.semantic.dimension,
+          weight: config.search.semantic.weight,
+          vectorSupport: status?.vectorSupport ?? (search ? await search.hasVectorSupport() : false),
+          health: status?.provider ?? { status: "disabled" },
+        },
+        reranking: {
+          enabled: config.search.reranking.enabled,
+          provider: config.search.reranking.provider,
+          model: config.search.reranking.modelId,
+          topK: config.search.reranking.topK,
+          fallbackToHybrid: config.search.reranking.fallbackToHybrid,
+        },
+        fusion: { rrfK: config.search.rrfK, minimumRelevanceScore: config.search.minimumRelevanceScore },
+        activeGeneration: generation ?? null,
+        worker: status ?? null,
+        queue: generation && search ? await search.queueDepth(generation.id) : {},
+      });
+    } catch (error) { next(error); }
+  });
+
+  router.get("/search/generations", async (_req, res, next) => {
+    try {
+      res.json({ items: search ? await search.generations() : [] });
+    } catch (error) { next(error); }
+  });
+
+  /** Search-to-payment conversion, attributed by resource within a window. */
+  router.get("/search/conversion", async (req, res, next) => {
+    try {
+      const hours = Number(single(req.query.hours) ?? 24);
+      res.json(await analytics.searchConversion(Number.isFinite(hours) && hours > 0 ? Math.min(hours, 720) : 24));
+    } catch (error) { next(error); }
+  });
 
   router.get("/origins", async (req, res, next) => {
     try {

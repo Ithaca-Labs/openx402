@@ -350,6 +350,61 @@ export class AnalyticsStore {
     return result.rows;
   }
 
+  /**
+   * Search-to-payment conversion.
+   *
+   * Attribution is by resource within a time window after the impression: the
+   * Bazaar response has no field for carrying a session id back into a payment,
+   * so a settlement cannot be linked to the exact search that produced it. This
+   * is an attribution heuristic and is labelled as one wherever it is shown.
+   */
+  async searchConversion(hours: number): Promise<Record<string, unknown>> {
+    const result = await this.pool.query<Record<string, unknown>>(
+      `WITH impressed AS (
+         SELECT i.id, i.session_id, i.resource_id, i.position, i.mode, i.reranked,
+                i.created_at,
+                EXISTS (
+                  SELECT 1 FROM payment_events e
+                  WHERE e.resource_id = i.resource_id AND e.stage = 'settled'
+                    AND e.occurred_at BETWEEN i.created_at AND i.created_at + ($1 * interval '1 hour')
+                ) AS settled,
+                EXISTS (
+                  SELECT 1 FROM payment_events e
+                  WHERE e.resource_id = i.resource_id AND e.stage = 'verified'
+                    AND e.occurred_at BETWEEN i.created_at AND i.created_at + ($1 * interval '1 hour')
+                ) AS verified
+         FROM search_impressions i
+         WHERE i.created_at >= now() - ($1 * interval '1 hour') - interval '30 days'
+       )
+       SELECT count(*) AS impressions,
+              count(DISTINCT session_id) AS sessions,
+              count(*) FILTER (WHERE verified) AS verified_impressions,
+              count(*) FILTER (WHERE settled) AS settled_impressions,
+              count(*) FILTER (WHERE settled AND position = 1) AS settled_at_position_1,
+              count(*) FILTER (WHERE settled AND position <= 3) AS settled_within_top_3,
+              count(*) FILTER (WHERE settled AND position <= 5) AS settled_within_top_5
+       FROM impressed`,
+      [hours],
+    );
+    const byMode = await this.pool.query<Record<string, unknown>>(
+      `SELECT mode, reranked, count(*) AS impressions,
+              count(DISTINCT session_id) AS sessions,
+              avg(latency_ms)::int AS avg_latency_ms,
+              count(*) FILTER (WHERE (degraded->>'semantic') IN ('timeout','error','unavailable')) AS semantic_fallbacks,
+              count(*) FILTER (WHERE (degraded->>'reranking') IN ('timeout','error','unavailable')) AS rerank_fallbacks
+       FROM search_impressions
+       WHERE created_at >= now() - ($1 * interval '1 hour') - interval '30 days'
+       GROUP BY 1, 2 ORDER BY 1, 2`,
+      [hours],
+    );
+    return {
+      attribution: "resource_within_window",
+      windowHours: hours,
+      ...result.rows[0],
+      byMode: byMode.rows,
+    };
+  }
+
   /** Per-resource invocation counts and status classes derived from settlements. */
   async resourceObservability(resourceId: number): Promise<Record<string, unknown>> {
     const windows = [1, 6, 24, 72, 168, 360, 720];

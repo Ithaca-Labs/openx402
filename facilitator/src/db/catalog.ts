@@ -2,6 +2,7 @@ import type { Pool, PoolClient } from "pg";
 import type { CatalogCandidate, PaymentOption, RejectionCode } from "../bazaar/extract.js";
 import { compileSearchDocument } from "../bazaar/document.js";
 import { canonicalJson } from "../bazaar/sanitize.js";
+import { generationTable } from "./search.js";
 import { createHash } from "node:crypto";
 
 export type CatalogOutcome =
@@ -47,7 +48,23 @@ export interface DiscoveryOptions {
   includeStale: boolean;
   includeUnverified: boolean;
   staleAfterHours: number;
-  query?: string;
+  query?: string | undefined;
+  /** PostgreSQL text-search configuration. Defaults to `simple`. */
+  language?: string | undefined;
+}
+
+export interface LexicalCandidateRow {
+  resourceId: number;
+  versionId: number;
+  /** `ts_rank_cd`. Only its rank position is used; it is never fused directly. */
+  score: number;
+}
+
+export interface SemanticCandidateRow {
+  resourceId: number;
+  versionId: number;
+  /** Cosine distance in [0, 2]. Only its rank position is used. */
+  distance: number;
 }
 
 export interface DiscoveryRow {
@@ -76,6 +93,10 @@ export interface DiscoveryPage {
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
+
+const DISCOVERY_COLUMNS = `r.id AS resource_id, r.type, r.resource_url, r.status,
+  v.id AS version_id, v.x402_version, v.description, v.mime_type, v.service_name,
+  v.tags, v.icon_url, v.extensions, GREATEST(v.activated_at, v.created_at) AS last_updated`;
 
 function optionRow(row: Record<string, unknown>): Record<string, unknown> {
   return {
@@ -370,10 +391,13 @@ export class CatalogStore {
       [versionId, resourceId, sourceHash, document, version],
     );
     // The lexical document is already searchable; the job row is the durable
-    // hand-off for the later embedding pipeline.
+    // hand-off to the embedding worker. Request-time cataloging never waits for
+    // model inference, and it does not read the active generation on the hot
+    // path: generation 0 means "unassigned", and the worker adopts the row into
+    // whichever generation is active when it next sweeps.
     await client.query(
-      `INSERT INTO catalog_index_jobs(kind, resource_id, version_id, source_hash)
-       VALUES ('embedding', $1, $2, $3)
+      `INSERT INTO catalog_index_jobs(kind, resource_id, version_id, source_hash, generation)
+       VALUES ('embedding', $1, $2, $3, 0)
        ON CONFLICT (kind, version_id, generation) DO UPDATE SET
          source_hash = EXCLUDED.source_hash,
          state = CASE WHEN catalog_index_jobs.source_hash = EXCLUDED.source_hash
@@ -439,6 +463,180 @@ export class CatalogStore {
    * demotion, tombstone) are reported through `partialResults`.
    */
   async list(options: DiscoveryOptions): Promise<DiscoveryPage> {
+    const scope = this.scope(options);
+    const { values, snapshotConditions, visibility, from, rank } = scope;
+    const base = `${from} WHERE ${[...snapshotConditions, ...visibility].join(" AND ")}`;
+
+    const counted = await this.pool.query<{ total: string; snapshot_total: string }>(
+      `SELECT count(*) FILTER (WHERE ${visibility.join(" AND ")}) AS total, count(*) AS snapshot_total
+       ${from} WHERE ${snapshotConditions.join(" AND ")}`,
+      values,
+    );
+    const total = Number(counted.rows[0]?.total ?? 0);
+    const snapshotTotal = Number(counted.rows[0]?.snapshot_total ?? 0);
+
+    values.push(options.limit, options.offset);
+    const order = options.query ? `ORDER BY rank DESC, r.id DESC` : `ORDER BY r.id DESC`;
+    const rows = await this.pool.query<Record<string, unknown>>(
+      `SELECT ${DISCOVERY_COLUMNS}${rank}
+       ${base} ${order} LIMIT $${values.length - 1} OFFSET $${values.length}`,
+      values,
+    );
+
+    return {
+      total,
+      partialResults: options.offset + rows.rows.length < total || snapshotTotal > total,
+      rows: await this.attachAccepts(rows.rows, options.snapshot),
+    };
+  }
+
+  /**
+   * Lexical candidate retrieval for the hybrid pipeline.
+   *
+   * PostgreSQL full-text search with `ts_rank_cd`. This is FTS, not BM25: no
+   * BM25 extension is installed, and the score is never compared directly with a
+   * vector distance — only its rank position enters fusion.
+   */
+  async lexicalCandidates(options: DiscoveryOptions & { candidateCount: number }): Promise<LexicalCandidateRow[]> {
+    if (!options.query) return [];
+    const { values, snapshotConditions, visibility, from, rank } = this.scope(options);
+    values.push(options.candidateCount);
+    const result = await this.pool.query<Record<string, unknown>>(
+      `SELECT r.id AS resource_id, v.id AS version_id${rank}
+       ${from} WHERE ${[...snapshotConditions, ...visibility].join(" AND ")}
+       ORDER BY rank DESC, r.id DESC LIMIT $${values.length}`,
+      values,
+    );
+    return result.rows.map(row => ({
+      resourceId: Number(row.resource_id),
+      versionId: Number(row.version_id),
+      score: Number(row.rank ?? 0),
+    }));
+  }
+
+  /**
+   * Semantic candidate retrieval, restricted to one model generation so vectors
+   * from different models are never compared. Cosine distance is used, matching
+   * the generation's HNSW operator class.
+   */
+  async semanticCandidates(
+    options: DiscoveryOptions & { candidateCount: number },
+    vectorLiteral: string,
+    generation: { id: number; dimension: number },
+  ): Promise<SemanticCandidateRow[]> {
+    const { values, snapshotConditions, visibility, from } = this.scope({ ...options, query: undefined });
+    values.push(vectorLiteral, options.candidateCount);
+    const vectorIndex = values.length - 1;
+    const storage = generationTable(generation.id);
+    const result = await this.pool.query<Record<string, unknown>>(
+      `SELECT r.id AS resource_id, v.id AS version_id,
+              (e.embedding <=> $${vectorIndex}::vector(${generation.dimension})) AS distance
+       ${from}
+       JOIN ${storage} e ON e.version_id = v.id AND e.status = 'ready'
+       WHERE ${[...snapshotConditions, ...visibility].join(" AND ")}
+       ORDER BY distance ASC, r.id DESC LIMIT $${values.length}`,
+      values,
+    );
+    return result.rows.map(row => ({
+      resourceId: Number(row.resource_id),
+      versionId: Number(row.version_id),
+      distance: Number(row.distance),
+    }));
+  }
+
+  /** Loads full discovery rows for an explicit, already-ordered version list. */
+  async hydrate(versionIds: number[], snapshot: bigint): Promise<Map<number, DiscoveryRow>> {
+    if (versionIds.length === 0) return new Map();
+    const rows = await this.pool.query<Record<string, unknown>>(
+      `SELECT ${DISCOVERY_COLUMNS}
+       FROM catalog_resources r JOIN catalog_resource_versions v ON v.resource_id = r.id
+       WHERE v.id = ANY($1::bigint[])`,
+      [versionIds],
+    );
+    const hydrated = await this.attachAccepts(rows.rows, snapshot);
+    return new Map(hydrated.map(row => [row.versionId, row]));
+  }
+
+  /** The compiled document text behind each version, used for reranking. */
+  async documents(versionIds: number[]): Promise<Map<number, string>> {
+    if (versionIds.length === 0) return new Map();
+    const rows = await this.pool.query<{ version_id: string; document: string }>(
+      "SELECT version_id, document FROM catalog_search_documents WHERE version_id = ANY($1::bigint[])",
+      [versionIds],
+    );
+    return new Map(rows.rows.map(row => [Number(row.version_id), row.document]));
+  }
+
+  /** Origins for the diversity cap, keyed by resource id. */
+  async origins(resourceIds: number[]): Promise<Map<number, string>> {
+    if (resourceIds.length === 0) return new Map();
+    const rows = await this.pool.query<{ id: string; origin: string }>(
+      "SELECT id, origin FROM catalog_resources WHERE id = ANY($1::bigint[])",
+      [resourceIds],
+    );
+    return new Map(rows.rows.map(row => [Number(row.id), row.origin]));
+  }
+
+  /** Number of resources visible under a snapshot and filter set. */
+  async countVisible(options: DiscoveryOptions): Promise<{ total: number; snapshotTotal: number }> {
+    const { values, snapshotConditions, visibility, from } = this.scope({ ...options, query: undefined });
+    const counted = await this.pool.query<{ total: string; snapshot_total: string }>(
+      `SELECT count(*) FILTER (WHERE ${visibility.join(" AND ")}) AS total, count(*) AS snapshot_total
+       ${from} WHERE ${snapshotConditions.join(" AND ")}`,
+      values,
+    );
+    return {
+      total: Number(counted.rows[0]?.total ?? 0),
+      snapshotTotal: Number(counted.rows[0]?.snapshot_total ?? 0),
+    };
+  }
+
+  private async attachAccepts(
+    rows: Array<Record<string, unknown>>,
+    snapshot: bigint,
+  ): Promise<DiscoveryRow[]> {
+    const versionIds = rows.map(row => Number(row.version_id));
+    const accepts = new Map<number, Array<Record<string, unknown>>>();
+    if (versionIds.length > 0) {
+      const optionRows = await this.pool.query<Record<string, unknown>>(
+        `SELECT * FROM catalog_payment_options
+         WHERE version_id = ANY($1::bigint[]) AND created_version <= $2
+           AND (retired_version IS NULL OR retired_version > $2)
+         ORDER BY network, scheme, asset, amount`,
+        [versionIds, snapshot.toString()],
+      );
+      for (const row of optionRows.rows) {
+        const list = accepts.get(Number(row.version_id)) ?? [];
+        list.push(optionRow(row));
+        accepts.set(Number(row.version_id), list);
+      }
+    }
+    return rows.map(row => ({
+      resourceId: Number(row.resource_id),
+      versionId: Number(row.version_id),
+      resource: String(row.resource_url),
+      type: row.type as "http" | "mcp",
+      x402Version: Number(row.x402_version),
+      ...(row.description ? { description: String(row.description) } : {}),
+      ...(row.mime_type ? { mimeType: String(row.mime_type) } : {}),
+      ...(row.service_name ? { serviceName: String(row.service_name) } : {}),
+      ...(Array.isArray(row.tags) && row.tags.length > 0 ? { tags: row.tags as string[] } : {}),
+      ...(row.icon_url ? { iconUrl: String(row.icon_url) } : {}),
+      ...(row.extensions && Object.keys(row.extensions).length > 0
+        ? { extensions: row.extensions as Record<string, unknown> } : {}),
+      lastUpdated: (row.last_updated as Date).toISOString(),
+      accepts: accepts.get(Number(row.version_id)) ?? [],
+    }));
+  }
+
+  /**
+   * Builds the shared snapshot scope. Browse, lexical retrieval, semantic
+   * retrieval and counting all read exactly the same catalog slice, so a filter
+   * can never mean one thing in one branch and something else in another.
+   */
+  private scope(options: DiscoveryOptions): {
+    values: unknown[]; snapshotConditions: string[]; visibility: string[]; from: string; rank: string;
+  } {
     const filters = options.filters;
     const values: unknown[] = [options.snapshot.toString()];
     // Conditions that depend only on immutable snapshot columns.
@@ -485,10 +683,14 @@ export class CatalogStore {
 
     let rank = "";
     if (options.query) {
+      values.push(options.language ?? "simple");
+      const language = values.length;
       values.push(options.query);
       const index = values.length;
-      snapshotConditions.push(`d.tsv @@ websearch_to_tsquery('simple', $${index})`);
-      rank = `, ts_rank_cd(d.tsv, websearch_to_tsquery('simple', $${index})) AS rank`;
+      // `search_or_tsquery` ORs the query terms; see migrations/003_search.sql
+      // for why an AND-only `websearch_to_tsquery` is unusable here.
+      snapshotConditions.push(`d.tsv @@ search_or_tsquery($${language}::regconfig, $${index})`);
+      rank = `, ts_rank_cd(d.tsv, search_or_tsquery($${language}::regconfig, $${index})) AS rank`;
     }
 
     const from = `
@@ -500,65 +702,8 @@ export class CatalogStore {
         ORDER BY cv.version DESC LIMIT 1
       ) v ON true
       ${options.query ? "JOIN catalog_search_documents d ON d.version_id = v.id" : ""}`;
-    const base = `${from} WHERE ${[...snapshotConditions, ...visibility].join(" AND ")}`;
 
-    const counted = await this.pool.query<{ total: string; snapshot_total: string }>(
-      `SELECT count(*) FILTER (WHERE ${visibility.join(" AND ")}) AS total, count(*) AS snapshot_total
-       ${from} WHERE ${snapshotConditions.join(" AND ")}`,
-      values,
-    );
-    const total = Number(counted.rows[0]?.total ?? 0);
-    const snapshotTotal = Number(counted.rows[0]?.snapshot_total ?? 0);
-
-    values.push(options.limit, options.offset);
-    const order = options.query
-      ? `ORDER BY rank DESC, r.id DESC`
-      : `ORDER BY r.id DESC`;
-    const rows = await this.pool.query<Record<string, unknown>>(
-      `SELECT r.id AS resource_id, r.type, r.resource_url, r.status, v.id AS version_id,
-              v.x402_version, v.description, v.mime_type, v.service_name, v.tags, v.icon_url,
-              v.extensions, GREATEST(v.activated_at, v.created_at) AS last_updated${rank}
-       ${base} ${order} LIMIT $${values.length - 1} OFFSET $${values.length}`,
-      values,
-    );
-
-    const versionIds = rows.rows.map(row => Number(row.version_id));
-    const accepts = new Map<number, Array<Record<string, unknown>>>();
-    if (versionIds.length > 0) {
-      const optionRows = await this.pool.query<Record<string, unknown>>(
-        `SELECT * FROM catalog_payment_options
-         WHERE version_id = ANY($1::bigint[]) AND created_version <= $2
-           AND (retired_version IS NULL OR retired_version > $2)
-         ORDER BY network, scheme, asset, amount`,
-        [versionIds, options.snapshot.toString()],
-      );
-      for (const row of optionRows.rows) {
-        const list = accepts.get(Number(row.version_id)) ?? [];
-        list.push(optionRow(row));
-        accepts.set(Number(row.version_id), list);
-      }
-    }
-
-    return {
-      total,
-      partialResults: options.offset + rows.rows.length < total || snapshotTotal > total,
-      rows: rows.rows.map(row => ({
-        resourceId: Number(row.resource_id),
-        versionId: Number(row.version_id),
-        resource: String(row.resource_url),
-        type: row.type as "http" | "mcp",
-        x402Version: Number(row.x402_version),
-        ...(row.description ? { description: String(row.description) } : {}),
-        ...(row.mime_type ? { mimeType: String(row.mime_type) } : {}),
-        ...(row.service_name ? { serviceName: String(row.service_name) } : {}),
-        ...(Array.isArray(row.tags) && row.tags.length > 0 ? { tags: row.tags as string[] } : {}),
-        ...(row.icon_url ? { iconUrl: String(row.icon_url) } : {}),
-        ...(row.extensions && Object.keys(row.extensions).length > 0
-          ? { extensions: row.extensions as Record<string, unknown> } : {}),
-        lastUpdated: (row.last_updated as Date).toISOString(),
-        accepts: accepts.get(Number(row.version_id)) ?? [],
-      })),
-    };
+    return { values, snapshotConditions, visibility, from, rank };
   }
 
   async resourceDetail(resourceId: number): Promise<Record<string, unknown> | undefined> {

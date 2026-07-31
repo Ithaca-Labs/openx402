@@ -26,6 +26,7 @@
     "packages/*/src/**/*.ts",
     "packages/*/test/**/*.ts",
     "packages/*/examples/**/*.ts",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "vitest.live-model.config.ts"
   ]
 }

@@ -22,7 +22,10 @@
     "test:live": "tsx tests/live/testnet.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "licenses": "node scripts/check-licenses.mjs",
-    "test:sdk": "vitest run packages"
+    "test:sdk": "vitest run packages",
+    "evaluate": "tsx src/cli/evaluate.ts",
+    "index": "tsx src/cli/index-search.ts",
+    "test:live-model": "vitest run --config vitest.live-model.config.ts"
   },
   "dependencies": {
     "@stellar/stellar-sdk": "16.2.0",
@@ -45,5 +48,13 @@
     "tsx": "4.20.3",
     "typescript": "5.9.2",
     "vitest": "3.2.7"
+  },
+  "peerDependencies": {
+    "@huggingface/transformers": "^4.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@huggingface/transformers": {
+      "optional": true
+    }
   }
 }

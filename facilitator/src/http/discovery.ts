@@ -2,6 +2,7 @@ import { Router, type NextFunction, type Request, type Response } from "express"
 import { z, ZodError } from "zod";
 import type { AppConfig } from "../types.js";
 import type { CatalogStore, DiscoveryFilters, DiscoveryRow } from "../db/catalog.js";
+import type { ImpressionRecorder, SearchMode, SearchService } from "../search/service.js";
 import { decodeCursor, encodeCursor, filterFingerprint } from "./cursor.js";
 
 const filterSchema = z.object({
@@ -69,7 +70,26 @@ function fail(error: unknown, res: Response, next: NextFunction): void {
   next(error);
 }
 
-export function createDiscoveryRouter(config: AppConfig, catalog: CatalogStore): Router {
+const MODES = new Set(["lexical", "semantic", "hybrid"]);
+
+/** Search page sizes come from `search.*`; browse keeps the discovery sizes. */
+function searchPaging(query: Request["query"], config: AppConfig): { limit: number; offset: number } {
+  const limit = Number(single(query.limit) ?? config.search.defaultResultLimit);
+  const offset = Number(single(query.offset) ?? 0);
+  return {
+    limit: Number.isFinite(limit) && limit > 0
+      ? Math.min(Math.floor(limit), config.search.maximumResultLimit)
+      : config.search.defaultResultLimit,
+    offset: Number.isFinite(offset) && offset > 0 ? Math.floor(offset) : 0,
+  };
+}
+
+export function createDiscoveryRouter(
+  config: AppConfig,
+  catalog: CatalogStore,
+  search?: SearchService,
+  impressions?: ImpressionRecorder,
+): Router {
   const router = Router();
 
   async function page(req: Request, res: Response, query?: string): Promise<void> {
@@ -142,6 +162,11 @@ export function createDiscoveryRouter(config: AppConfig, catalog: CatalogStore):
     }
   });
 
+  /**
+   * Ranked search. The response keeps the official `resources` /
+   * `partialResults` / `pagination` shape; the hybrid pipeline only changes how
+   * the list is ordered.
+   */
   router.get("/search", async (req, res, next) => {
     try {
       if (!config.discovery.enabled) {
@@ -153,7 +178,68 @@ export function createDiscoveryRouter(config: AppConfig, catalog: CatalogStore):
         res.status(400).json({ error: "query_required" });
         return;
       }
-      await page(req, res, query.slice(0, 512));
+      const trimmed = query.slice(0, 512);
+      if (!search) {
+        await page(req, res, trimmed);
+        return;
+      }
+
+      const rawMode = single(req.query.mode);
+      if (rawMode !== undefined && !MODES.has(rawMode)) {
+        res.status(400).json({ error: "invalid_mode", details: ["mode must be lexical, semantic or hybrid"] });
+        return;
+      }
+      const filters = parseFilters(req.query);
+      const fingerprint = filterFingerprint({ ...filters, query: trimmed, mode: rawMode ?? null });
+      const requested = searchPaging(req.query, config);
+      const rawCursor = single(req.query.cursor);
+
+      let snapshot: bigint;
+      let offset = requested.offset;
+      if (rawCursor) {
+        const decoded = decodeCursor(config.discovery.cursorHmacKey, rawCursor);
+        if (!decoded || decoded.filters !== fingerprint) {
+          res.status(400).json({ error: "invalid_cursor" });
+          return;
+        }
+        snapshot = BigInt(decoded.snapshot);
+        offset = decoded.offset;
+      } else {
+        snapshot = await catalog.watermark();
+      }
+
+      const result = await search.search({
+        filters,
+        limit: requested.limit,
+        offset,
+        snapshot,
+        includeStale: config.discovery.includeStale,
+        includeUnverified: config.discovery.includeUnverified,
+        staleAfterHours: config.catalog.staleAfterHours,
+        query: trimmed,
+        ...(rawMode ? { mode: rawMode as SearchMode } : {}),
+      });
+
+      await impressions?.record({
+        sessionId: result.sessionId, query: trimmed, result, rows: result.rows,
+      }).catch(() => undefined);
+
+      const nextOffset = offset + result.rows.length;
+      const cursor = nextOffset < result.total
+        ? encodeCursor(config.discovery.cursorHmacKey, {
+            snapshot: snapshot.toString(),
+            offset: nextOffset,
+            filters: fingerprint,
+            expiresAt: Date.now() + config.discovery.cursorTtlMinutes * 60_000,
+          })
+        : null;
+
+      res.json({
+        x402Version: 2,
+        resources: result.rows.map(toResource),
+        partialResults: result.partialResults,
+        pagination: { limit: requested.limit, cursor },
+      });
     } catch (error) {
       fail(error, res, next);
     }

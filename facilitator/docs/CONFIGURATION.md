@@ -79,6 +79,92 @@ Bazaar specification, and neither is any price filter. Both are documented as
 upstream proposals in [catalog trust boundary](CATALOG-TRUST.md); clients must
 not depend on them. There is no client-selectable sort parameter.
 
+## Search (`search`)
+
+Full pipeline reference: [search, indexing and evaluation](SEARCH.md).
+
+### `search.lexical`
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `enabled` | `true` | Use the PostgreSQL full-text branch. |
+| `language` | `simple` | Text-search configuration. `simple` avoids language guessing; `english` adds stemming and stopword removal. |
+| `weight` | `0.35` | Branch weight in reciprocal rank fusion. |
+| `candidate_count` | `100` | Candidates retrieved before fusion. |
+
+### `search.semantic`
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `enabled` | `true` | Attempt the vector branch. Disabling it is a supported lexical-only deployment. |
+| `provider` | `local` | `disabled`, `local`, `remote`, or `fake` (tests only; rejected unless `FACILITATOR_ALLOW_FAKE_PROVIDERS=1`). |
+| `model` | `BAAI/bge-m3` | Logical model identity recorded on every vector. |
+| `repo` | `Xenova/bge-m3` | Repository holding the loadable ONNX artifact. |
+| `revision` | `4de1325…f0858` | Immutable commit sha. Must be a full 40-character sha when `models.require_pinned_revision` is set. |
+| `dimension` | `1024` | Validated against what the provider actually returns on every batch. |
+| `pooling` | `cls` | `cls` or `mean`. Part of the generation identity. |
+| `normalization` | `l2` | `l2` or `none`. Part of the generation identity. |
+| `weight` | `0.65` | Branch weight in fusion. |
+| `timeout_ms` | `500` | Bound on the query-embedding call; a timeout degrades to lexical. |
+| `candidate_count` | `100` | Candidates retrieved before fusion. |
+| `remote_url_env` | `FACILITATOR_EMBEDDING_URL` | Required when `provider: remote`. |
+| `remote_api_key_env` | `FACILITATOR_EMBEDDING_API_KEY` | Optional bearer token. |
+
+### `search.reranking`
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `enabled` | `false` | Rerank the fused head. |
+| `provider` | `local` | `disabled`, `local`, `remote`, `fake`. |
+| `model` | `BAAI/bge-reranker-v2-m3` | Logical identity. |
+| `repo` | `""` | ONNX cross-encoder export. Empty by default because none is published for the local runtime; the provider stays degraded and search falls back to hybrid. |
+| `revision` | `953dc6f…8d41e` | Immutable commit sha. |
+| `top_k` | `30` | How many fused results are reranked. The tail keeps its fused order and never outranks a reranked result. |
+| `timeout_ms` | `800` | Bound on the rerank call. |
+| `fallback_to_hybrid` | `true` | On timeout, error or unavailability, return fused results. `false` returns nothing instead. |
+| `remote_url_env` | `FACILITATOR_RERANKER_URL` | Required when `provider: remote`. |
+| `remote_api_key_env` | `FACILITATOR_RERANKER_API_KEY` | Optional bearer token. |
+
+### `search` fusion and limits
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `rrf_k` | `60` | Reciprocal-rank-fusion constant: `score(d) = Σ w_b / (k + rank_b(d))`. |
+| `minimum_relevance_score` | `0` | Drop fused results below this score. |
+| `default_result_limit` | inherits `discovery.default_page_size` | Page size for `/discovery/search` when the caller sends no `limit`. |
+| `maximum_result_limit` | inherits `discovery.max_page_size` | Ceiling; a larger `limit` is clamped. |
+| `origin_diversity_limit` | `3` | How many results one origin may hold before being demoted (never dropped). |
+
+### `search.impressions`
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `enabled` | `true` | Record what was shown, for conversion and ranking attribution. |
+| `retain_query_text` | `false` | Store the raw query. Aggregate conversion works either way. |
+| `retention_days` | `90` | Pruned hourly. |
+
+### `search.models`
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `cache_dir` | `.models` | Model cache. Persist it to keep restarts offline-capable. |
+| `offline` | `false` | Forbid any download; a missing artifact becomes a degraded state. |
+| `dtype` | `q8` | ONNX weight precision, for example `fp32`, `q8`, `q4`. |
+| `require_pinned_revision` | `true` | Refuse to start a local provider without a full commit sha. |
+
+### `search.indexing`
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `batch_size` | `32` | Documents per provider call. |
+| `worker_concurrency` | `1` | Batches claimed per poll. |
+| `poll_ms` | `500` | Queue poll interval. |
+| `lease_ms` | `30000` | Job lease; an expired lease is safe to steal. |
+| `max_attempts` | `5` | Attempts before a job is dead-lettered. |
+| `backoff_base_ms` | `1000` | Exponential backoff base: `base × 2^(attempt-1)`. |
+| `backoff_max_ms` | `300000` | Backoff ceiling. |
+| `reindex_schedule` | `manual` | `manual`, or `startup` to enqueue missing documents on every boot. |
+
 ## Analytics (`analytics`)
 
 | Key | Default | Meaning |
@@ -137,4 +223,12 @@ replacing another's active listing; the append-only version and payment-option
 history; and the rule that cataloging never turns a valid payment into an
 error. `duplicate_changed` may be made stricter (`reject`) but never permissive:
 in-place overwrite is not an option.
+
+Search adds its own fixed invariants: only rank positions enter fusion, never a
+raw `ts_rank_cd` value against a cosine distance; one active model generation per
+index, with a model, revision, dimension, pooling or normalization change
+forcing a new generation and an explicit reindex; vectors from different
+generations are never compared; embedding dimension is validated on every batch
+before storage; no generative model may produce or rewrite indexed text; and
+search never fails merely because a model is absent.
 

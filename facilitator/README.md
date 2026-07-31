@@ -43,9 +43,8 @@ and activates it only after a confirmed settlement.
 `GET /discovery/resources` and `GET /discovery/search` serve the official browse
 and search shapes. Filters are the specification set (`type`, `network`,
 `scheme`, `payTo`, `extensions`) plus `asset`, and there is no price filter —
-both divergences are documented as upstream proposals. Search is PostgreSQL
-full-text ranking, so lexical discovery works with zero API keys and no external
-service. Cursors are opaque HMAC tokens pinning a catalog watermark;
+both divergences are documented as upstream proposals. Cursors are opaque HMAC
+tokens pinning a catalog watermark;
 `catalog_next_version()` assigns versions under a row lock held to commit, so
 version order equals commit order and a page cannot shift, duplicate or skip a
 row while other replicas write.
@@ -63,6 +62,35 @@ observability) behind the same bearer authentication as the payment routes.
 Operator-only status, verification and provenance fields live only there and
 never enter a Bazaar wire response. See the
 [x402scan field inventory](docs/X402SCAN-INVENTORY.md).
+
+## Search
+
+Ranking is hybrid: PostgreSQL full-text candidates and pgvector cosine
+candidates fused by weighted reciprocal rank fusion, with optional cross-encoder
+reranking of the top k. Only rank positions enter fusion — a `ts_rank_cd` score
+and a cosine distance are never compared directly. The lexical branch is FTS with
+`ts_rank_cd`, not BM25.
+
+Every optional stage degrades on its own and says so: an embedding timeout,
+a missing model, an unavailable reranker or a PostgreSQL server without pgvector
+all fall back to full-text results with `partialResults: true`. Lexical search
+works with zero API keys, zero accounts and no downloaded weights.
+
+Embeddings are produced off the request path by a worker that claims durable
+jobs from the same PostgreSQL queue with `FOR UPDATE SKIP LOCKED` and fencing
+tokens, with batching, exponential backoff and dead-lettering. One model
+generation is active at a time; changing the model, revision, dimension,
+pooling or normalization creates a new generation with its own typed storage, so
+incompatible vectors can never be mixed.
+
+```sh
+npm run index -- status      # generations, queue depth, provider health
+npm run index -- reindex     # explicit migration after a model change
+npm run evaluate             # recall@k, MRR, nDCG, violations, latency, lift
+```
+
+See [search, indexing and evaluation](docs/SEARCH.md) for the fusion formula,
+the degradation matrix, model licences and pinned revisions.
 
 Sellers declare their metadata with [`@openx402/bazaar-sdk`](packages/bazaar-sdk),
 whose `bazaar.http()` and `bazaar.mcp()` compile readable configuration into the
@@ -88,8 +116,8 @@ npm run keys -- disable-channel stellar:pubnet G...
 Run all replicas with the same PostgreSQL database and encryption key. Back up the database with `pg_dump`; restore it with `pg_restore` before starting any facilitator replica. Rotate encryption material using an offline database re-encryption procedure, not by changing the environment variable under existing ciphertext.
 
 See [configuration](docs/CONFIGURATION.md), [catalog trust boundary](docs/CATALOG-TRUST.md),
-[x402scan field inventory](docs/X402SCAN-INVENTORY.md) and
-[dependency licences](THIRD_PARTY_LICENSES.md).
+[search](docs/SEARCH.md), [x402scan field inventory](docs/X402SCAN-INVENTORY.md)
+and [dependency licences](THIRD_PARTY_LICENSES.md).
 
 ## Verification
 
@@ -99,15 +127,19 @@ npm test
 npm run build
 npm run licenses
 npm audit --omit=dev
-npm run test:live
+npm run test:live         # real testnet settlements
+npm run evaluate          # retrieval quality report
+npm run test:live-model   # optional: real ONNX weights, not part of CI
 ```
 
 Integration tests need PostgreSQL 17 at `TEST_DATABASE_URL` (default
-`postgresql://postgres:test@127.0.0.1:55432/facilitator_test`):
+`postgresql://postgres:test@127.0.0.1:55432/facilitator_test`). Use the pgvector
+image so the semantic tests run; plain `postgres:17-alpine` exercises the
+lexical-only path instead:
 
 ```sh
 docker run -d --name x402-test-pg -e POSTGRES_PASSWORD=test \
-  -e POSTGRES_DB=facilitator_test -p 55432:5432 postgres:17-alpine
+  -e POSTGRES_DB=facilitator_test -p 55432:5432 pgvector/pgvector:pg17
 ```
 
 The live test uses the stock `@x402/stellar` exact client and canonical HTTP facilitator client, exercises partial and zero Stellar upto settlements, and then makes a fourth exact payment carrying seller Bazaar metadata to check the `EXTENSION-RESPONSES` header and both discovery endpoints. Published testnet hashes from the latest run:
