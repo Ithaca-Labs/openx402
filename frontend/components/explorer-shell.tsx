@@ -1,0 +1,275 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState, type ReactNode } from "react";
+
+import {
+  ActivityIcon,
+  ArrowRightIcon,
+  ChevronDownIcon,
+  CommandIcon,
+  MenuIcon,
+  XIcon,
+} from "@/components/icons";
+import { navItems, type Metric } from "@/components/data";
+import { Badge, Card, cn } from "@/components/ui";
+
+export function AppShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="site-frame">
+      <SiteHeader />
+      <main className="site-main">{children}</main>
+      <SiteFooter />
+    </div>
+  );
+}
+
+export function SiteHeader() {
+  const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <header className="site-header">
+      <div className="header-inner">
+        <Link className="brand-lockup" href="/" onClick={() => setMenuOpen(false)}>
+          <Image
+            alt="openx402"
+            className="brand-lockup__image"
+            height={26}
+            priority
+            src="/brand/logo/lockup-primary-light.svg"
+            width={130}
+          />
+        </Link>
+
+        <button
+          aria-controls="primary-navigation"
+          aria-expanded={menuOpen}
+          aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+          className="menu-trigger"
+          onClick={() => setMenuOpen((open) => !open)}
+          type="button"
+        >
+          {menuOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
+        </button>
+
+        <nav
+          aria-label="Primary navigation"
+          className={cn("primary-navigation", menuOpen && "primary-navigation--open")}
+          id="primary-navigation"
+        >
+          {navItems.map((item) => {
+            const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+
+            return (
+              <Link
+                aria-current={active ? "page" : undefined}
+                className={cn("nav-link", active && "nav-link--active")}
+                href={item.href}
+                key={item.href}
+                onClick={() => setMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="header-meta" aria-label="Index status">
+          <span className="status-pulse" aria-hidden="true" />
+          <span>Index live</span>
+          <span className="header-meta__separator" aria-hidden="true" />
+          <span className="mono">09:42:18 UTC</span>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export function PageContainer({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cn("page-container", className)}>{children}</div>;
+}
+
+export function PageHeader({
+  eyebrow,
+  title,
+  description,
+  actions,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  actions?: ReactNode;
+}) {
+  return (
+    <section className="page-header" aria-labelledby="page-title">
+      <div>
+        <div className="eyebrow">{eyebrow}</div>
+        <h1 id="page-title">{title}</h1>
+        <p>{description}</p>
+      </div>
+      {actions ? <div className="page-header__actions">{actions}</div> : null}
+    </section>
+  );
+}
+
+export function SectionHeading({
+  eyebrow,
+  title,
+  description,
+  action,
+  className,
+}: {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  action?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("section-heading", className)}>
+      <div>
+        {eyebrow ? <div className="eyebrow">{eyebrow}</div> : null}
+        <h2>{title}</h2>
+        {description ? <p>{description}</p> : null}
+      </div>
+      {action ? <div className="section-heading__action">{action}</div> : null}
+    </div>
+  );
+}
+
+export function MetricCard({ metric }: { metric: Metric }) {
+  return (
+    <Card className="metric-card">
+      <div className="metric-card__topline">
+        <span>{metric.label}</span>
+        <span className={cn("metric-delta", metric.trend === "flat" && "metric-delta--flat")}>
+          {metric.delta}
+        </span>
+      </div>
+      <div className="metric-card__value">{metric.value}</div>
+      <MiniBars bars={metric.bars} />
+      <div className="metric-card__context">
+        <span>{metric.context}</span>
+        <ActivityIcon size={14} />
+      </div>
+    </Card>
+  );
+}
+
+export function MiniBars({ bars, className }: { bars: number[]; className?: string }) {
+  return (
+    <div className={cn("mini-bars", className)} aria-hidden="true">
+      {bars.map((bar, index) => (
+        <span key={`${bar}-${index}`} style={{ height: `${bar}%` }} />
+      ))}
+    </div>
+  );
+}
+
+export function Sparkline({
+  points,
+  className,
+}: {
+  points: number[];
+  className?: string;
+}) {
+  const max = Math.max(...points);
+  const min = Math.min(...points);
+  const range = max - min || 1;
+  const path = points
+    .map((point, index) => {
+      const x = (index / (points.length - 1)) * 100;
+      const y = 26 - ((point - min) / range) * 21;
+      return `${index === 0 ? "M" : "L"}${x.toFixed(2)} ${y.toFixed(2)}`;
+    })
+    .join(" ");
+
+  return (
+    <svg
+      aria-hidden="true"
+      className={cn("sparkline", className)}
+      preserveAspectRatio="none"
+      viewBox="0 0 100 28"
+    >
+      <path className="sparkline__fill" d={`${path} L100 28 L0 28 Z`} />
+      <path className="sparkline__line" d={path} />
+    </svg>
+  );
+}
+
+export function EntityLogo({
+  name,
+  accent = "yellow",
+  size = "md",
+}: {
+  name: string;
+  accent?: string;
+  size?: "sm" | "md" | "lg";
+}) {
+  const initials = name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <span className={cn("entity-logo", `entity-logo--${accent}`, `entity-logo--${size}`)} aria-hidden="true">
+      {initials}
+    </span>
+  );
+}
+
+export function StatusBadge({ state }: { state: "settled" | "pending" | "online" | "limited" | "preview" }) {
+  const label = state === "settled" ? "Settled" : state === "pending" ? "Pending" : state;
+  const tone = state === "settled" || state === "online" ? "success" : state === "pending" ? "signal" : "neutral";
+
+  return (
+    <Badge className="status-badge" tone={tone}>
+      <span aria-hidden="true" className="status-badge__dot" />
+      {label}
+    </Badge>
+  );
+}
+
+export function TimeControl({ label = "Last 30 days" }: { label?: string }) {
+  return (
+    <button className="control-button" type="button">
+      <span>{label}</span>
+      <ChevronDownIcon size={15} />
+    </button>
+  );
+}
+
+export function CommandHint() {
+  return (
+    <span className="command-hint" aria-hidden="true">
+      <CommandIcon size={13} /> K
+    </span>
+  );
+}
+
+export function SiteFooter() {
+  return (
+    <footer className="site-footer">
+      <div className="footer-inner">
+        <div className="footer-brand">
+          <Image alt="" height={22} src="/brand/logo/mark-yellow.svg" width={22} />
+          <span>openx402</span>
+        </div>
+        <div className="footer-note">Ecosystem explorer for open payment infrastructure.</div>
+        <div className="footer-links">
+          <a href="https://github.com" rel="noreferrer" target="_blank">Repository <ArrowRightIcon size={14} /></a>
+          <a href="https://stellar.org" rel="noreferrer" target="_blank">Stellar <ArrowRightIcon size={14} /></a>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <span>© 2026 openx402</span>
+        <span className="mono">BUILD 0.1 / OBSERVER MODE</span>
+      </div>
+    </footer>
+  );
+}
