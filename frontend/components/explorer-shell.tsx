@@ -11,8 +11,11 @@ import {
   ChevronDownIcon,
   CommandIcon,
   MenuIcon,
+  MoonIcon,
+  SunIcon,
   XIcon,
 } from "@/components/icons";
+import { Bar, BarBaseline, BarChart } from "@/components/charts";
 import { navItems, type Metric } from "@/components/data";
 import { Badge, Card, cn } from "@/components/ui";
 
@@ -123,15 +126,8 @@ export function SiteHeader() {
             title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
             type="button"
           >
-            <span aria-hidden="true">{theme === "dark" ? "Light" : "Dark"}</span>
+            {theme === "dark" ? <SunIcon aria-hidden="true" size={16} /> : <MoonIcon aria-hidden="true" size={16} />}
           </button>
-
-          <div className="header-meta" aria-label="Index status">
-            <span className="status-pulse" aria-hidden="true" />
-            <span>Index live</span>
-            <span className="header-meta__separator" aria-hidden="true" />
-            <span className="mono">09:42:18 UTC</span>
-          </div>
         </div>
 
         <button
@@ -195,32 +191,61 @@ export function SectionHeading({
   );
 }
 
-export function MetricCard({ metric }: { metric: Metric }) {
+export function MetricCard({ metric, featured = false }: { metric: Metric; featured?: boolean }) {
   return (
-    <Card className="metric-card">
-      <div className="metric-card__topline">
-        <span>{metric.label}</span>
-        <span className={cn("metric-delta", metric.trend === "flat" && "metric-delta--flat")}>
+    <Card className={cn("metric-card", featured && "metric-card--featured")}>
+      <div className="metric-card__header">
+        <span className="metric-card__label">
+          <span aria-hidden="true" className="metric-card__signal" />
+          {metric.label}
+        </span>
+        <span
+          aria-label={`${metric.delta} over ${metric.context}`}
+          className={cn("metric-delta", metric.trend === "flat" && "metric-delta--flat")}
+        >
           {metric.delta}
         </span>
       </div>
-      <div className="metric-card__value">{metric.value}</div>
-      <MiniBars bars={metric.bars} />
-      <div className="metric-card__context">
-        <span>{metric.context}</span>
-        <ActivityIcon size={14} />
+      <div className="metric-card__value-row">
+        <div className="metric-card__value">{metric.value}</div>
+        <span className="metric-card__context">{metric.context}</span>
+      </div>
+      <MetricChart bars={metric.bars} label={metric.label} range={metric.context} />
+      <div className="metric-card__footer" aria-hidden="true">
+        <span className="metric-card__footer-label"><ActivityIcon size={13} /> Trend</span>
+        <span className="metric-card__range"><span>30d ago</span><span>Now</span></span>
       </div>
     </Card>
   );
 }
 
-export function MiniBars({ bars, className }: { bars: number[]; className?: string }) {
+export function MetricChart({ bars, label, range }: { bars: number[]; label: string; range: string }) {
+  const data = bars.flatMap((value, index) => {
+    const next = bars[index + 1] ?? value;
+    return [
+      { label: `${index}-a`, value },
+      { label: `${index}-b`, value: Math.round(value + (next - value) * 0.35) },
+      { label: `${index}-c`, value: Math.round(value + (next - value) * 0.7) },
+    ];
+  });
+
   return (
-    <div className={cn("mini-bars", className)} aria-hidden="true">
-      {bars.map((bar, index) => (
-        <span key={`${bar}-${index}`} style={{ height: `${bar}%` }} />
-      ))}
-    </div>
+    <BarChart
+      ariaLabel={`${label} trend over ${range}`}
+      className="metric-bar-chart"
+      data={data}
+      xDataKey="label"
+    >
+      <BarBaseline />
+      <Bar
+        dataKey="value"
+        fill="var(--color-accent)"
+        fillOpacity={0.4}
+        lineCap="butt"
+        stroke="var(--color-chart-bar-stroke)"
+        strokeWidth={1.3}
+      />
+    </BarChart>
   );
 }
 

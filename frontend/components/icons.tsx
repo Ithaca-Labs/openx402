@@ -51,6 +51,23 @@ export function ChevronDownIcon(props: IconProps) {
   );
 }
 
+export function SunIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="3.25" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M12 2.75v2.1M12 19.15v2.1M21.25 12h-2.1M4.85 12h-2.1M18.54 5.46l-1.49 1.49M6.95 17.05l-1.49 1.49M18.54 18.54l-1.49-1.49M6.95 6.95 5.46 5.46" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+    </Icon>
+  );
+}
+
+export function MoonIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M19.75 14.9A8.05 8.05 0 0 1 9.1 4.25 8.05 8.05 0 1 0 19.75 14.9Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.55" />
+    </Icon>
+  );
+}
+
 export function ChevronLeftIcon(props: IconProps) {
   return (
     <Icon {...props}>
@@ -208,4 +225,3 @@ export function MoreIcon(props: IconProps) {
     </Icon>
   );
 }
-
