@@ -1,0 +1,26 @@
+{
+  "name": "@openx402/mcp-example-seller",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Example paid MCP seller: one x402-priced tool, declared via bazaar.mcp() over its own inputSchema, settled through the facilitator.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.15.1",
+    "@openx402/bazaar-sdk": "0.1.0",
+    "@x402/core": "2.20.0",
+    "@x402/extensions": "^2.20.0",
+    "@x402/mcp": "2.20.0",
+    "express": "5.1.0",
+    "zod": "3.25.76",
+    "zod-to-json-schema": "^3.25.1"
+  },
+  "devDependencies": {
+    "tsx": "4.20.3",
+    "typescript": "5.9.2"
+  }
+}

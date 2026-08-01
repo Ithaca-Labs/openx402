@@ -32,6 +32,28 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # Optional agent-facing MCP server. Never required for the facilitator to
+  # start -- enable with `docker compose --profile mcp up`. Talks to the
+  # facilitator above only over its public HTTP API (FACILITATOR_URL) and
+  # shares the same PostgreSQL instance via its own DATABASE_URL, but is a
+  # separate process with its own image, config and (optional) signer.
+  mcp-server:
+    profiles: ["mcp"]
+    build: ../mcp-server
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://facilitator:facilitator-development-only@postgres:5432/facilitator
+      FACILITATOR_URL: http://facilitator:4022
+      MCP_SERVER_CONFIG: config/self-hosted.yaml
+    ports:
+      - "4522:4522"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      facilitator:
+        condition: service_started
+    restart: unless-stopped
+
 volumes:
   facilitator_postgres:
   facilitator_models:

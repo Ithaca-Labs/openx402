@@ -1,0 +1,22 @@
+{
+  "name": "@openx402/mcp-example-testnet-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Live Stellar testnet flow: unpaid MCP call -> stock @x402/mcp + @x402/stellar exact client pay -> settle through our facilitator -> confirm auto-catalog -> find and invoke through x402_search_resources/x402_call_resource.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.15.1",
+    "@stellar/stellar-sdk": "16.2.0",
+    "@x402/core": "2.20.0",
+    "@x402/mcp": "2.20.0",
+    "@x402/stellar": "2.20.0"
+  },
+  "devDependencies": {
+    "tsx": "4.20.3",
+    "typescript": "5.9.2"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "openx402",
+  "private": true,
+  "license": "Apache-2.0",
+  "workspaces": [
+    "facilitator/packages/*",
+    "mcp-server/examples/*"
+  ]
+}

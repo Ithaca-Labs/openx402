@@ -3,6 +3,7 @@ import { z, ZodError } from "zod";
 import type { AppConfig } from "../types.js";
 import type { CatalogStore, DiscoveryFilters, DiscoveryRow } from "../db/catalog.js";
 import type { ImpressionRecorder, SearchMode, SearchService } from "../search/service.js";
+import { normalizeResourceUrl } from "../bazaar/extract.js";
 import { decodeCursor, encodeCursor, filterFingerprint } from "./cursor.js";
 
 const filterSchema = z.object({
@@ -157,6 +158,62 @@ export function createDiscoveryRouter(
         return;
       }
       await page(req, res);
+    } catch (error) {
+      fail(error, res, next);
+    }
+  });
+
+  /**
+   * Exact single-resource resolver, keyed by catalog identity rather than a
+   * sequential id or the internal analytics API. Built for a client (e.g. the
+   * standalone agent-facing MCP server) that already holds a stable
+   * `(type, url, toolName)` reference and needs current terms without paging
+   * through `/resources`. Response is the same `DiscoveryResource` shape as
+   * the other discovery routes, wrapped in a single `resource` field.
+   */
+  router.get("/resource", async (req, res, next) => {
+    try {
+      if (!config.discovery.enabled) {
+        res.status(404).json({ error: "discovery_disabled" });
+        return;
+      }
+      const type = single(req.query.type);
+      const rawUrl = single(req.query.url);
+      const toolName = single(req.query.toolName);
+      if (type !== "http" && type !== "mcp") {
+        res.status(400).json({ error: "invalid_filter", details: ["type must be http or mcp"] });
+        return;
+      }
+      if (!rawUrl) {
+        res.status(400).json({ error: "invalid_filter", details: ["url is required"] });
+        return;
+      }
+      if (type === "mcp" && !toolName) {
+        res.status(400).json({ error: "invalid_filter", details: ["toolName is required for type=mcp"] });
+        return;
+      }
+      const normalized = normalizeResourceUrl(rawUrl);
+      if (typeof normalized === "string") {
+        res.status(400).json({ error: "invalid_filter", details: ["url is not a valid resource url"] });
+        return;
+      }
+      const snapshot = await catalog.watermark();
+      const row = await catalog.getByKey(
+        { type, url: normalized.canonical, ...(toolName ? { toolName } : {}) },
+        {
+          limit: 1,
+          offset: 0,
+          snapshot,
+          includeStale: config.discovery.includeStale,
+          includeUnverified: config.discovery.includeUnverified,
+          staleAfterHours: config.catalog.staleAfterHours,
+        },
+      );
+      if (!row) {
+        res.status(404).json({ error: "not_found" });
+        return;
+      }
+      res.json({ x402Version: 2, resource: toResource(row) });
     } catch (error) {
       fail(error, res, next);
     }

@@ -233,6 +233,53 @@ describe("GET /discovery/resources", () => {
   });
 });
 
+describe("GET /discovery/resource", () => {
+  it("resolves one HTTP resource by exact url with no sequential id exposed", async () => {
+    await catalogResource("https://api.example.com/weather");
+    const response = await request(app())
+      .get("/discovery/resource?type=http&url=https://api.example.com/weather").expect(200);
+    expect(response.body.x402Version).toBe(2);
+    expect(response.body.resource.resource).toBe("https://api.example.com/weather");
+    expect(response.body.resource).not.toHaveProperty("id");
+    expect(response.body.resource).not.toHaveProperty("resourceId");
+  });
+
+  it("keys MCP entries on (url, toolName), so two tools on one URL resolve separately", async () => {
+    const sentiment = extractCandidate(
+      payload({ url: "https://api.example.com/mcp", metadata: mcpMetadata("sentiment") }),
+      requirements(), catalogConfig(),
+    );
+    const summary = extractCandidate(
+      payload({ url: "https://api.example.com/mcp", metadata: mcpMetadata("summary") }),
+      requirements(), catalogConfig(),
+    );
+    if (sentiment.kind !== "candidate" || summary.kind !== "candidate") throw new Error("expected candidates");
+    await catalog.observe(sentiment.candidate, { stage: "verified", activate: true, duplicateChanged: "version_and_verify" });
+    await catalog.observe(summary.candidate, { stage: "verified", activate: true, duplicateChanged: "version_and_verify" });
+
+    const a = await request(app())
+      .get("/discovery/resource?type=mcp&url=https://api.example.com/mcp&toolName=sentiment").expect(200);
+    const b = await request(app())
+      .get("/discovery/resource?type=mcp&url=https://api.example.com/mcp&toolName=summary").expect(200);
+    expect(a.body.resource.extensions.bazaar.info.input.toolName).toBe("sentiment");
+    expect(b.body.resource.extensions.bazaar.info.input.toolName).toBe("summary");
+  });
+
+  it("404s on an unknown resource and rejects missing/invalid query params", async () => {
+    await request(app())
+      .get("/discovery/resource?type=http&url=https://api.example.com/missing").expect(404);
+    await request(app()).get("/discovery/resource?type=grpc&url=https://api.example.com/x").expect(400);
+    await request(app()).get("/discovery/resource?type=http").expect(400);
+    await request(app()).get("/discovery/resource?type=mcp&url=https://api.example.com/mcp").expect(400);
+    await request(app()).get("/discovery/resource?type=http&url=not-a-url").expect(400);
+  });
+
+  it("returns 404 when discovery is disabled", async () => {
+    const disabled = app({ discovery: discoveryConfig({ enabled: false }) });
+    await request(disabled).get("/discovery/resource?type=http&url=https://api.example.com/weather").expect(404);
+  });
+});
+
 const envelopeBody = () => ({
   x402Version: 2,
   paymentPayload: payload(),
