@@ -12,20 +12,11 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "declaration": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "@openx402/bazaar-sdk": [
-        "packages/bazaar-sdk/src/index.ts"
-      ]
-    }
+    "sourceMap": true
   },
   "include": [
     "src/**/*.ts",
     "tests/**/*.ts",
-    "packages/*/src/**/*.ts",
-    "packages/*/test/**/*.ts",
-    "packages/*/examples/**/*.ts",
     "vitest.config.ts",
     "vitest.live-model.config.ts"
   ]

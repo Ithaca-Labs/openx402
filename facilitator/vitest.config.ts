@@ -6,7 +6,7 @@ export default defineConfig({
     alias: {
       // Tests exercise the workspace package from source; `npm run build`
       // still emits the published dist entry point.
-      "@openx402/bazaar-sdk": fileURLToPath(new URL("./packages/bazaar-sdk/src/index.ts", import.meta.url)),
+      "@openx402/bazaar-sdk": fileURLToPath(new URL("../packages/bazaar-sdk/src/index.ts", import.meta.url)),
     },
   },
   test: {

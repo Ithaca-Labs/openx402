@@ -2,16 +2,15 @@
   "name": "@openx402/stellar-facilitator",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && npm run build -w @openx402/bazaar-sdk",
+    "build": "npm run build:sdk && npm run build:service",
+    "build:sdk": "npm run build --prefix ../packages/bazaar-sdk",
+    "build:service": "tsc -p tsconfig.json",
     "dev": "tsx watch src/server.ts",
     "start": "node dist/src/server.js",
     "migrate": "tsx src/cli/migrate.ts",
@@ -22,7 +21,7 @@
     "test:live": "tsx tests/live/testnet.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "licenses": "node scripts/check-licenses.mjs",
-    "test:sdk": "vitest run packages",
+    "test:sdk": "npm test --prefix ../packages/bazaar-sdk",
     "evaluate": "tsx src/cli/evaluate.ts",
     "benchmark:fetch-cdp": "tsx src/cli/fetch-cdp-benchmark.ts",
     "benchmark:generate": "tsx src/cli/generate-release-dataset.ts",
@@ -39,6 +38,7 @@
     "test:live-model": "vitest run --config vitest.live-model.config.ts"
   },
   "dependencies": {
+    "@openx402/bazaar-sdk": "file:../packages/bazaar-sdk",
     "@stellar/stellar-sdk": "16.2.0",
     "@x402/core": "2.20.0",
     "@x402/extensions": "^2.20.0",

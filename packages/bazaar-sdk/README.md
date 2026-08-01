@@ -144,3 +144,27 @@ Both are written in the exact official shape, and both `info` and `schema` are
 updated together so the extension stays valid under the builder's
 `additionalProperties: false`. When you declare neither, the output is
 byte-identical to the official builder's.
+
+## Development
+
+The package is independently installable and testable from this directory:
+
+```sh
+npm ci --workspaces=false
+npm test
+npm run typecheck
+npm run build
+```
+
+Inspect the public artifact before publishing:
+
+```sh
+npm pack --dry-run --workspaces=false
+```
+
+Publishing runs the test and typecheck gates, rebuilds `dist`, and uses the
+public access configured in `package.json`:
+
+```sh
+npm publish --workspaces=false
+```

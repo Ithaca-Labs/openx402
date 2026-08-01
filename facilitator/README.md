@@ -92,7 +92,7 @@ npm run evaluate             # recall@k, MRR, nDCG, violations, latency, lift
 See [search, indexing and evaluation](docs/SEARCH.md) for the fusion formula,
 the degradation matrix, model licences and pinned revisions.
 
-Sellers declare their metadata with [`@openx402/bazaar-sdk`](packages/bazaar-sdk),
+Sellers declare their metadata with [`@openx402/bazaar-sdk`](../packages/bazaar-sdk),
 whose `bazaar.http()` and `bazaar.mcp()` compile readable configuration into the
 official wire format by delegating to the upstream builders.
 

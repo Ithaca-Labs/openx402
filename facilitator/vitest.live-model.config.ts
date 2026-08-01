@@ -8,7 +8,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
-      "@openx402/bazaar-sdk": fileURLToPath(new URL("./packages/bazaar-sdk/src/index.ts", import.meta.url)),
+      "@openx402/bazaar-sdk": fileURLToPath(new URL("../packages/bazaar-sdk/src/index.ts", import.meta.url)),
     },
   },
   test: {

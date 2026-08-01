@@ -17,7 +17,9 @@ services:
       retries: 20
 
   facilitator:
-    build: .
+    build:
+      context: ..
+      dockerfile: facilitator/Dockerfile
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://facilitator:facilitator-development-only@postgres:5432/facilitator
@@ -26,7 +28,7 @@ services:
       # Model cache. Persisting it keeps restarts offline-capable.
       - facilitator_models:/app/.models
     ports:
-      - "4022:4022"
+      - "${FACILITATOR_PORT:-4022}:4022"
     depends_on:
       postgres:
         condition: service_healthy

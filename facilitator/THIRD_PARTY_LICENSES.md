@@ -50,6 +50,6 @@ hosted-vendor model is referenced, bundled or selected by default.
 is not vendored; the Compose file uses the upstream `pgvector/pgvector:pg17`
 image. Without it the facilitator runs lexical-only.
 
-The workspace package `packages/bazaar-sdk` (`@openx402/bazaar-sdk`) is Apache-2.0 and depends only on `@x402/core` and `@x402/extensions`, both Apache-2.0. Workspace symlinks are skipped by the checker; their own lock entries are verified.
+The workspace package `../packages/bazaar-sdk` (`@openx402/bazaar-sdk`) is Apache-2.0 and depends only on `@x402/core` and `@x402/extensions`, both Apache-2.0. Workspace symlinks are skipped by the checker; their own lock entries are verified.
 
 The PostgreSQL 17 container uses the PostgreSQL licence. No model weights, embedding runtime, external relayer, OpenZeppelin Relayer, or AGPL x402 plugin is part of this service.
