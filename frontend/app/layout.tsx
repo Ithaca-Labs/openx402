@@ -13,7 +13,6 @@ const archivo = localFont({
   ],
   declarations: [{ prop: "font-stretch", value: "62% 125%" }],
   display: "swap",
-  fallback: ["sans-serif"],
   preload: true,
   variable: "--font-archivo",
 });
@@ -32,14 +31,13 @@ const plexMono = localFont({
     },
   ],
   display: "swap",
-  fallback: ["monospace"],
   preload: true,
   variable: "--font-plex-mono",
 });
 
 export const metadata: Metadata = {
-  title: "openx402 — Ecosystem explorer",
-  description: "Discover, inspect, and understand activity across the openx402 payment ecosystem.",
+  title: "openx402 — Digital Workers for Mundane Workflows",
+  description: "Deploy digital workers for the routine browser workflows that slow your team down.",
   icons: {
     icon: "/brand/favicon/favicon.svg",
   },
@@ -51,12 +49,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      className={`${archivo.variable} ${plexMono.variable}`}
-      data-scroll-behavior="smooth"
-      data-theme="dark"
-      lang="en"
-    >
+    <html className={`${archivo.variable} ${plexMono.variable}`} lang="en">
       <body>{children}</body>
     </html>
   );
