@@ -39,7 +39,7 @@ export type Activity = {
 };
 
 export const navItems: NavItem[] = [
-  { href: "/", label: "Discover" },
+  { href: "/discover", label: "Discover" },
   { href: "/all", label: "All activity" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/transactions", label: "Transactions" },
@@ -214,9 +214,9 @@ export const networks = [
 ];
 
 export const ecosystemGroups = [
-  { category: "Build", eyebrow: "TOOLS FOR SHIPPING", entities: ["RouteKit", "Scout MCP", "Beacon API"] },
-  { category: "Settle", eyebrow: "PAYMENT RAILS", entities: ["openx402", "Bridgeway", "Relay House"] },
-  { category: "Understand", eyebrow: "SIGNALS & DATA", entities: ["Ledger Lens", "Proofmail", "Northstar"] },
+  { category: "Build", entities: ["RouteKit", "Scout MCP", "Beacon API"] },
+  { category: "Settle", entities: ["openx402", "Bridgeway", "Relay House"] },
+  { category: "Understand", entities: ["Ledger Lens", "Proofmail", "Northstar"] },
 ];
 
 export const transactionRows = [
@@ -225,4 +225,3 @@ export const transactionRows = [
   { entity: "Proofmail", type: "message delivery", amount: "$0.09", network: "Stellar", facilitator: "Bridgeway", hash: "1f20…80a1", time: "39 min ago", state: "settled" as const },
   { entity: "Beacon API", type: "data request", amount: "$0.22", network: "Stellar", facilitator: "Relay House", hash: "d2f0…109e", time: "44 min ago", state: "settled" as const },
 ];
-

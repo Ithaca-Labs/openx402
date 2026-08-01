@@ -60,7 +60,6 @@ export function AllPage() {
             </div>
           }
           description="Aggregate activity across services, payments, facilitators, and networks."
-          eyebrow="ALL ACTIVITY / SYSTEM VIEW"
           title="All activity"
         />
 
@@ -71,7 +70,6 @@ export function AllPage() {
 
         <section className="section-block" aria-labelledby="top-services-title">
           <SectionHeading
-            eyebrow="RANKED DIRECTORY"
             title="Top services"
             description="The services with the clearest activity signal in the selected window."
             action={<TimeControl label="Last 30 days" />}
@@ -102,7 +100,6 @@ export function MarketplacePage() {
         <PageHeader
           actions={<div className="control-cluster"><TimeControl label="Last 30 days" /><Link className="ui-button ui-button--solid ui-button--sm" href="/ecosystem">Suggest a service <ArrowUpRightIcon size={15} /></Link></div>}
           description="Browse services and merchants tracked by the index."
-          eyebrow="MARKETPLACE / DISCOVERABLE SERVICES"
           title="Marketplace"
         />
 
@@ -115,7 +112,6 @@ export function MarketplacePage() {
 
         <section className="section-block" aria-labelledby="browse-title">
           <SectionHeading
-            eyebrow="BROWSE THE INDEX"
             title="Services & merchants"
             description="Identity first, then the activity that makes an entity worth opening."
           />
@@ -155,7 +151,6 @@ export function TransactionsPage() {
         <PageHeader
           actions={<div className="control-cluster"><TimeControl label="Last 24 hours" /><SelectField aria-label="Filter transaction state" onChange={(event) => setState(event.target.value)} value={state}><option>All states</option><option>Settled</option><option>Pending</option></SelectField></div>}
           description="Inspect tracked payments and settlement receipts."
-          eyebrow="TRANSACTIONS / RECEIPTS"
           title="Transactions"
         />
         <section className="section-block section-block--compact" aria-labelledby="transaction-pulse-title">
@@ -166,7 +161,7 @@ export function TransactionsPage() {
           </div>
         </section>
         <section className="section-block" aria-labelledby="ledger-title">
-          <SectionHeading eyebrow="THE LEDGER" title="Latest receipts" description="Hashes are shortened visually and remain copyable at the transaction level." action={<button className="control-button" type="button"><SlidersIcon size={15} /> More filters</button>} />
+          <SectionHeading title="Latest receipts" description="Hashes are shortened visually and remain copyable at the transaction level." action={<button className="control-button" type="button"><SlidersIcon size={15} /> More filters</button>} />
           <ActivityTable rows={rows} />
         </section>
       </PageContainer>
@@ -181,18 +176,17 @@ export function FacilitatorsPage() {
         <PageHeader
           actions={<div className="control-cluster"><TimeControl label="Last 30 days" /><SelectField aria-label="Sort facilitators" defaultValue="Volume"><option>Volume</option><option>Payments</option><option>Uptime</option></SelectField></div>}
           description="Compare payment facilitators and their routing activity."
-          eyebrow="FACILITATORS / ROUTING LAYER"
           title="Facilitators"
         />
         <section className="section-block section-block--compact" aria-labelledby="facilitator-pulse-title">
           <div className="facilitator-banner">
-            <div className="facilitator-banner__copy"><div className="eyebrow">ROUTING HEALTH</div><h2>Facilitator activity</h2><p>Compare volume, uptime, and supported paths for the facilitators in the index.</p></div>
+            <div className="facilitator-banner__copy"><h2>Facilitator activity</h2><p>Compare volume, uptime, and supported paths for the facilitators in the index.</p></div>
             <div className="facilitator-banner__stats"><span><strong>99.96%</strong><small>network average</small></span><span><strong>4.2s</strong><small>median settlement</small></span><span><strong>12</strong><small>rails supported</small></span></div>
             <NetworkIcon className="facilitator-banner__mark" size={104} />
           </div>
         </section>
         <section className="section-block" aria-labelledby="facilitator-directory-title">
-          <SectionHeading eyebrow="RANKED OPERATORS" title="Facilitator directory" description="Operational context for the services doing the routing." />
+          <SectionHeading title="Facilitator directory" description="Operational context for the services doing the routing." />
           <div className="facilitator-list">
             {facilitators.map((facilitator, index) => (
               <Card className="facilitator-row" key={facilitator.name}>
@@ -219,7 +213,6 @@ export function NetworksPage() {
         <PageHeader
           actions={<div className="control-cluster"><TimeControl label="Last 30 days" /><Link className="ui-button ui-button--outline ui-button--sm" href="/ecosystem">Read the spec <ExternalLinkIcon size={15} /></Link></div>}
           description="Compare supported settlement networks and environments."
-          eyebrow="NETWORKS / SETTLEMENT RAILS"
           title="Networks"
         />
         <section className="section-block section-block--compact" aria-labelledby="network-summary-title">
@@ -236,7 +229,7 @@ export function NetworksPage() {
           </div>
         </section>
         <section className="section-block" aria-labelledby="capability-title">
-          <SectionHeading eyebrow="CAPABILITY MAP" title="Network capabilities" description="Compare the supported capabilities of each settlement environment." />
+          <SectionHeading title="Network capabilities" description="Compare the supported capabilities of each settlement environment." />
           <Card className="capability-card">
             <div className="capability-card__lead"><GlobeIcon size={19} /><span>Capability</span></div>
             {networks.map((network) => <div className="capability-card__network" key={network.name}><EntityLogo accent={network.accent} name={network.name} size="sm" /><span>{network.name.replace("Stellar ", "").replace("EVM ", "EVM ")}</span></div>)}
@@ -260,7 +253,6 @@ export function EcosystemPage() {
         <PageHeader
           actions={<Link className="ui-button ui-button--solid ui-button--sm" href="/marketplace">Open marketplace <ArrowUpRightIcon size={15} /></Link>}
           description="Browse organizations, tools, and infrastructure in the wider ecosystem."
-          eyebrow="ECOSYSTEM / THE WIDER MAP"
           title="Ecosystem"
         />
         <section className="section-block section-block--compact" aria-labelledby="ecosystem-groups-title">
@@ -270,7 +262,6 @@ export function EcosystemPage() {
               <Card className="ecosystem-group" key={group.category}>
                 <div className="ecosystem-group__top"><span className="mono">0{index + 1}</span><ArrowUpRightIcon size={18} /></div>
                 <div className="ecosystem-group__icon">{index === 0 ? <ServerIcon size={22} /> : index === 1 ? <NetworkIcon size={22} /> : <DatabaseIcon size={22} />}</div>
-                <div className="eyebrow">{group.eyebrow}</div>
                 <h3>{group.category}</h3>
                 <div className="ecosystem-group__entities">{group.entities.map((entity) => <span key={entity}>{entity}</span>)}</div>
               </Card>
@@ -278,7 +269,7 @@ export function EcosystemPage() {
           </div>
         </section>
         <section className="section-block" aria-labelledby="directory-title">
-          <SectionHeading eyebrow="CURATED DIRECTORY" title="Directory" description="Entities currently represented in the ecosystem index." action={<button className="control-button" type="button"><SlidersIcon size={15} /> Filter directory</button>} />
+          <SectionHeading title="Directory" description="Entities currently represented in the ecosystem index." action={<button className="control-button" type="button"><SlidersIcon size={15} /> Filter directory</button>} />
           <div className="ecosystem-directory">
             {[...featuredEntities, ...facilitators.map((facilitator) => ({ name: facilitator.name, category: "Facilitator", description: facilitator.description, domain: `${facilitator.name.toLowerCase().replaceAll(" ", "")}.network`, volume: facilitator.volume, transactions: facilitator.payments, buyers: "—", network: "Stellar", freshness: "online", accent: facilitator.accent }))].map((entity) => <DirectoryRow entity={entity} key={entity.name} />)}
           </div>

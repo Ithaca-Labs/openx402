@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 
 import {
   ActivityIcon,
@@ -15,6 +15,29 @@ import {
 } from "@/components/icons";
 import { navItems, type Metric } from "@/components/data";
 import { Badge, Card, cn } from "@/components/ui";
+
+type Theme = "dark" | "light";
+
+const themeListeners = new Set<() => void>();
+const themeStore = {
+  getSnapshot: (): Theme =>
+    typeof document !== "undefined" && document.documentElement.dataset.theme === "light" ? "light" : "dark",
+  getServerSnapshot: (): Theme => "dark",
+  subscribe: (listener: () => void) => {
+    themeListeners.add(listener);
+    return () => themeListeners.delete(listener);
+  },
+  set: (theme: Theme) => {
+    document.documentElement.dataset.theme = theme;
+    themeListeners.forEach((listener) => listener());
+
+    try {
+      window.localStorage.setItem("openx402-theme", theme);
+    } catch {
+      // Keep the current theme for this session when storage is unavailable.
+    }
+  },
+};
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
@@ -29,6 +52,23 @@ export function AppShell({ children }: { children: ReactNode }) {
 export function SiteHeader() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const theme = useSyncExternalStore(themeStore.subscribe, themeStore.getSnapshot, themeStore.getServerSnapshot);
+
+  useEffect(() => {
+    try {
+      const storedTheme = window.localStorage.getItem("openx402-theme");
+      if (storedTheme === "light" || storedTheme === "dark") {
+        themeStore.set(storedTheme);
+      }
+    } catch {
+      document.documentElement.dataset.theme = "dark";
+    }
+  }, []);
+
+  function toggleTheme() {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    themeStore.set(nextTheme);
+  }
 
   return (
     <header className="site-header">
@@ -36,24 +76,22 @@ export function SiteHeader() {
         <Link className="brand-lockup" href="/" onClick={() => setMenuOpen(false)}>
           <Image
             alt="openx402"
-            className="brand-lockup__image"
+            className="brand-lockup__image brand-lockup__image--light"
             height={26}
             priority
             src="/brand/logo/lockup-primary-light.svg"
             width={130}
           />
+          <Image
+            alt=""
+            aria-hidden="true"
+            className="brand-lockup__image brand-lockup__image--dark"
+            height={26}
+            priority
+            src="/brand/logo/lockup-primary-dark.svg"
+            width={130}
+          />
         </Link>
-
-        <button
-          aria-controls="primary-navigation"
-          aria-expanded={menuOpen}
-          aria-label={menuOpen ? "Close navigation" : "Open navigation"}
-          className="menu-trigger"
-          onClick={() => setMenuOpen((open) => !open)}
-          type="button"
-        >
-          {menuOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
-        </button>
 
         <nav
           aria-label="Primary navigation"
@@ -61,7 +99,7 @@ export function SiteHeader() {
           id="primary-navigation"
         >
           {navItems.map((item) => {
-            const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
 
             return (
               <Link
@@ -77,12 +115,35 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <div className="header-meta" aria-label="Index status">
-          <span className="status-pulse" aria-hidden="true" />
-          <span>Index live</span>
-          <span className="header-meta__separator" aria-hidden="true" />
-          <span className="mono">09:42:18 UTC</span>
+        <div className="header-tools">
+          <button
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            className="theme-toggle"
+            onClick={toggleTheme}
+            title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            type="button"
+          >
+            <span aria-hidden="true">{theme === "dark" ? "Light" : "Dark"}</span>
+          </button>
+
+          <div className="header-meta" aria-label="Index status">
+            <span className="status-pulse" aria-hidden="true" />
+            <span>Index live</span>
+            <span className="header-meta__separator" aria-hidden="true" />
+            <span className="mono">09:42:18 UTC</span>
+          </div>
         </div>
+
+        <button
+          aria-controls="primary-navigation"
+          aria-expanded={menuOpen}
+          aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+          className="menu-trigger"
+          onClick={() => setMenuOpen((open) => !open)}
+          type="button"
+        >
+          {menuOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
+        </button>
       </div>
     </header>
   );
@@ -93,12 +154,10 @@ export function PageContainer({ children, className }: { children: ReactNode; cl
 }
 
 export function PageHeader({
-  eyebrow,
   title,
   description,
   actions,
 }: {
-  eyebrow: string;
   title: string;
   description: string;
   actions?: ReactNode;
@@ -106,7 +165,6 @@ export function PageHeader({
   return (
     <section className="page-header" aria-labelledby="page-title">
       <div>
-        <div className="eyebrow">{eyebrow}</div>
         <h1 id="page-title">{title}</h1>
         <p>{description}</p>
       </div>
@@ -116,13 +174,11 @@ export function PageHeader({
 }
 
 export function SectionHeading({
-  eyebrow,
   title,
   description,
   action,
   className,
 }: {
-  eyebrow?: string;
   title: string;
   description?: string;
   action?: ReactNode;
@@ -131,7 +187,6 @@ export function SectionHeading({
   return (
     <div className={cn("section-heading", className)}>
       <div>
-        {eyebrow ? <div className="eyebrow">{eyebrow}</div> : null}
         <h2>{title}</h2>
         {description ? <p>{description}</p> : null}
       </div>
