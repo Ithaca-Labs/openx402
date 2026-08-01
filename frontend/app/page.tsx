@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { navItems } from "@/components/data";
+
 export const metadata: Metadata = {
   title: "openx402 — x402 for the Stellar ecosystem",
   description: "Discover the x402 ecosystem built on Stellar.",
@@ -9,8 +11,6 @@ export const metadata: Metadata = {
 
 const VIDEO_URL =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260714_113715_c7e0daa0-8bdd-4486-a2da-040901f8f0ea.mp4";
-
-const navigationItems = ["Features", "Plans", "Security", "About"];
 
 export default function Home() {
   return (
@@ -58,14 +58,14 @@ export default function Home() {
           </Link>
 
           <div className="hidden items-center gap-5 sm:flex md:gap-7">
-            {navigationItems.map((item) => (
-              <a
+            {navItems.map((item) => (
+              <Link
                 className="text-sm font-medium text-[#111111]/75 transition-colors duration-200 hover:text-[#111111]"
-                href={`#${item.toLowerCase()}`}
-                key={item}
+                href={item.href}
+                key={item.href}
               >
-                {item}
-              </a>
+                {item.label}
+              </Link>
             ))}
           </div>
         </div>
