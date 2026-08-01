@@ -544,6 +544,38 @@ export class CatalogStore {
     }));
   }
 
+  /**
+   * Exact single-resource lookup by catalog identity `(type, url, toolName)`.
+   * For a caller that already holds this tuple (e.g. an agent-facing MCP
+   * server resolving a stable resource reference it derived itself) and needs
+   * current terms without paging through `list()`. Returns the same
+   * `DiscoveryRow` shape as browse/search; no sequential id is exposed.
+   */
+  async getByKey(
+    key: { type: "http" | "mcp"; url: string; toolName?: string },
+    options: Omit<DiscoveryOptions, "filters" | "query" | "language">,
+  ): Promise<DiscoveryRow | undefined> {
+    const { values, snapshotConditions, visibility, from } = this.scope({
+      ...options, filters: {}, query: undefined,
+    });
+    values.push(key.type);
+    snapshotConditions.push(`r.type = $${values.length}`);
+    values.push(key.url);
+    snapshotConditions.push(`r.resource_url = $${values.length}`);
+    if (key.type === "mcp") {
+      values.push(key.toolName ?? "");
+      snapshotConditions.push(`r.tool_name = $${values.length}`);
+    }
+    const rows = await this.pool.query<Record<string, unknown>>(
+      `SELECT ${DISCOVERY_COLUMNS}
+       ${from} WHERE ${[...snapshotConditions, ...visibility].join(" AND ")}
+       ORDER BY r.id DESC LIMIT 1`,
+      values,
+    );
+    const hydrated = await this.attachAccepts(rows.rows, options.snapshot);
+    return hydrated[0];
+  }
+
   /** Loads full discovery rows for an explicit, already-ordered version list. */
   async hydrate(versionIds: number[], snapshot: bigint): Promise<Map<number, DiscoveryRow>> {
     if (versionIds.length === 0) return new Map();

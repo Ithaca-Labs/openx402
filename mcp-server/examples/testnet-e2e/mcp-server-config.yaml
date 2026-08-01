@@ -1,0 +1,32 @@
+# Config for the mcp-server instance spawned by the live testnet flow
+# script (examples/testnet-e2e/src/index.ts). stdio transport, exact-scheme
+# testnet payments via a Friendbot-funded buyer key from STELLAR_SECRET_KEY.
+
+facilitator:
+  base_url: http://127.0.0.1:4022
+  request_timeout_ms: 10000
+
+transport: stdio
+
+signer:
+  mode: env-secret
+  secret_env: STELLAR_SECRET_KEY
+
+networks:
+  stellar:testnet:
+    enabled: true
+  stellar:pubnet:
+    enabled: false
+
+budget:
+  store: memory
+  default_per_call_max_atomic: "5000000"
+  default_session_or_day_max_atomic: "50000000"
+
+network_security:
+  allow_insecure_local: true
+  max_response_bytes: 8388608
+  timeout_ms: 15000
+  max_redirects: 3
+  max_concurrent_connections: 10
+  resolved_mcp_endpoints: {}

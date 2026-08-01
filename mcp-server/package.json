@@ -1,0 +1,48 @@
+{
+  "name": "@openx402/mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Optional agent-facing MCP server for the Stellar x402 facilitator: Bazaar search and guarded discover-pay-retry, exposed as MCP tools.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "dist/src/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/src/server.js",
+    "migrate": "tsx src/cli/migrate.ts",
+    "test": "vitest run tests/unit",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration --config vitest.integration.config.ts",
+    "test:e2e": "vitest run tests/e2e --config vitest.integration.config.ts",
+    "test:live": "tsx tests/e2e/testnetLiveFlow.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "licenses": "node scripts/check-licenses.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.15.1",
+    "@x402/core": "2.20.0",
+    "@x402/extensions": "^2.20.0",
+    "@x402/mcp": "2.20.0",
+    "@x402/stellar": "2.20.0",
+    "express": "5.1.0",
+    "helmet": "8.1.0",
+    "pg": "8.16.3",
+    "undici": "^7.2.0",
+    "yaml": "2.9.0",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.3",
+    "@types/node": "24.2.0",
+    "@types/pg": "8.15.5",
+    "@types/supertest": "6.0.3",
+    "supertest": "7.1.4",
+    "tsx": "4.20.3",
+    "typescript": "5.9.2",
+    "vitest": "3.2.7"
+  }
+}
