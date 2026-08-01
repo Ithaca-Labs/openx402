@@ -229,6 +229,12 @@ export class CatalogStore {
       if (!context.activate && versionRow.status !== "active") {
         return { outcome: "pending", resourceId, versionId, paymentOptionId: optionId };
       }
+      if (context.activate && versionRow.status === "active") {
+        // A declaration can advertise several payment options. Refresh the
+        // deterministic document after adding or replacing one so every live
+        // option is represented in lexical text and the embedding job.
+        await this.indexVersion(client, resourceId, versionId, candidate, version);
+      }
       return { outcome: "refreshed", resourceId, versionId, paymentOptionId: optionId };
     }
 

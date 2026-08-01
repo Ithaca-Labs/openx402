@@ -7,8 +7,8 @@ coverage/
 # Coinbase catalog metadata has unclear redistribution terms. Keep the raw
 # snapshot and provider responses local; only manifests and derived fixtures
 # belong in version control.
-eva-datasetl/raw-generation-output/foreign_cdp_reference.jsonl
-eva-datasetl/raw-generation-output/cdp-sample-v1.jsonl
-eva-datasetl/raw-generation-output/openrouter-candidates-v1.json
-eva-datasetl/raw-generation-output/openrouter/
-eva-datasetl/manifests/checkpoints/
+eval-dataset/raw-generation-output/foreign_cdp_reference.jsonl
+eval-dataset/raw-generation-output/cdp-sample-v1.jsonl
+eval-dataset/raw-generation-output/openrouter-candidates-v1.json
+eval-dataset/raw-generation-output/openrouter/
+eval-dataset/manifests/checkpoints/

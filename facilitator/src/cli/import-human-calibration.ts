@@ -5,7 +5,7 @@ import { HumanCalibrationSchema, HumanReviewImportSchema } from "../search/relea
 
 const source = process.argv[2];
 if (!source) throw new Error("usage: npm run benchmark:import-human -- <human-review.jsonl> [dataset-root]");
-const root = resolve(process.argv[3] ?? "eva-datasetl");
+const root = resolve(process.argv[3] ?? "eval-dataset");
 const imports = await readJsonl(resolve(source), HumanReviewImportSchema);
 rejectDuplicates(imports, value => `${value.query_id}\0${value.resource_id}`, "human review pair");
 const path = resolve(root, "calibration/human-review-v1.jsonl");

@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-08-01T08:41:51.089Z",
+  "status": "blocked",
+  "ready_for_evaluation": false,
+  "gates": {
+    "dataset_valid": true,
+    "wire_validation_errors_zero": true,
+    "exact_resource_count": true,
+    "exact_query_count": true,
+    "exact_qrel_count": true,
+    "exact_only": true,
+    "release_queries_curated": true,
+    "qrels_complete": false,
+    "qrels_final": false,
+    "human_calibration_passed": false,
+    "bge_m3_report_passed": true,
+    "real_reranker_configured": false,
+    "isolated_database_configured": false,
+    "minimum_relevance_score_frozen": false,
+    "hybrid_latency_limit_frozen": false,
+    "reranker_latency_limit_frozen": false
+  },
+  "blockers": [
+    "22584 eligible pairs need OpenRouter judgments",
+    "30000 qrels remain provisional until human calibration passes",
+    "human calibration is incomplete or below threshold",
+    "FACILITATOR_RERANKER_URL is unset; reranked profile unavailable and production reranking stays off",
+    "TEST_DATABASE_URL/DATABASE_URL is unset; PostgreSQL/pgvector release run unavailable",
+    "BENCHMARK_MIN_RELEVANCE_SCORE must be fixed from development-query tuning",
+    "BENCHMARK_HYBRID_P95_LIMIT_MS must be fixed before the release run",
+    "BENCHMARK_RERANKER_P95_LIMIT_MS must be fixed before the release run"
+  ]
+}

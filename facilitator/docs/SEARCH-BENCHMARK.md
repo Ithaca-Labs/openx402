@@ -2,7 +2,7 @@
 
 The release benchmark is separate from the 12-resource `golden-v1.json` smoke
 suite. It contains 300 fixtures, 100 queries, and the complete 30,000-pair qrel
-matrix under `eva-datasetl/`. Every retrieval profile runs through
+matrix under `eval-dataset/`. Every retrieval profile runs through
 `SearchService`; the benchmark does not contain another ranking implementation.
 
 ## Dataset contract
@@ -15,9 +15,9 @@ and inconsistent hard-constraint labels.
 
 The exact composition is:
 
-- 150 HTTP fixtures derived only from CDP source capability metadata;
-- 60 generated MCP fixtures;
-- 45 adversarial HTTP fixtures; and
+- 150 HTTP fixtures whose category/method shape is sampled from CDP records;
+- 60 MCP fixtures generated from repository templates or optional development-only LLM output;
+- 45 adversarial fixtures spanning nine attack classes; and
 - 45 sparse/cold-start HTTP fixtures.
 
 Exactly 50 deterministic provider identities are generated with
@@ -28,6 +28,9 @@ The SDK also validates the configured Stellar USDC contract IDs. Testnet uses
 `CBIEL...DAMA`, pubnet uses `CCW67...MI75`, both at 7 decimals. Atomic amounts
 are stored as decimal integer strings. USD prices are fixed authoring-time
 sidecar snapshots; search never derives them or exposes a public price filter.
+This benchmark version is deliberately `exact`-only. It includes multi-option
+resources across both Stellar networks and both G-account and C-account
+recipients, but it makes no `upto` search-quality claim.
 
 Each fixture is compiled with `@openx402/bazaar-sdk` and checked by both upstream
 Bazaar validators. The `wire` object contains only `x402Version`, `resource`,
@@ -43,7 +46,7 @@ uses a fixed 30-day threshold at fixture-authoring time, never wall-clock runtim
 ```sh
 npm install
 npm run benchmark:fetch-cdp
-npm run benchmark:generate-candidates # requires OPENROUTER_API_KEY
+npm run benchmark:generate-candidates # optional, development fixtures only; requires OPENROUTER_API_KEY
 npm run benchmark:generate
 npm run benchmark:validate
 OPENROUTER_API_KEY=... npm run benchmark:judge
@@ -53,6 +56,9 @@ npm run benchmark:calibration
 npm run benchmark:gates
 TEST_DATABASE_URL=postgresql://... \
 FACILITATOR_RERANKER_URL=https://... \
+BENCHMARK_MIN_RELEVANCE_SCORE=... \
+BENCHMARK_HYBRID_P95_LIMIT_MS=... \
+BENCHMARK_RERANKER_P95_LIMIT_MS=... \
 npm run benchmark:evaluate
 ```
 
@@ -68,23 +74,27 @@ this inference is sidecar-only and never adds a capability to Bazaar wire prose.
 Coinbase documents the endpoint for browsing, but no clear metadata
 redistribution grant was found. Therefore the full snapshot and sampled foreign
 records are gitignored. They do not inherit this repository's Apache-2.0
-licence. The fetch manifest and transformed `.example` fixtures are committed.
+licence. Committed fixtures do not copy CDP descriptions, tags, examples, or
+schemas. They use deterministic repository-owned prose and schemas; only source
+hashes, category/method shape, and timestamps retain provenance. The fetch
+manifest and transformed `.example` fixtures are committed.
 
 ## OpenRouter judging
 
 `OPENROUTER_API_KEY` is read from the environment only. The default model is
 `deepseek/deepseek-v4-flash` and may be overridden with `OPENROUTER_MODEL`.
-Candidate generation and relevance judging both use OpenRouter. Calls use
+Optional development candidate generation and relevance judging use OpenRouter. Calls use
 `https://openrouter.ai/api/v1/chat/completions`, temperature 0, strict
 JSON output, Zod validation, rate limiting, bounded retries, prompt-addressed
 cache files, and resumable batch checkpoints. Provenance records the requested
 and returned model, request ID/provider when supplied, prompt hash, timestamp,
 response hash, and cache path. No key is written.
 
-When the key is unavailable, `benchmark:generate` can produce a clearly marked
-curated fallback so schema and search mechanics remain testable. That fallback
-does not satisfy the release gate: generated MCP prose and query paraphrases
-must carry OpenRouter prompt provenance for a release run.
+When the key is unavailable, `benchmark:generate` produces a clearly marked,
+keyless curated baseline so schema and search mechanics remain testable. The 30
+release queries are always curated and never replaced by model output. Optional
+generation may replace only development-query wording and MCP fixture prose, so
+the DeepSeek judge does not author the held-out release questions it scores.
 
 Hard constraints supported by production—type, network, scheme, payTo, asset,
 and extension presence—are calculated before judging. Evaluation-only category
@@ -118,7 +128,8 @@ mode and production reranking remains off.
 
 Reports include standard Precision@5 (always denominator 5), Recall@20, MRR,
 nDCG@5, no-result accuracy, semantic grade-0 rate, production hard-filter
-violation rate, separate price/category violation rate, adversarial win rate,
+violation rate, separate evaluation-constraint violation rate, adversarial top-1
+and resistance rates,
 provider concentration, embedding completeness/failures, warm/cold result share,
 reranker lift, and p50/p95/p99 latency. Development/release, per-class, and
 overall metrics include deterministic 1,000-sample bootstrap 95% intervals.
@@ -127,10 +138,15 @@ release results must not guide configuration changes.
 
 ## Release gates and environment record
 
-The run fails unless wire validation and production hard-filter violations are
-zero, all 300 BGE-M3 vectors are present with no failed jobs, qrels have no
-pending eligible pairs, a real reranker actually ran, and human calibration
-passed. Reports record Node/OS/architecture/CPU count, PostgreSQL version,
+`benchmark:gates` is a preflight report, not a quality pass. The actual release
+run fails unless wire and evaluation constraint violations are zero, all 300
+BGE-M3 vectors are present with no failed jobs, hybrid improves held-out nDCG@5
+and Recall@20 over lexical, reranking matches or improves both, held-out
+no-result accuracy is perfect, adversarial fixtures never take the top slot,
+provider fallbacks are zero, configured p95 targets are met, a real reranker
+actually ran, and human calibration passed. Relevance and latency thresholds
+must be fixed from development-query runs before running the frozen release
+split. Reports record Node/OS/architecture/CPU count, PostgreSQL version,
 embedding and reranker model IDs/revisions, dataset hashes (in the manifest),
 unavailable profiles, and limitations. Record exact host CPU/RAM details beside
 a published report when running on benchmark hardware.

@@ -235,7 +235,7 @@ reranker. Nothing is faked, and reranking is off by default.
 - The pinned `Xenova/bge-m3` revision has now been run on Apple M4 hardware at
   its real 1024 dimensions. Dimension, normalization, determinism, semantic
   ordering, mismatch rejection, and loaded-artifact checksum passed; the
-  machine-readable report is `eva-datasetl/reports/bge-m3-local-v1.json`.
+  machine-readable report is `eval-dataset/reports/bge-m3-local-v1.json`.
   This is a provider-runtime measurement, not a release retrieval-quality
   result. The smoke-suite ranking numbers below still use the deterministic
   fake provider and measure mechanics only.

@@ -7,6 +7,7 @@ import {
   RELEASE_COUNTS, SidecarRecordSchema, type CatalogRecord, type QueryRecord, type SidecarRecord,
 } from "./schema.js";
 import { readJsonl, rejectDuplicates, sha256 } from "./io.js";
+import { evaluateEligibility } from "./eligibility.js";
 
 export interface ReleaseDataset {
   catalog: CatalogRecord[];
@@ -59,18 +60,8 @@ export async function validateReleaseDataset(root: string): Promise<ReleaseDatas
     const query = queryById.get(qrel.query_id)!;
     const record = catalogById.get(qrel.resource_id)!;
     const sidecar = sidecarById.get(qrel.resource_id)!;
-    const option = record.wire.accepts[0]!;
-    const input = (record.wire.extensions.bazaar.info as Record<string, unknown>).input as Record<string, unknown>;
-    let eligible = !Object.entries(query.filters).some(([key, wanted]) => {
-      if (wanted === undefined) return false;
-      const actual = key === "type" ? input.type
-        : key === "extensions" ? (wanted in record.wire.extensions ? wanted : undefined)
-          : key === "payTo" ? option.payTo : option[key as keyof typeof option];
-      return actual !== wanted;
-    });
-    if (query.evaluation_constraints.category !== undefined && query.evaluation_constraints.category !== sidecar.category) eligible = false;
-    if (query.evaluation_constraints.max_price_usd !== undefined && sidecar.price_usd_snapshot.value > query.evaluation_constraints.max_price_usd) eligible = false;
-    if (qrel.eligible !== eligible) throw new Error(`${qrel.query_id}/${qrel.resource_id}: qrel eligibility is inconsistent with deterministic constraints`);
+    const eligibility = evaluateEligibility(query, record, sidecar);
+    if (qrel.eligible !== eligibility.eligible) throw new Error(`${qrel.query_id}/${qrel.resource_id}: qrel eligibility is inconsistent with deterministic constraints`);
   }
 
   const sources = Object.fromEntries(Object.keys(RELEASE_COUNTS.sources).map(key => [key, 0])) as Record<string, number>;
@@ -81,8 +72,14 @@ export async function validateReleaseDataset(root: string): Promise<ReleaseDatas
   const sidecarsById = new Map(sidecars.map(value => [value.resource_id, value]));
   for (const record of catalog) {
     const input = (record.wire.extensions.bazaar.info as Record<string, unknown>).input as Record<string, unknown>;
-    const expectedType = sidecarsById.get(record.resource_id)!.source_class === "generated_mcp" ? "mcp" : "http";
+    const expectedType = sidecarsById.get(record.resource_id)!.resource_type;
     if (input.type !== expectedType) throw new Error(`${record.resource_id}: expected ${expectedType} Bazaar input`);
+  }
+  if (catalog.some(record => record.wire.accepts.some(option => option.scheme !== "exact"))) throw new Error("v1 benchmark is intentionally exact-only");
+  if (catalog.filter(record => record.wire.accepts.length > 1).length < 50) throw new Error("benchmark requires at least 50 multi-option exact resources");
+  if (catalog.filter(record => record.wire.accepts.some(option => option.payTo.startsWith("C"))).length < 50) throw new Error("benchmark requires representative C-address recipients");
+  for (const kind of ["prompt_injection", "keyword_stuffing", "false_free_claim", "misleading_tags", "unsupported_network_claim", "scheme_mismatch_claim", "duplicate_provider", "capability_spoof", "ranking_instruction"]) {
+    if (sidecars.filter(value => value.adversarial_kind === kind).length !== 5) throw new Error(`expected five ${kind} adversarial fixtures`);
   }
   if (new Set(sidecars.map(value => value.provider_id)).size !== RELEASE_COUNTS.providers) throw new Error("dataset must use exactly 50 provider identities");
   for (const category of ["weather", "finance", "blockchain", "identity", "documents", "news", "risk", "language", "media", "logistics"]) {
@@ -91,6 +88,9 @@ export async function validateReleaseDataset(root: string): Promise<ReleaseDatas
   }
   if (queries.filter(value => value.split === "development").length !== 70 || queries.filter(value => value.split === "release").length !== 30) {
     throw new Error("query split must be exactly 70 development / 30 release");
+  }
+  if (queries.some(value => value.split === "release" && value.derived_from.kind !== "curated")) {
+    throw new Error("release queries must remain curated and independent of the LLM judge");
   }
   const expectedClasses = { capability: 30, structured: 20, semantic: 15, price_category: 10, adversarial: 10, no_result: 10, cold_start: 5 };
   for (const [queryClass, expected] of Object.entries(expectedClasses)) {
@@ -102,6 +102,12 @@ export async function validateReleaseDataset(root: string): Promise<ReleaseDatas
     const spec = validateDiscoveryExtensionSpec(extension);
     const schema = validateDiscoveryExtension(extension as never);
     if (!spec.valid || !schema.valid) throw new Error(`${record.resource_id}: invalid upstream Bazaar metadata: ${[...(spec.errors ?? []), ...(schema.errors ?? [])].join("; ")}`);
+  }
+  if (!qrels.some(value => value.judge === "pending")) {
+    for (const query of queries) {
+      const relevant = qrels.some(value => value.query_id === query.query_id && value.grade >= 2);
+      if (query.expects_no_result === relevant) throw new Error(`${query.query_id}: no-result expectation disagrees with completed qrels`);
+    }
   }
   return { catalog, sidecars, queries, qrels };
 }

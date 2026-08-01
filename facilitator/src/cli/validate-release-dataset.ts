@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 import { validateReleaseDataset } from "../search/release/validate.js";
 
-const root = resolve(process.argv[2] ?? "eva-datasetl");
+const root = resolve(process.argv[2] ?? "eval-dataset");
 const dataset = await validateReleaseDataset(root);
 const pending = dataset.qrels.filter(value => value.judge === "pending").length;
 console.log(JSON.stringify({

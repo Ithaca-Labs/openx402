@@ -29,8 +29,7 @@ const report = {
   limitations: ["This is a local embedding-runtime validation report, not a retrieval-quality report; provisional qrels prevent release ranking measurements."],
 };
 if (!Object.values(report.assertions).every(Boolean)) throw new Error(`BGE-M3 assertions failed: ${JSON.stringify(report.assertions)}`);
-const path = resolve(process.argv[2] ?? "eva-datasetl/reports/bge-m3-local-v1.json");
+const path = resolve(process.argv[2] ?? "eval-dataset/reports/bge-m3-local-v1.json");
 await mkdir(resolve(path, ".."), { recursive: true });
 await writeFile(path, `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify(report, null, 2));
-

@@ -5,13 +5,15 @@ import { encodeJsonl, seededOrder, sha256 } from "../search/release/io.js";
 import { openRouterJson } from "../search/release/openrouter.js";
 import { CatalogRecordSchema, HumanCalibrationSchema, QrelRecordSchema, QueryRecordSchema, SidecarRecordSchema, type QrelRecord } from "../search/release/schema.js";
 import { readJsonl } from "../search/release/io.js";
+import { buildCalibrationSample } from "../search/release/calibration.js";
 
-const root = resolve(process.argv[2] ?? "eva-datasetl");
+const root = resolve(process.argv[2] ?? "eval-dataset");
 const catalog = await readJsonl(resolve(root, "catalog/catalog-v1.jsonl"), CatalogRecordSchema);
 const sidecars = await readJsonl(resolve(root, "catalog/evaluation-sidecar-v1.jsonl"), SidecarRecordSchema);
 const queries = await readJsonl(resolve(root, "queries/queries-v1.jsonl"), QueryRecordSchema);
 const qrels = await readJsonl(resolve(root, "qrels/qrels-v1.jsonl"), QrelRecordSchema);
-const byResource = new Map(catalog.map((value, index) => [value.resource_id, { wire: value.wire, sidecar: sidecars[index] }]));
+const sidecarById = new Map(sidecars.map(value => [value.resource_id, value]));
+const byResource = new Map(catalog.map(value => [value.resource_id, { wire: value.wire, sidecar: sidecarById.get(value.resource_id)! }]));
 const byQuery = new Map(queries.map(value => [value.query_id, value]));
 const eligible = qrels.filter(value => value.eligible && value.judge === "pending");
 const ordered = seededOrder(eligible, "qrel-position-randomization-v1", value => `${value.query_id}\0${value.resource_id}`);
@@ -73,8 +75,8 @@ const qrelText = encodeJsonl(completed);
 await writeFile(resolve(root, "qrels/qrels-v1.jsonl"), qrelText);
 const calibrationPath = resolve(root, "calibration/human-review-v1.jsonl");
 const calibration = await readJsonl(calibrationPath, HumanCalibrationSchema);
-const completedGrades = new Map(completed.map(value => [`${value.query_id}\0${value.resource_id}`, value.grade]));
-const calibrationText = encodeJsonl(calibration.map(value => ({ ...value, agent_grade: completedGrades.get(`${value.query_id}\0${value.resource_id}`)! })));
+if (calibration.some(value => value.human_grade !== null)) throw new Error("refusing to replace a calibration sample after human review has started");
+const calibrationText = encodeJsonl(buildCalibrationSample(completed, queries));
 await writeFile(calibrationPath, calibrationText);
 await writeFile(resolve(root, "manifests/openrouter-qrels-v1.jsonl"), encodeJsonl(provenance));
 await writeFile(resolve(root, "reports/position-consistency-v1.json"), `${JSON.stringify({

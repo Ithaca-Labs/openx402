@@ -4,8 +4,8 @@ import { agreement } from "../search/release/agreement.js";
 import { encodeJsonl, readJsonl, sha256 } from "../search/release/io.js";
 import { QrelRecordSchema } from "../search/release/schema.js";
 
-const input = resolve(process.argv[2] ?? "eva-datasetl/calibration/human-review-v1.jsonl");
-const output = resolve(process.argv[3] ?? "eva-datasetl/reports/calibration-v1.json");
+const input = resolve(process.argv[2] ?? "eval-dataset/calibration/human-review-v1.jsonl");
+const output = resolve(process.argv[3] ?? "eval-dataset/reports/calibration-v1.json");
 const rows = (await readFile(input, "utf8")).trim().split(/\r?\n/).filter(Boolean).map((line, index) => {
   const value = JSON.parse(line) as Record<string, unknown>;
   if (value.human_grade === null || value.human_grade === undefined) return undefined;

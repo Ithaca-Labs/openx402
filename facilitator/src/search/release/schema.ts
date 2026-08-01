@@ -13,8 +13,11 @@ export const RELEASE_COUNTS = {
 export const TESTNET_USDC = "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA";
 export const PUBNET_USDC = "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75";
 
-const stellarAccount = z.string().refine(value => StrKey.isValidEd25519PublicKey(value), "invalid Stellar G address");
 const stellarContract = z.string().refine(value => StrKey.isValidContract(value), "invalid Stellar C address");
+const stellarAddress = z.string().refine(
+  value => StrKey.isValidEd25519PublicKey(value) || StrKey.isValidContract(value),
+  "invalid Stellar G or C address",
+);
 const jsonObject = z.record(z.unknown());
 
 export const AcceptsSchema = z.object({
@@ -22,7 +25,7 @@ export const AcceptsSchema = z.object({
   network: z.enum(["stellar:testnet", "stellar:pubnet"]),
   asset: stellarContract,
   amount: z.string().regex(/^\d+$/),
-  payTo: stellarAccount,
+  payTo: stellarAddress,
   maxTimeoutSeconds: z.number().int().positive().max(3600),
   extra: z.object({ areFeesSponsored: z.boolean() }).strict(),
 }).strict().superRefine((value, context) => {
@@ -41,7 +44,7 @@ const resourceWire = z.object({
 export const WireSchema = z.object({
   x402Version: z.literal(2),
   resource: resourceWire,
-  accepts: z.array(AcceptsSchema).length(1),
+  accepts: z.array(AcceptsSchema).min(1).max(3),
   extensions: z.object({ bazaar: jsonObject }).strict(),
 }).strict();
 
@@ -53,15 +56,16 @@ export const CatalogRecordSchema = z.object({
 export const SidecarRecordSchema = z.object({
   resource_id: z.string().regex(/^res-\d{3}$/),
   source_class: z.enum(["cdp", "generated_mcp", "adversarial", "sparse"]),
+  resource_type: z.enum(["http", "mcp"]),
   provider_id: z.string().regex(/^provider-\d{2}$/),
   derived_from: z.object({
     kind: z.enum(["cdp", "openrouter", "curated"]),
-    source_url: z.string().url().optional(),
+    source_catalog_url: z.string().url().optional(),
     source_resource_hash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
     generation_id: z.string().optional(),
   }).strict(),
   category: z.string().min(1),
-  is_live: z.boolean(),
+  is_live: z.literal(false),
   settlement_verified: z.literal(false),
   freshness: z.enum(["warm", "cold"]),
   source_last_updated: z.string().datetime().optional(),
@@ -69,15 +73,23 @@ export const SidecarRecordSchema = z.object({
   price_usd_snapshot: z.object({
     value: z.number().nonnegative(),
     as_of: z.string().datetime(),
-    basis: z.literal("fixed_fixture_authoring_value"),
+    basis: z.literal("fixed_fixture_minimum_option_value"),
   }).strict(),
   adversarial: z.boolean(),
+  adversarial_kind: z.enum([
+    "prompt_injection", "keyword_stuffing", "false_free_claim", "misleading_tags",
+    "unsupported_network_claim", "scheme_mismatch_claim", "duplicate_provider",
+    "capability_spoof", "ranking_instruction",
+  ]).optional(),
 }).strict().superRefine((value, context) => {
-  if (value.derived_from.kind === "cdp" && (!value.derived_from.source_url || !value.derived_from.source_resource_hash)) {
-    context.addIssue({ code: z.ZodIssueCode.custom, message: "CDP-derived records require source URL and source hash" });
+  if (value.derived_from.kind === "cdp" && (!value.derived_from.source_catalog_url || !value.derived_from.source_resource_hash)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "CDP-derived records require source catalog URL and source hash" });
   }
   if (value.derived_from.kind !== "cdp" && !value.derived_from.generation_id) {
     context.addIssue({ code: z.ZodIssueCode.custom, message: "generated/curated records require generation_id" });
+  }
+  if (value.adversarial !== (value.adversarial_kind !== undefined)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "adversarial fixtures require exactly one adversarial_kind" });
   }
 });
 
@@ -85,7 +97,7 @@ export const SupportedFiltersSchema = z.object({
   type: z.enum(["http", "mcp"]).optional(),
   network: z.enum(["stellar:testnet", "stellar:pubnet"]).optional(),
   scheme: z.literal("exact").optional(),
-  payTo: stellarAccount.optional(),
+  payTo: stellarAddress.optional(),
   asset: stellarContract.optional(),
   extensions: z.string().min(1).optional(),
 }).strict();
@@ -93,6 +105,8 @@ export const SupportedFiltersSchema = z.object({
 export const EvaluationConstraintsSchema = z.object({
   max_price_usd: z.number().nonnegative().optional(),
   category: z.string().min(1).optional(),
+  source_class: z.enum(["cdp", "generated_mcp", "adversarial", "sparse"]).optional(),
+  freshness: z.enum(["warm", "cold"]).optional(),
 }).strict();
 
 export const QueryRecordSchema = z.object({

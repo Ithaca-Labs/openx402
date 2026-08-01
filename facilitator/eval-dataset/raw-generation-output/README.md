@@ -13,3 +13,7 @@ licence. Run `npm run benchmark:fetch-cdp` followed by
 committed manifests contain the source URL, timestamps, response metadata,
 sampling seed, and SHA-256 hashes needed to audit a regeneration.
 
+Committed fixtures do not reproduce CDP descriptions, tags, examples, or JSON
+Schemas. The generator uses the local sample only for deterministic category and
+HTTP-method shape, source timestamps, and per-record provenance hashes, then
+creates new `.example` metadata from repository-owned fixture templates.

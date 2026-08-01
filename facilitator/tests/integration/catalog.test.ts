@@ -153,6 +153,12 @@ describe("catalog identity, duplicates and updates", () => {
     expect(page.total).toBe(1);
     expect(page.rows[0]!.accepts).toHaveLength(2);
     expect(page.rows[0]!.accepts.map(option => option.scheme).sort()).toEqual(["exact", "upto"]);
+    const document = await replicaA.query<{ document: string }>(
+      "SELECT document FROM catalog_search_documents WHERE version_id = $1",
+      [page.rows[0]!.versionId],
+    );
+    expect(document.rows[0]!.document).toContain("exact");
+    expect(document.rows[0]!.document).toContain("upto");
   });
 
   it("quarantines a rival payTo instead of overwriting the active listing", async () => {

@@ -11,7 +11,7 @@ const pageSchema = z.object({
   pagination: z.object({ limit: z.number(), offset: z.number(), total: z.number() }),
 }).passthrough();
 
-const root = resolve(process.argv[2] ?? "eva-datasetl");
+const root = resolve(process.argv[2] ?? "eval-dataset");
 const seed = process.env.CDP_SAMPLING_SEED ?? "stellar-bazaar-release-v1";
 const pageSize = 1000;
 const maxResponseBytes = 32 * 1024 * 1024;
@@ -90,6 +90,6 @@ await writeFile(resolve(root, "manifests/cdp-fetch-v1.json"), `${JSON.stringify(
   reported_total: total, unique_records: all.length, selected_records: sample.length,
   sample_category_counts: categoryCounts,
   raw_sha256: createHash("sha256").update(raw).digest("hex"), sample_sha256: sha256(sampleText),
-  redistribution: "unclear; raw snapshot is gitignored and is not licensed under this repository's Apache-2.0 license",
+  redistribution: "unclear; raw snapshot and sample are gitignored, not Apache-2.0, and are used only to derive category/method shape plus provenance hashes",
 }, null, 2)}\n`);
 console.log(`Fetched ${all.length} unique CDP records across ${pages.length} pages; deterministically selected 150.`);
