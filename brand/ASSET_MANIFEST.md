@@ -72,7 +72,11 @@ Wordmark-only transparent PNGs are included in black, white, and yellow at 2000 
 - GitHub: [`github-social-preview-1280x640.png`](./social/github-social-preview-1280x640.png)
 - Open Graph: [`open-graph-1200x630.png`](./social/open-graph-1200x630.png) — HD-generated ink/yellow texture inspired by panel 1, with the canonical primary-dark lockup centered at 66.7% canvas width
 - LinkedIn-compatible crop: [`open-graph-1200x627.png`](./social/open-graph-1200x627.png)
-- Avatar: [`avatar-400.png`](./social/avatar-400.png) — exact uniform 4× scaling of the canonical `100×100` mark geometry
+- Avatar: [`avatar-400.png`](./social/avatar-400.png) — preferred social master with a full Ink background and 21–22% visible padding
+- Complete profile set: [`social/profile/`](./social/profile/) — X, LinkedIn, GitHub, Discord, 1024 px master, alternate colorways, and transparent marks
+- Separate 1024 colorways: [`social/profile/1024-colorways/`](./social/profile/1024-colorways/) — 10 native SVG and PNG exports covering Ink, Signal Yellow, Paper, white, and transparent backgrounds
+- Downloadable 1024 pack: [`openx402-social-avatar-colorways-1024.zip`](./social/profile/openx402-social-avatar-colorways-1024.zip)
+- Square-background colorway preview: [`social-avatar-square-preview.png`](./social/profile/social-avatar-square-preview.png)
 - Square post: [`feed-square-1080x1080.png`](./social/feed-square-1080x1080.png)
 - Portrait post: [`feed-portrait-1080x1350.png`](./social/feed-portrait-1080x1350.png)
 

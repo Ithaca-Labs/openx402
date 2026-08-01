@@ -250,14 +250,50 @@ def build_feed_portrait() -> str:
     return svg_document("0 0 1080 1350", "openx402 portrait social post", body)
 
 
-def build_avatar() -> str:
-    body = "".join(
-        [
-            '<rect width="400" height="400" rx="52" fill="#111111"/>',
-            mark_group("#FFD21C", "scale(4)"),
-        ]
+def build_avatar(
+    size: int, background: str | None, foreground: str, label: str
+) -> str:
+    inset = size * 0.175
+    scale = size * 0.0065
+    layers = []
+    if background:
+        layers.append(f'<rect width="{size}" height="{size}" fill="{background}"/>')
+    layers.append(
+        mark_group(foreground, f"translate({inset:g} {inset:g}) scale({scale:g})")
     )
-    return svg_document("0 0 400 400", "openx402 profile image", body)
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" '
+        f'viewBox="0 0 {size} {size}" role="img" aria-label="openx402 {escape(label)}">'
+        + "".join(layers)
+        + "</svg>\n"
+    )
+
+
+def build_avatar_square_preview() -> str:
+    colors = [
+        ("#111111", "#FFD21C"),
+        ("#FFD21C", "#111111"),
+        ("#F4F0E6", "#111111"),
+        ("#111111", "#FFFFFF"),
+    ]
+    layers = ['<rect width="1760" height="440" fill="#1A1A1A"/>']
+    for index, (background, foreground) in enumerate(colors):
+        tile_x = index * 440 + 20
+        layers.append(
+            f'<rect x="{tile_x}" y="20" width="400" height="400" fill="{background}"/>'
+        )
+        layers.append(
+            mark_group(
+                foreground,
+                f"translate({tile_x + 70:g} 90) scale(2.6)",
+            )
+        )
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="440" '
+        'viewBox="0 0 1760 440" role="img" aria-label="openx402 social avatar preview">'
+        + "".join(layers)
+        + "</svg>\n"
+    )
 
 
 def main() -> None:
@@ -268,7 +304,52 @@ def main() -> None:
     (ROOT / "github-social-preview.svg").write_text(github, encoding="utf-8")
     (ROOT / "social/feed-square.svg").write_text(build_feed_square(), encoding="utf-8")
     (ROOT / "social/feed-portrait.svg").write_text(build_feed_portrait(), encoding="utf-8")
-    avatar = build_avatar()
+    profile_dir = ROOT / "social/profile"
+    profile_dir.mkdir(parents=True, exist_ok=True)
+    profile_variants = {
+        "x-avatar-primary-400.svg": (400, "#111111", "#FFD21C", "X avatar"),
+        "linkedin-avatar-primary-400.svg": (400, "#111111", "#FFD21C", "LinkedIn avatar"),
+        "github-avatar-primary-500.svg": (500, "#111111", "#FFD21C", "GitHub avatar"),
+        "discord-avatar-primary-512.svg": (512, "#111111", "#FFD21C", "Discord avatar"),
+        "social-avatar-primary-master-1024.svg": (1024, "#111111", "#FFD21C", "social avatar master"),
+        "avatar-primary-dark-400.svg": (400, "#111111", "#FFD21C", "primary dark social avatar"),
+        "avatar-primary-light-400.svg": (400, "#FFD21C", "#111111", "primary light social avatar"),
+        "avatar-paper-400.svg": (400, "#F4F0E6", "#111111", "paper social avatar"),
+        "avatar-mono-white-400.svg": (400, "#111111", "#FFFFFF", "white-on-ink social avatar"),
+        "avatar-primary-light-1024.svg": (1024, "#FFD21C", "#111111", "primary light social avatar master"),
+        "mark-safe-black-transparent-1024.svg": (1024, None, "#111111", "circle-safe black mark"),
+        "mark-safe-white-transparent-1024.svg": (1024, None, "#FFFFFF", "circle-safe white mark"),
+        "mark-safe-yellow-transparent-1024.svg": (1024, None, "#FFD21C", "circle-safe yellow mark"),
+    }
+    for filename, (size, background, foreground, label) in profile_variants.items():
+        (profile_dir / filename).write_text(
+            build_avatar(size, background, foreground, label), encoding="utf-8"
+        )
+
+    pack_dir = profile_dir / "1024-colorways"
+    pack_dir.mkdir(parents=True, exist_ok=True)
+    pack_variants = {
+        "openx402-yellow-on-ink-1024.svg": ("#111111", "#FFD21C", "yellow on Ink avatar"),
+        "openx402-white-on-ink-1024.svg": ("#111111", "#FFFFFF", "white on Ink avatar"),
+        "openx402-ink-on-yellow-1024.svg": ("#FFD21C", "#111111", "Ink on yellow avatar"),
+        "openx402-white-on-yellow-1024.svg": ("#FFD21C", "#FFFFFF", "white on yellow avatar"),
+        "openx402-ink-on-white-1024.svg": ("#FFFFFF", "#111111", "Ink on white avatar"),
+        "openx402-yellow-on-white-1024.svg": ("#FFFFFF", "#FFD21C", "yellow on white avatar"),
+        "openx402-ink-on-paper-1024.svg": ("#F4F0E6", "#111111", "Ink on Paper avatar"),
+        "openx402-black-transparent-1024.svg": (None, "#111111", "transparent black mark"),
+        "openx402-white-transparent-1024.svg": (None, "#FFFFFF", "transparent white mark"),
+        "openx402-yellow-transparent-1024.svg": (None, "#FFD21C", "transparent yellow mark"),
+    }
+    for filename, (background, foreground, label) in pack_variants.items():
+        (pack_dir / filename).write_text(
+            build_avatar(1024, background, foreground, label), encoding="utf-8"
+        )
+
+    (profile_dir / "social-avatar-square-preview.svg").write_text(
+        build_avatar_square_preview(), encoding="utf-8"
+    )
+
+    avatar = build_avatar(400, "#111111", "#FFD21C", "profile image")
     (ROOT / "social/avatar.svg").write_text(avatar, encoding="utf-8")
     (ROOT / "social-avatar.svg").write_text(avatar, encoding="utf-8")
 

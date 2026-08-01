@@ -2,36 +2,36 @@
 
 ## Plan
 
-- [x] Reduce and visibly center the canonical OG lockup.
-- [x] Rebuild the avatar from an exact uniform scaling of the canonical mark.
-- [x] Refresh previews, documentation, and ZIP package.
-- [x] Commit and push the completed brand package.
+- [x] Author every approved colorway natively at 1024×1024.
+- [x] Export each colorway as a separate SVG and PNG.
+- [x] Create a dedicated downloadable 1024 colorway ZIP.
+- [x] Refresh the manifest and complete brand package.
 
 ## Verification
 
-- [x] Measure the OG lockup visible center and canvas occupancy.
-- [x] Compare avatar mark paths against the canonical SVG geometry.
-- [x] Validate SVGs, dimensions, transparency, and ZIP integrity.
-- [x] Confirm clean commit and successful push.
+- [x] Confirm identical canonical paths and native 1024 artboards.
+- [x] Confirm opaque backgrounds and transparent alpha variants.
+- [x] Visually inspect every separate colorway.
+- [x] Validate SVGs and both ZIP archives.
 
 ## Review
 
 ### Changed
 
-- Reduced the OG lockup to `800×172` and centered it at `600,315` on the `1200×630` canvas.
-- Rebuilt the avatar using an exact uniform 4× scaling of the canonical mark paths.
-- Refreshed the contact sheet, engineer documentation, and ZIP package.
+- Added 10 separate native 1024×1024 SVG and PNG colorways.
+- Added a dedicated downloadable colorway ZIP and updated the complete package.
+- Added a colorway preview and usage notes.
 
 ### Verified
 
-- OG lockup placement has equal `200 px` horizontal and `229 px` vertical margins.
-- Avatar uses identical canonical paths; its visible geometry has equal outer margins and the original bracket gap.
-- SVG validation, export dimensions, deterministic OG comparison, and ZIP integrity pass.
-- Commit `451d5b0` pushed successfully to `origin/assets/brandkit`.
+- All files use the two canonical paths with identical `translate(179.2 179.2) scale(6.656)` geometry.
+- All PNGs are 1024×1024; every mark has the same centered `575×587+225+219` visible bounds.
+- Opaque corner pixels match their specified backgrounds; transparent variants retain alpha.
+- All SVGs pass `xmllint`; both ZIP archives pass `unzip -tq`.
 
 ### Risks
 
-- Public launch still needs a trademark/name clearance check.
+- White-on-yellow and yellow-on-white are intentionally included for completeness but are low-contrast alternates.
 
 ### Follow-ups
 

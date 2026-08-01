@@ -104,7 +104,7 @@ Keep the mark and wordmark inside the calm center. Let texture crop at the edges
 
 | Channel | Export | Composition |
 | --- | --- | --- |
-| X profile | `400×400` PNG | exact canonical gate mark scaled uniformly 4× and centered on ink |
+| X profile | `400×400` PNG | full square Ink background with the canonical mark at about 56% canvas occupancy; no baked circle |
 | X header | `1500×500` PNG | panel 7 art direction: regenerated HD paper/yellow paint with canonical black lockup |
 | GitHub social preview | `1280×640` PNG, under 1 MB | mark + wordmark, one line, three capability chips |
 | Open Graph / LinkedIn link | `1200×630` PNG | panel 1 art direction: regenerated HD ink/yellow paint with a centered lockup at 66.7% canvas width |
@@ -116,6 +116,7 @@ Current platform references: [X profile/header guidance](https://help.x.com/en/m
 Sources/templates:
 
 - Profile: [`avatar.svg`](./social/avatar.svg) / [`avatar-400.png`](./social/avatar-400.png)
+- Full profile-logo set: [`social/profile/`](./social/profile/) with X, LinkedIn, GitHub, Discord, master, and alternate colorways
 - X header: [`x-header.svg`](./social/x-header.svg) / [`x-header-1500x500.png`](./social/x-header-1500x500.png), with HD-generated background inspired by panel 7
 - GitHub preview: [`github-social-preview.svg`](./social/github-social-preview.svg) / [`github-social-preview-1280x640.png`](./social/github-social-preview-1280x640.png)
 - Open Graph: [`open-graph-1200x630.png`](./social/open-graph-1200x630.png), with HD-generated background inspired by panel 1

@@ -29,3 +29,13 @@
 
 - Mistake: Let the OG lockup occupy too much of the canvas, weakening negative space and apparent centering.
 - Rule: Center social lockups by trimmed visible bounds and verify their canvas occupancy at final export size.
+
+## Circle-safe avatars
+
+- Mistake: Used the full-size canonical icon artboard directly as a profile image, so circular platform crops made the mark appear oversized.
+- Rule: Preserve canonical geometry but place it on a dedicated social artboard with 21–22% visible padding and test the actual circular crop.
+
+## Deterministic logo exports
+
+- Mistake: Treated an exact geometric logo request as an image-generation task.
+- Rule: For approved marks, reuse the canonical vector paths and vary only artboard scale, background, and color; never ask a generative model to redraw them.
