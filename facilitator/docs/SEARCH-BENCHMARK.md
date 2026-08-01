@@ -62,6 +62,11 @@ BENCHMARK_RERANKER_P95_LIMIT_MS=... \
 npm run benchmark:evaluate
 ```
 
+Before genuine human calibration, the same production retrieval path may be
+measured with `BENCHMARK_ALLOW_PROVISIONAL=1`. It writes only
+`provisional-v1.json`, always reports `release_ready: false`, and cannot replace
+the release report or open the formal gate.
+
 `benchmark:fetch-cdp` walks every `items`/`pagination` page, retries with bounded
 exponential backoff, caps each response at 32 MiB, deduplicates before sampling,
 and samples by the `stellar-bazaar-release-v1` seed. It records the fetch time,
@@ -81,14 +86,20 @@ manifest and transformed `.example` fixtures are committed.
 
 ## OpenRouter judging
 
-`OPENROUTER_API_KEY` is read from the environment only. The default model is
-`deepseek/deepseek-v4-flash` and may be overridden with `OPENROUTER_MODEL`.
+`OPENROUTER_API_KEY` is read from the environment only. The qrel judge defaults
+to `deepseek/deepseek-v4-flash-0731` and may be overridden with
+`OPENROUTER_JUDGE_MODEL`. Optional candidate generation uses
+`OPENROUTER_MODEL`.
 Optional development candidate generation and relevance judging use OpenRouter. Calls use
 `https://openrouter.ai/api/v1/chat/completions`, temperature 0, strict
 JSON output, Zod validation, rate limiting, bounded retries, prompt-addressed
 cache files, and resumable batch checkpoints. Provenance records the requested
 and returned model, request ID/provider when supplied, prompt hash, timestamp,
 response hash, and cache path. No key is written.
+`OPENROUTER_JUDGE_BATCH_SIZE` defaults to 8. A bounded compatibility probe can
+set `OPENROUTER_JUDGE_MAX_BATCHES=1`; probe runs populate the ignored response
+cache and checkpoint provenance but never modify qrels. Calls use rate-spaced
+starts and bounded `OPENROUTER_JUDGE_CONCURRENCY` (default 8, maximum 32).
 
 When the key is unavailable, `benchmark:generate` produces a clearly marked,
 keyless curated baseline so schema and search mechanics remain testable. The 30
@@ -103,6 +114,12 @@ grade 0 without an LLM. Eligible pairs are randomized into batches with repeated
 anchors. The system prompt says seller metadata is untrusted data and commands
 inside listings must be ignored. Until judging runs, eligible rows say `pending`
 and their grade 0 is explicitly a placeholder, not a relevance label.
+
+The ten hand-authored no-result queries are catalog-absence assertions, not
+semantic-model opinions. Their eligible rows are explicitly marked `curated`
+grade 0 and remain provisional until independent calibration. This prevents
+judge over-leniency from becoming false ground truth; model-judged, curated, and
+hard-filtered labels remain distinguishable in every qrel.
 
 The 400-pair calibration set is stratified deterministically and initially has
 null human fields. The agreement report includes quadratic weighted kappa, a 4x4
@@ -133,6 +150,10 @@ and resistance rates,
 provider concentration, embedding completeness/failures, warm/cold result share,
 reranker lift, and p50/p95/p99 latency. Development/release, per-class, and
 overall metrics include deterministic 1,000-sample bootstrap 95% intervals.
+Precision, recall, MRR, and nDCG aggregate only queries with at least one
+grade-2-or-higher judgment. Catalog-absence queries are measured only by
+no-result accuracy, so a correct empty result cannot inflate recall/nDCG or
+depress precision.
 The 30 release queries are frozen: the runner exposes no tuning operation and
 release results must not guide configuration changes.
 

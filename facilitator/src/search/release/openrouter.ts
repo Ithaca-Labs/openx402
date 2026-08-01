@@ -24,19 +24,30 @@ export interface OpenRouterOptions {
   maxAttempts?: number;
   minIntervalMs?: number;
   maxResponseBytes?: number;
+  timeoutMs?: number;
 }
 
 let previousRequest = 0;
+let throttleQueue: Promise<void> = Promise.resolve();
 
 async function wait(ms: number): Promise<void> {
   if (ms > 0) await new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function reserveRequestSlot(intervalMs: number): Promise<void> {
+  const slot = throttleQueue.then(async () => {
+    await wait(Math.max(0, previousRequest + intervalMs - Date.now()));
+    previousRequest = Date.now();
+  });
+  throttleQueue = slot.catch(() => undefined);
+  await slot;
 }
 
 /** Reproducible, cached OpenRouter JSON call. The API key is read only at call time. */
 export async function openRouterJson<T>(
   system: string,
   input: unknown,
-  outputSchema: z.ZodType<T>,
+  outputSchema: z.ZodType<T, z.ZodTypeDef, unknown>,
   options: OpenRouterOptions,
 ): Promise<OpenRouterRecord<T>> {
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -56,8 +67,7 @@ export async function openRouterJson<T>(
   let lastError: unknown;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     const interval = options.minIntervalMs ?? 1_100;
-    await wait(Math.max(0, previousRequest + interval - Date.now()));
-    previousRequest = Date.now();
+    await reserveRequestSlot(interval);
     const requestedAt = new Date().toISOString();
     try {
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -68,7 +78,7 @@ export async function openRouterJson<T>(
           response_format: { type: "json_object" },
           messages: [{ role: "system", content: system }, { role: "user", content: canonicalJson(input) }],
         }),
-        signal: AbortSignal.timeout(60_000),
+        signal: AbortSignal.timeout(options.timeoutMs ?? 60_000),
       });
       const bytes = new Uint8Array(await response.arrayBuffer());
       if (bytes.byteLength > (options.maxResponseBytes ?? 8 * 1024 * 1024)) throw new Error("OpenRouter response exceeded size limit");
@@ -76,7 +86,18 @@ export async function openRouterJson<T>(
       if (!response.ok) throw new Error(`OpenRouter ${response.status}: ${rawText.slice(0, 500)}`);
       const envelope = responseSchema.parse(JSON.parse(rawText));
       const content = envelope.choices[0]!.message.content;
-      const value = outputSchema.parse(JSON.parse(content));
+      let value: T;
+      try {
+        value = outputSchema.parse(JSON.parse(content));
+      } catch (error) {
+        await mkdir(dirname(cachePath), { recursive: true });
+        await writeFile(`${cachePath}.invalid.json`, `${JSON.stringify({
+          requested_model: model,
+          returned_model: envelope.model,
+          response_content: content,
+        }, null, 2)}\n`, { mode: 0o600 });
+        throw error;
+      }
       const record: OpenRouterRecord<T> = {
         value,
         raw_response: JSON.parse(rawText),

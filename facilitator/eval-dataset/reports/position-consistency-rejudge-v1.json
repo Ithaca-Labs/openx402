@@ -1,0 +1,13 @@
+{
+  "scope": [
+    "qry-014",
+    "qry-019",
+    "qry-028",
+    "qry-064",
+    "qry-092",
+    "qry-095"
+  ],
+  "repeated_anchors": 19,
+  "exact_consistency": 0.7894736842105263,
+  "severe_inconsistencies": 2
+}

@@ -99,6 +99,8 @@ export function scoreQuery(
 
 export interface SuiteMetrics {
   queries: number;
+  /** Queries with at least one grade-2-or-higher judgment. */
+  rankingQueries: number;
   recall: Record<number, number>;
   precision: Record<number, number>;
   ndcg: Record<number, number>;
@@ -107,7 +109,7 @@ export interface SuiteMetrics {
   noResultRate: number;
   noResultAccuracy: number;
   latency: { p50: number; p95: number; p99: number; mean: number };
-  byClass: Record<string, { queries: number; recall: Record<number, number>; mrr: number }>;
+  byClass: Record<string, { queries: number; rankingQueries: number; recall: Record<number, number>; mrr: number }>;
   fallbacks: Record<string, number>;
   catalogSize: number;
 }
@@ -127,24 +129,34 @@ export function aggregate(
   catalogSize: number,
   cutoffs: readonly number[] = DEFAULT_CUTOFFS,
 ): SuiteMetrics {
+  // Queries whose expected outcome is an empty result set are evaluated by
+  // noResultAccuracy. Including them in retrieval metrics would assign perfect
+  // recall/nDCG to returning nothing and zero precision to correct behaviour.
+  const rankingResults = results.filter(entry =>
+    entry.query.judgments.some(judgment => judgment.grade >= RELEVANT_GRADE));
   const recall: Record<number, number> = {};
   const precision: Record<number, number> = {};
   const ndcg: Record<number, number> = {};
   const violations: Record<number, number> = {};
   for (const k of cutoffs) {
-    recall[k] = mean(results.map(entry => entry.metrics.recall[k] ?? 0));
-    precision[k] = mean(results.map(entry => entry.metrics.precision[k] ?? 0));
-    ndcg[k] = mean(results.map(entry => entry.metrics.ndcg[k] ?? 0));
+    recall[k] = mean(rankingResults.map(entry => entry.metrics.recall[k] ?? 0));
+    precision[k] = mean(rankingResults.map(entry => entry.metrics.precision[k] ?? 0));
+    ndcg[k] = mean(rankingResults.map(entry => entry.metrics.ndcg[k] ?? 0));
     violations[k] = results.reduce((sum, entry) => sum + (entry.metrics.violations[k] ?? 0), 0);
   }
   const latencies = results.map(entry => entry.metrics.latencyMs).sort((left, right) => left - right);
   const byClass: SuiteMetrics["byClass"] = {};
   for (const entry of results) {
-    const bucket = byClass[entry.query.queryClass] ??= { queries: 0, recall: {}, mrr: 0 };
+    const bucket = byClass[entry.query.queryClass] ??= {
+      queries: 0, rankingQueries: 0, recall: {}, mrr: 0,
+    };
     bucket.queries += 1;
+    if (entry.query.judgments.some(judgment => judgment.grade >= RELEVANT_GRADE)) {
+      bucket.rankingQueries += 1;
+    }
   }
   for (const [name, bucket] of Object.entries(byClass)) {
-    const subset = results.filter(entry => entry.query.queryClass === name);
+    const subset = rankingResults.filter(entry => entry.query.queryClass === name);
     for (const k of cutoffs) bucket.recall[k] = mean(subset.map(entry => entry.metrics.recall[k] ?? 0));
     bucket.mrr = mean(subset.map(entry => entry.metrics.mrr));
   }
@@ -159,8 +171,9 @@ export function aggregate(
   }
   return {
     queries: results.length,
+    rankingQueries: rankingResults.length,
     recall, precision, ndcg, violations,
-    mrr: mean(results.map(entry => entry.metrics.mrr)),
+    mrr: mean(rankingResults.map(entry => entry.metrics.mrr)),
     noResultRate: results.length === 0
       ? 0
       : results.filter(entry => !entry.metrics.hasResult).length / results.length,

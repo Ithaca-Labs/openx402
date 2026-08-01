@@ -21,7 +21,10 @@ if (!databaseUrl) throw new Error("TEST_DATABASE_URL or DATABASE_URL is required
 const dataset = await validateReleaseDataset(root);
 const pending = dataset.qrels.filter(value => value.judge === "pending");
 if (pending.length > 0) throw new Error(`${pending.length} eligible qrels remain pending; run benchmark:judge before release evaluation`);
-if (dataset.qrels.some(value => value.provisional)) throw new Error("release qrels remain provisional; import human calibration and pass the agreement gate first");
+const provisionalMode = process.env.BENCHMARK_ALLOW_PROVISIONAL === "1";
+if (dataset.qrels.some(value => value.provisional) && !provisionalMode) {
+  throw new Error("release qrels remain provisional; import human calibration and pass the agreement gate first, or set BENCHMARK_ALLOW_PROVISIONAL=1 for a non-release measurement");
+}
 const rerankerUrl = process.env.FACILITATOR_RERANKER_URL;
 const minimumRelevanceScoreRaw = process.env.BENCHMARK_MIN_RELEVANCE_SCORE;
 const hybridP95LimitRaw = process.env.BENCHMARK_HYBRID_P95_LIMIT_MS;
@@ -165,12 +168,17 @@ function enrich(profile: ProfileResult, name: string) {
   }
   const subsets = (predicate: (query: QueryRecord) => boolean) => {
     const rows = profile.perQuery.filter(row => predicate(queryByText.get(row.query)!));
+    const rankingRows = rows.filter(row => {
+      const query = queryByText.get(row.query)!;
+      return dataset.qrels.some(value => value.query_id === query.query_id && value.grade >= 2);
+    });
     return {
       queries: rows.length,
-      precision_at_5: bootstrap(rows.map(row => row.metrics.precision[5] ?? 0)),
-      recall_at_20: bootstrap(rows.map(row => row.metrics.recall[20] ?? 0)),
-      mrr: bootstrap(rows.map(row => row.metrics.mrr)),
-      ndcg_at_5: bootstrap(rows.map(row => row.metrics.ndcg[5] ?? 0)),
+      ranking_queries: rankingRows.length,
+      precision_at_5: bootstrap(rankingRows.map(row => row.metrics.precision[5] ?? 0)),
+      recall_at_20: bootstrap(rankingRows.map(row => row.metrics.recall[20] ?? 0)),
+      mrr: bootstrap(rankingRows.map(row => row.metrics.mrr)),
+      ndcg_at_5: bootstrap(rankingRows.map(row => row.metrics.ndcg[5] ?? 0)),
       no_result_accuracy: bootstrap(rows.map(row => row.metrics.noResultCorrect ? 1 : 0)),
     };
   };
@@ -228,8 +236,8 @@ try {
   const suite = toSuite();
   const options = { suite, pool, catalog, searchStore: store, searchConfig: config, catalogConfig, limit: 20, keys, includeUnverified: true };
   const profiles = [
-    await runProfile(options, "lexical", { semantic: { ...config.semantic, enabled: false }, reranking: { ...config.reranking, enabled: false } }),
-    await runProfile(options, "semantic-only", { lexical: { ...config.lexical, enabled: false }, reranking: { ...config.reranking, enabled: false } }),
+    await runProfile(options, "lexical", { minimumRelevanceScore: 0, semantic: { ...config.semantic, enabled: false }, reranking: { ...config.reranking, enabled: false } }),
+    await runProfile(options, "semantic-only", { minimumRelevanceScore: 0, lexical: { ...config.lexical, enabled: false }, reranking: { ...config.reranking, enabled: false } }),
     await runProfile(options, "hybrid-rrf", { reranking: { ...config.reranking, enabled: false } }),
   ];
   const unavailableProfiles: Record<string, string> = {};
@@ -274,7 +282,9 @@ try {
     rerankerP95LimitMs,
   });
   const report = {
-    benchmark: "stellar-bazaar-release-v1", generated_at: new Date().toISOString(), isolated_schema: schema,
+    benchmark: provisionalMode ? "stellar-bazaar-provisional-v1" : "stellar-bazaar-release-v1",
+    evaluation_mode: provisionalMode ? "provisional" : "release",
+    generated_at: new Date().toISOString(), isolated_schema: schema,
     environment: { node: process.version, platform: process.platform, arch: process.arch, cpu_count: (await import("node:os")).cpus().length },
     database: (await pool.query<{ version: string }>("SHOW server_version")).rows[0]?.version,
     embedding: { provider: config.semantic.provider, model: config.semantic.modelId, revision: config.semantic.revision, indexed: index.stored, status: index.status },
@@ -282,14 +292,15 @@ try {
     thresholds: { minimum_relevance_score: minimumRelevanceScore, hybrid_p95_limit_ms: hybridP95LimitMs, reranker_p95_limit_ms: rerankerP95LimitMs },
     unavailable_profiles: unavailableProfiles, profiles: reports,
     reranker_lift: reranked ? lift(hybrid.metrics, reranked.metrics) : null,
-    gates, release_ready: Object.values(gates).every(value => value === true),
+    gates, release_ready: !provisionalMode && Object.values(gates).every(value => value === true),
     limitations: ["The benchmark is intentionally exact-only in v1.", "CDP records supply sampling shape and provenance hashes; committed fixture descriptions and schemas are deterministic synthetic metadata, not copied source prose.", "Release queries are curated, frozen, and this command exposes no tuning controls."],
   };
   await mkdir(resolve(root, "reports"), { recursive: true }); await mkdir(resolve(root, "runs"), { recursive: true });
-  await writeFile(resolve(root, "reports/release-v1.json"), `${JSON.stringify(report, null, 2)}\n`);
-  await writeFile(resolve(root, "runs/release-v1.json"), `${JSON.stringify({ generated_at: report.generated_at, profiles: profiles.map(value => ({ name: value.name, per_query: value.perQuery })) }, null, 2)}\n`);
+  const outputName = provisionalMode ? "provisional-v1.json" : "release-v1.json";
+  await writeFile(resolve(root, `reports/${outputName}`), `${JSON.stringify(report, null, 2)}\n`);
+  await writeFile(resolve(root, `runs/${outputName}`), `${JSON.stringify({ generated_at: report.generated_at, profiles: profiles.map(value => ({ name: value.name, per_query: value.perQuery })) }, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
-  if (!report.release_ready) process.exitCode = 1;
+  if (!provisionalMode && !report.release_ready) process.exitCode = 1;
 } finally {
   if (pool) await pool.end();
   await admin.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);

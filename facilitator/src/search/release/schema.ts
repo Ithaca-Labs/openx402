@@ -126,7 +126,7 @@ export const QrelRecordSchema = z.object({
   grade: z.number().int().min(0).max(3),
   eligible: z.boolean(),
   hard_constraint_reason: z.string().optional(),
-  judge: z.enum(["deterministic", "openrouter", "pending"]),
+  judge: z.enum(["deterministic", "openrouter", "curated", "pending"]),
   provisional: z.boolean(),
   rationale: z.string().max(1_000).optional(),
 }).strict().superRefine((value, context) => {

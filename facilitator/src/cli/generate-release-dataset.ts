@@ -195,11 +195,11 @@ const queryText: Record<QueryRecord["query_class"], string[]> = {
     "Find an API that gives a weather forecast for a city", "I need current cryptocurrency market prices", "Look up the details of a blockchain transaction",
     "Verify whether a customer identity is legitimate", "Extract structured fields from a document", "Summarize the latest business news",
     "Calculate a risk score for a wallet", "Translate short technical text", "Describe the contents of an uploaded image", "Estimate a delivery route",
-    "Show token balances held by an account", "Retrieve emitted smart-contract events", "Get a concise profile of a public company", "Resolve domain registration records",
+    "Show token balances held by an account", "Retrieve emitted smart-contract events", "Get a concise profile of a public company", "Verify a reusable credential for a customer",
     "Estimate international shipping time", "Detect fraud indicators in a payment", "Measure sentiment in customer feedback", "Parse line items from an invoice",
-    "Review source code for likely defects", "Screen a counterparty for compliance concerns", "Return hourly weather conditions", "Fetch a token transfer history",
+    "Analyze an image for visible manufacturing defects", "Screen a counterparty for compliance concerns", "Return hourly weather conditions", "Fetch a token transfer history",
     "Analyze the risk of an onchain address", "Convert a paragraph into another language", "Find recent headlines about a company", "Read totals from a receipt",
-    "Inspect a contract transaction receipt", "Find the registrar for a domain", "Create a route between two locations", "Classify the subject of a photograph",
+    "Inspect a contract transaction receipt", "Verify a customer's identity document", "Create a route between two locations", "Classify the subject of a photograph",
   ],
   structured: [
     "Find an HTTP resource on Stellar testnet", "Only show MCP tools that accept exact payments", "Find a pubnet service paid in configured USDC",
@@ -214,7 +214,7 @@ const queryText: Record<QueryRecord["query_class"], string[]> = {
     "Is this new customer likely who they claim to be?", "Turn messy paperwork into usable fields", "Give me the important events without reading every article",
     "How dangerous does this wallet activity look?", "Make this message understandable to a Japanese speaker", "Explain what is visible in this picture",
     "Work out how a parcel should travel", "What coins does this address control?", "Tell me which events this program emitted",
-    "Brief me on this corporation", "Who operates this internet name?", "Flag suspicious behavior before I approve a transfer",
+    "Brief me on this corporation", "Can this identity credential be trusted?", "Flag suspicious behavior before I approve a transfer",
   ],
   price_category: [
     "Find a weather service costing at most 0.001 USD", "Show finance resources below 0.002 USD", "Find an affordable blockchain lookup",
@@ -230,8 +230,8 @@ const queryText: Record<QueryRecord["query_class"], string[]> = {
   no_result: [
     "Find a service that teleports a physical package instantly", "Locate an API that proves tomorrow's lottery numbers", "Find a resource that reverses a confirmed Stellar ledger",
     "Show a service offering guaranteed perpetual motion", "Find an endpoint that reads private thoughts", "Locate a tool that creates matter from nothing",
-    "Find an API guaranteeing zero-risk investments", "Show a service that decrypts any ciphertext without a key", "Find a tool that predicts every earthquake exactly",
-    "Locate an endpoint that changes historical weather",
+    "Find an API that grows a mature forest in one second", "Show a service that decrypts any ciphertext without a key", "Find a tool that predicts every earthquake exactly",
+    "Locate an endpoint that physically changes yesterday's weather",
   ],
   cold_start: [
     "Find a basic weather lookup even if its listing has little metadata", "Search sparse finance listings for a market endpoint", "Find a minimal blockchain lookup service",
@@ -245,8 +245,9 @@ function queries(generated?: GeneratedCandidates): QueryRecord[] {
   for (const [queryClass, texts] of Object.entries(queryText) as Array<[QueryRecord["query_class"], string[]]>) {
     const releaseCount = { capability: 9, structured: 6, semantic: 5, price_category: 3, adversarial: 3, no_result: 3, cold_start: 1 }[queryClass];
     for (const [index, intent] of texts.entries()) {
+      const currentId = id++;
       const split = index >= texts.length - releaseCount ? "release" as const : "development" as const;
-      const generatedQuery = split === "development" ? generated?.queries.find(value => value.id === id)?.text : undefined;
+      const generatedQuery = split === "development" ? generated?.queries.find(value => value.id === currentId)?.text : undefined;
       const query = generatedQuery ?? intent;
       const structuredFilters = queryClass === "structured" ? {
         ...(/\bHTTP\b/.test(intent) ? { type: "http" as const } : /\bMCP\b/.test(intent) ? { type: "mcp" as const } : {}),
@@ -259,7 +260,7 @@ function queries(generated?: GeneratedCandidates): QueryRecord[] {
         ...(/Bazaar/.test(intent) ? { extensions: "bazaar" } : {}),
       } : {};
       rows.push(QueryRecordSchema.parse({
-        query_id: `qry-${String(id++).padStart(3, "0")}`,
+        query_id: `qry-${String(currentId).padStart(3, "0")}`,
         split,
         query_class: queryClass, query,
         filters: structuredFilters,
@@ -270,7 +271,9 @@ function queries(generated?: GeneratedCandidates): QueryRecord[] {
         expects_no_result: queryClass === "no_result",
         derived_from: generatedQuery
           ? { kind: "openrouter", generation_id: generated!.generation_id }
-          : { kind: "curated", generation_id: split === "release" ? "human-release-query-v1" : "query-author-v2" },
+          : { kind: "curated", generation_id: split === "release"
+            ? ([28, 64, 95].includes(currentId) ? "human-release-query-v2-corrected-coverage" : "human-release-query-v1")
+            : "query-author-v2" },
       }));
     }
   }
@@ -293,12 +296,15 @@ async function main(): Promise<void> {
   const qrels: QrelRecord[] = [];
   for (const query of queryRecords) for (const [index, resource] of catalog.entries()) {
     const eligibility = evaluateEligibility(query, resource, sidecars[index]!);
+    const curatedNoResult = query.expects_no_result && eligibility.eligible;
     qrels.push(QrelRecordSchema.parse({
       query_id: query.query_id, resource_id: resource.resource_id, grade: 0,
-      eligible: eligibility.eligible, judge: eligibility.eligible ? "pending" : "deterministic",
+      eligible: eligibility.eligible, judge: !eligibility.eligible ? "deterministic" : curatedNoResult ? "curated" : "pending",
       ...(eligibility.reason ? { hard_constraint_reason: eligibility.reason } : {}),
       provisional: true,
-      rationale: eligibility.eligible ? "Pending independent OpenRouter relevance judgment; placeholder is not a judged label." : eligibility.reason,
+      rationale: !eligibility.eligible ? eligibility.reason : curatedNoResult
+        ? "Benchmark-curated absent capability; provisional until independent calibration."
+        : "Pending independent OpenRouter relevance judgment; placeholder is not a judged label.",
     }));
   }
   const calibration = buildCalibrationSample(qrels, queryRecords);

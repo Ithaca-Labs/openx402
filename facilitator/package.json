@@ -28,6 +28,7 @@
     "benchmark:generate": "tsx src/cli/generate-release-dataset.ts",
     "benchmark:generate-candidates": "tsx src/cli/generate-openrouter-candidates.ts",
     "benchmark:judge": "tsx src/cli/judge-release-qrels.ts",
+    "benchmark:curate-no-results": "tsx src/cli/curate-no-result-qrels.ts",
     "benchmark:calibration": "tsx src/cli/calibration-report.ts",
     "benchmark:import-human": "tsx src/cli/import-human-calibration.ts",
     "benchmark:validate": "tsx src/cli/validate-release-dataset.ts",

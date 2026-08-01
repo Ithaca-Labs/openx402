@@ -130,6 +130,25 @@ describe("evaluation metrics", () => {
     expect(suite.byClass.lexical?.queries).toBe(2);
   });
 
+  it("keeps no-result queries out of aggregate ranking metrics", () => {
+    const noResult: EvalQuery = {
+      query: "impossible capability",
+      queryClass: "no-result",
+      judgments: [{ resource: "irrelevant", grade: 0 }],
+    };
+    const ranked = { query, metrics: scoreQuery(query, ["ideal"], 10), degraded: {} };
+    const empty = { query: noResult, metrics: scoreQuery(noResult, [], 10), degraded: {} };
+    const suite = aggregate([ranked, empty], 2);
+
+    expect(suite.queries).toBe(2);
+    expect(suite.rankingQueries).toBe(1);
+    expect(suite.recall[1]).toBe(ranked.metrics.recall[1]);
+    expect(suite.precision[5]).toBe(ranked.metrics.precision[5]);
+    expect(suite.ndcg[5]).toBe(ranked.metrics.ndcg[5]);
+    expect(suite.byClass["no-result"]?.rankingQueries).toBe(0);
+    expect(suite.noResultAccuracy).toBe(1);
+  });
+
   it("reports lift as a signed difference so a regression is visible", () => {
     const baseline = aggregate([{ query, metrics: scoreQuery(query, ["marginal", "ideal"], 1), degraded: {} }], 1);
     const candidate = aggregate([{ query, metrics: scoreQuery(query, ["ideal", "relevant"], 1), degraded: {} }], 1);
