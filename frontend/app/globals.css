@@ -872,6 +872,140 @@ html[data-theme="dark"] .brand-lockup__image--dark {
   transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
 }
 
+.metric-card::before {
+  position: absolute;
+  right: -14%;
+  bottom: -30%;
+  width: 122%;
+  height: 112%;
+  background: url("/brand/social/open-graph-background-generated.png") right bottom / cover no-repeat;
+  content: "";
+  filter: saturate(1.35) contrast(1.08) brightness(1.08);
+  mix-blend-mode: screen;
+  opacity: 0.3;
+  pointer-events: none;
+  transform: rotate(-2deg) scale(1.05);
+  transform-origin: right bottom;
+  transition: opacity 240ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.metric-card--featured::before {
+  right: -6%;
+  bottom: -26%;
+  width: 132%;
+  height: 120%;
+  opacity: 0.42;
+  transform: rotate(-3deg) scale(1.08);
+}
+
+.metric-card:hover::before {
+  opacity: 0.36;
+  transform: rotate(-2deg) scale(1.1);
+}
+
+.metric-card--featured:hover::before {
+  opacity: 0.48;
+  transform: rotate(-3deg) scale(1.13);
+}
+
+.metric-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+:root:not([data-theme="dark"]) .metric-card::before {
+  background-image: url("/brand/social/x-header-background-generated.png");
+  filter: saturate(1.22) contrast(1.04);
+  mix-blend-mode: multiply;
+  opacity: 0.2;
+  transform: rotate(0deg) scale(1.05);
+}
+
+:root:not([data-theme="dark"]) .metric-card--featured::before {
+  opacity: 0.28;
+  transform: rotate(0deg) scale(1.08);
+}
+
+:root:not([data-theme="dark"]) .metric-card:not(.metric-card--featured)::before {
+  right: -6%;
+  bottom: -26%;
+  width: 132%;
+  height: 120%;
+  background-position: right bottom;
+  opacity: 0.28;
+  transform: rotate(0deg) scale(1.08);
+}
+
+:root:not([data-theme="dark"]) .metric-grid .metric-card:nth-child(1)::before {
+  background-position: right bottom;
+  opacity: 0.32;
+  transform: rotate(0deg) scale(1.08);
+}
+
+:root:not([data-theme="dark"]) .metric-grid .metric-card:nth-child(2)::before {
+  background-position: 76% bottom;
+  opacity: 0.22;
+  transform: rotate(0deg) scale(1.14);
+}
+
+:root:not([data-theme="dark"]) .metric-grid .metric-card:nth-child(3)::before {
+  right: -6%;
+  bottom: -26%;
+  width: 132%;
+  height: 120%;
+  background-position: right bottom;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 30%, #000 72%);
+  mask-image: linear-gradient(to bottom, transparent 0%, transparent 30%, #000 72%);
+  opacity: 0.18;
+  transform: rotate(0deg) scale(1.08);
+}
+
+:root:not([data-theme="dark"]) .metric-grid .metric-card:nth-child(4)::before {
+  background-position: 100% 72%;
+  opacity: 0.25;
+  transform: rotate(0deg) scale(1.17);
+}
+
+:root[data-theme="dark"] .metric-grid .metric-card:nth-child(1)::before {
+  right: -6%;
+  bottom: -26%;
+  width: 132%;
+  height: 120%;
+  background-position: right bottom;
+  opacity: 0.42;
+  transform: rotate(-3deg) scale(1.08);
+}
+
+:root[data-theme="dark"] .metric-grid .metric-card:nth-child(2)::before {
+  right: -20%;
+  bottom: -34%;
+  width: 150%;
+  height: 132%;
+  background-position: 72% bottom;
+  opacity: 0.42;
+  transform: rotate(0deg) scale(1.12);
+}
+
+:root[data-theme="dark"] .metric-grid .metric-card:nth-child(3)::before {
+  right: -8%;
+  bottom: -22%;
+  width: 126%;
+  height: 114%;
+  background-position: 48% 82%;
+  opacity: 0.42;
+  transform: rotate(0deg) scale(1.04);
+}
+
+:root[data-theme="dark"] .metric-grid .metric-card:nth-child(4)::before {
+  right: -38%;
+  bottom: -18%;
+  width: 156%;
+  height: 110%;
+  background-position: 100% 70%;
+  opacity: 0.42;
+  transform: rotate(0deg) scale(1.16);
+}
+
 .metric-card:hover {
   border-color: var(--color-border-strong);
   box-shadow: var(--shadow-paper);
@@ -3171,6 +3305,12 @@ body {
   backdrop-filter: blur(18px) saturate(125%);
 }
 
+.metric-card {
+  background: var(--color-surface);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 :is(
   .ui-card,
   .metric-card,
@@ -3188,6 +3328,11 @@ body {
 ):hover {
   border-color: var(--glass-border-strong);
   box-shadow: 0 27px 64px var(--color-shadow), inset 0 1px 0 var(--glass-highlight), inset 0 -1px 0 color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+.metric-card:hover {
+  background: var(--color-surface);
+  box-shadow: 0 27px 64px var(--color-shadow);
 }
 
 :is(.observer-card, .facilitator-banner, .closing-field) {
@@ -3376,4 +3521,47 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Keep data surfaces opaque: texture and signal should sit on top of a stable field. */
+:is(
+  .ui-card,
+  .metric-card,
+  .table-card,
+  .activity-panel,
+  .entity-preview,
+  .marketplace-card,
+  .transaction-callout,
+  .facilitator-row,
+  .network-card,
+  .capability-card,
+  .ecosystem-group,
+  .empty-panel,
+  .state-panel
+) {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: 0 20px 54px var(--color-shadow);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+:is(
+  .ui-card,
+  .metric-card,
+  .table-card,
+  .activity-panel,
+  .entity-preview,
+  .marketplace-card,
+  .transaction-callout,
+  .facilitator-row,
+  .network-card,
+  .capability-card,
+  .ecosystem-group,
+  .empty-panel,
+  .state-panel
+):hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+  box-shadow: 0 27px 64px var(--color-shadow);
 }
