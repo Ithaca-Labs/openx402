@@ -1,0 +1,75 @@
+@font-face {
+  font-family: "Archivo";
+  src: url("./fonts/Archivo-Variable.ttf") format("truetype-variations");
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("./fonts/IBMPlexMono-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("./fonts/IBMPlexMono-Medium.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+:root {
+  --ox-signal: #ffd21c;
+  --ox-ink: #111111;
+  --ox-paper: #f4f0e6;
+  --ox-graphite: #5d5b56;
+
+  --ox-display: "Archivo", sans-serif;
+  --ox-mono: "IBM Plex Mono", monospace;
+
+  --ox-space-1: 0.25rem;
+  --ox-space-2: 0.5rem;
+  --ox-space-3: 0.75rem;
+  --ox-space-4: 1rem;
+  --ox-space-6: 1.5rem;
+  --ox-space-8: 2rem;
+  --ox-space-12: 3rem;
+  --ox-space-16: 4rem;
+  --ox-space-24: 6rem;
+
+  --ox-rule: 1px solid color-mix(in srgb, var(--ox-paper) 22%, transparent);
+  --ox-radius-control: 0.25rem;
+  --ox-radius-panel: 0;
+}
+
+/* Texture belongs to large atmospheric surfaces, never beneath small text. */
+.ox-surface-painted {
+  background-color: var(--ox-signal);
+}
+
+.ox-kicker {
+  font: 500 0.6875rem/1.2 var(--ox-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ox-display {
+  font-family: var(--ox-display);
+  font-size: clamp(3.5rem, 8vw, 8rem);
+  font-stretch: 85%;
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 0.88;
+}
+
+.ox-wordmark {
+  font-family: var(--ox-display);
+  font-stretch: 100%;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
