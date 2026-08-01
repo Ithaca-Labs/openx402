@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-08-01T06:31:36.150Z",
+  "status": "fail",
+  "reviewed": 0,
+  "exactAgreement": 0,
+  "withinOneAgreement": 0,
+  "severeDisagreementRate": 0,
+  "weightedKappa": 0,
+  "confusionMatrix": [
+    [
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0
+    ]
+  ],
+  "passes": false,
+  "threshold": {
+    "minimumReviewed": 300,
+    "weightedKappa": 0.7,
+    "severeDisagreementRate": 0.05
+  }
+}

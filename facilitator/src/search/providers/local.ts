@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readdir, readFile, stat } from "node:fs/promises";
+import { open, readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import type {
   EmbeddingIdentity, EmbeddingProvider, ProviderHealth, RerankIdentity,
@@ -59,21 +59,44 @@ async function loadRuntime(config: LocalRuntimeConfig): Promise<TransformersModu
 }
 
 /** Hashes the ONNX artifacts actually loaded, so the generation records what ran. */
+async function onnxFiles(directory: string, depth = 0): Promise<string[]> {
+  if (depth > 5) return [];
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files: string[] = [];
+  for (const entry of entries) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...await onnxFiles(path, depth + 1));
+    else if ((entry.isFile() || entry.isSymbolicLink()) && entry.name.endsWith(".onnx")) files.push(path);
+  }
+  return files;
+}
+
 async function artifactChecksum(cacheDir: string, repo: string): Promise<string | undefined> {
-  const directory = join(cacheDir, repo, "onnx");
+  // transformers.js v3 used <cache>/<repo>/onnx; v4 follows the Hugging Face
+  // cache convention models--owner--repo/snapshots/<revision>/onnx.
+  const roots = [join(cacheDir, repo), join(cacheDir, `models--${repo.replaceAll("/", "--")}`)];
   try {
-    const files = (await readdir(directory)).filter(name => name.endsWith(".onnx")).sort();
+    let files: string[] = [];
+    for (const root of roots) files.push(...await onnxFiles(root).catch(() => []));
+    files = [...new Set(files)].sort();
     if (files.length === 0) return undefined;
     const digest = createHash("sha256");
-    for (const file of files) {
-      const path = join(directory, file);
+    for (const path of files) {
       const info = await stat(path);
       // Hash the name and size plus the head and tail of the file: a full hash of
       // a multi-gigabyte weight file on every boot is not worth the I/O.
-      digest.update(`${file}:${info.size}\n`);
-      const handle = await readFile(path);
-      digest.update(handle.subarray(0, 1 << 20));
-      digest.update(handle.subarray(Math.max(0, handle.length - (1 << 20))));
+      digest.update(`${path.slice(cacheDir.length)}:${info.size}\n`);
+      const handle = await open(path, "r");
+      try {
+        const sampleSize = Math.min(1 << 20, info.size);
+        const head = Buffer.alloc(sampleSize);
+        const tail = Buffer.alloc(sampleSize);
+        await handle.read(head, 0, sampleSize, 0);
+        await handle.read(tail, 0, sampleSize, Math.max(0, info.size - sampleSize));
+        digest.update(head); digest.update(tail);
+      } finally {
+        await handle.close();
+      }
     }
     return digest.digest("hex");
   } catch {

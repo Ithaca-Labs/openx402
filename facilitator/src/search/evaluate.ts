@@ -39,10 +39,12 @@ export interface QueryMetrics {
   violations: Record<number, number>;
   returned: number;
   hasResult: boolean;
+  /** Correctly returned nothing for a query with no relevant resource, or returned something otherwise. */
+  noResultCorrect: boolean;
   latencyMs: number;
 }
 
-export const DEFAULT_CUTOFFS = [1, 3, 5, 10] as const;
+export const DEFAULT_CUTOFFS = [1, 3, 5, 10, 20] as const;
 /** A judgment at or above this grade counts as relevant for recall and MRR. */
 export const RELEVANT_GRADE = 2;
 
@@ -71,7 +73,9 @@ export function scoreQuery(
     const head = rankedResourceKeys.slice(0, k);
     const hits = head.filter(key => relevantKeys.has(key)).length;
     recall[k] = relevantKeys.size === 0 ? 1 : hits / relevantKeys.size;
-    precision[k] = head.length === 0 ? 0 : hits / head.length;
+    // Standard precision@k always divides by k. Short result pages do not get
+    // an inflated score (in particular Precision@5 always has denominator 5).
+    precision[k] = hits / k;
     const idealAtK = dcg(idealGrades.slice(0, k));
     ndcg[k] = idealAtK === 0 ? 1 : dcg(head.map(key => graded.get(key) ?? 0)) / idealAtK;
     // A grade-0 judgment is an explicit "this must not rank for this query".
@@ -79,6 +83,7 @@ export function scoreQuery(
   }
 
   const firstRelevant = rankedResourceKeys.findIndex(key => relevantKeys.has(key));
+  const expectsResult = relevantKeys.size > 0;
   return {
     recall,
     precision,
@@ -87,6 +92,7 @@ export function scoreQuery(
     mrr: firstRelevant === -1 ? 0 : 1 / (firstRelevant + 1),
     returned: rankedResourceKeys.length,
     hasResult: rankedResourceKeys.length > 0,
+    noResultCorrect: expectsResult ? rankedResourceKeys.length > 0 : rankedResourceKeys.length === 0,
     latencyMs,
   };
 }
@@ -99,6 +105,7 @@ export interface SuiteMetrics {
   violations: Record<number, number>;
   mrr: number;
   noResultRate: number;
+  noResultAccuracy: number;
   latency: { p50: number; p95: number; p99: number; mean: number };
   byClass: Record<string, { queries: number; recall: Record<number, number>; mrr: number }>;
   fallbacks: Record<string, number>;
@@ -157,6 +164,7 @@ export function aggregate(
     noResultRate: results.length === 0
       ? 0
       : results.filter(entry => !entry.metrics.hasResult).length / results.length,
+    noResultAccuracy: mean(results.map(entry => entry.metrics.noResultCorrect ? 1 : 0)),
     latency: {
       p50: percentile(latencies, 0.5),
       p95: percentile(latencies, 0.95),

@@ -93,6 +93,7 @@ describe("evaluation metrics", () => {
     expect(metrics.mrr).toBeCloseTo(1);
     expect(metrics.violations[1]).toBe(0);
     expect(metrics.violations[3]).toBe(1);
+    expect(metrics.precision[5]).toBeCloseTo(2 / 5);
   });
 
   it("scores a perfect ordering as nDCG 1", () => {

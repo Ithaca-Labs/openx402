@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "generated_at": "2026-08-01T06:31:34.898Z",
+  "authored_price_snapshot_at": "2026-08-01T00:00:00.000Z",
+  "counts": {
+    "resources": 300,
+    "queries": 100,
+    "qrels": 30000,
+    "providers": 50,
+    "sources": {
+      "cdp": 150,
+      "generated_mcp": 60,
+      "adversarial": 45,
+      "sparse": 45
+    },
+    "splits": {
+      "development": 70,
+      "release": 30
+    }
+  },
+  "hashes": {
+    "catalog/catalog-v1.jsonl": "c88e6324658823d6e44b58cbc2da13ff34d2db616d02802c8459796228debbbe",
+    "catalog/evaluation-sidecar-v1.jsonl": "c8bd5c2f8759fa61f416820e7363993d3368e79b6abae00287de77a8d7667740",
+    "queries/queries-v1.jsonl": "a9b1effcfe8771c9ba680a2870af6b580af6c10861459d50d2373e887943ac98",
+    "qrels/qrels-v1.jsonl": "e6cfe605de9a7cd4b48876f906849303bec27251f91c511ea04f9d4dc9a77f03",
+    "calibration/human-review-v1.jsonl": "deb93c429d9c7c57179e18c7086b8554bb8a466212b9b8d276cd1d83d7b0cd35"
+  },
+  "candidate_generation_status": "curated_fallback_openrouter_unavailable",
+  "qrels_status": "provisional_pending_openrouter",
+  "human_review_status": "not_started",
+  "licenses": {
+    "repository_code": "Apache-2.0",
+    "third_party_metadata": "not relicensed; raw CDP snapshot is gitignored"
+  }
+}

@@ -133,6 +133,8 @@ export interface RunnerOptions {
   limit: number;
   /** fixture id → catalog resource key, from `seedSuite`. */
   keys: Map<string, string>;
+  /** Release fixtures are deliberately unverified and only visible in evaluation mode. */
+  includeUnverified?: boolean;
 }
 
 /**
@@ -167,7 +169,7 @@ export async function runProfile(
       offset: 0,
       snapshot,
       includeStale: false,
-      includeUnverified: false,
+      includeUnverified: options.includeUnverified ?? false,
       staleAfterHours: 168,
       query: query.query,
     });

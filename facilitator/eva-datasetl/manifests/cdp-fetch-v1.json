@@ -1,0 +1,145 @@
+{
+  "source_url": "https://api.cdp.coinbase.com/platform/v2/x402/discovery/resources",
+  "fetched_at": "2026-08-01T06:29:16.329Z",
+  "sampling_seed": "stellar-bazaar-release-v1",
+  "pagination": [
+    {
+      "offset": 0,
+      "count": 1000,
+      "sha256": "dbe1164edeafc192a998fa212c3f6331cd20ec7c48082fd7c53125bc0ba171e6",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 1000,
+      "count": 1000,
+      "sha256": "3924715af6f03275f4fcc635ae1feb7f6a3b9270823f20c18503f8bdb09e2587",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 2000,
+      "count": 1000,
+      "sha256": "d27fff6e32775ae999900f899dc918d5585baed07da3998a7743a9bc5fc16640",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 3000,
+      "count": 1000,
+      "sha256": "b41de876cfc075150244e0401d2d8e2a0d1e5e3ba985099afc8ee9064e7e4353",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 4000,
+      "count": 1000,
+      "sha256": "d6f0b54b275ad034878b2bd89acd53e11b1fea74c50a45a7ec6280c5c559df46",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 5000,
+      "count": 1000,
+      "sha256": "8d9ea3e431aa590773a66f437ff605753c5a7d68a7b6c83e28da0a90019c34a8",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 6000,
+      "count": 1000,
+      "sha256": "23d361960a096236dd8f44fef5189015b4e38ad3b0bd0bac39f4c3a23896934f",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 7000,
+      "count": 1000,
+      "sha256": "27c229135e68a9de4adb8e1f9b81d9c58219bfc7d955bb29a8af9f823a2abff0",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 8000,
+      "count": 1000,
+      "sha256": "7fb00ee88c227dfeac69823dee7177b82deca7eb88c339982518b18b0860cfb8",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 9000,
+      "count": 1000,
+      "sha256": "7c586ba506d99b81d30052ea242d74c3bb21eff9f69111ad0bb959f0a490b6d9",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 10000,
+      "count": 1000,
+      "sha256": "7f392669b67ff374f627b4990c9a918ded6db0a4d08b2b55cfed6e6da2412299",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 11000,
+      "count": 1000,
+      "sha256": "28ce6c6fe15730dd38489f2c59c71d93d0b32d90e200163d16c08cefeb1c44be",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 12000,
+      "count": 1000,
+      "sha256": "c39fcd22f655c1bef3e75e33da7fab2dd89d57dda68d7439aecfb48720d24313",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 13000,
+      "count": 1000,
+      "sha256": "9bc41c5158824154ef5e98cd1a4087359ebf39618657f71fed132e1a601da48f",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    },
+    {
+      "offset": 14000,
+      "count": 672,
+      "sha256": "2e074cbe847740be239ac08986c27077fd1d0e0daf0b16baca574f610ae1e69d",
+      "response_metadata": {
+        "content-type": "application/json"
+      }
+    }
+  ],
+  "reported_total": 14672,
+  "unique_records": 14672,
+  "selected_records": 150,
+  "sample_category_counts": {
+    "weather": 15,
+    "finance": 15,
+    "blockchain": 15,
+    "identity": 15,
+    "documents": 15,
+    "news": 15,
+    "risk": 15,
+    "language": 15,
+    "media": 15,
+    "logistics": 15
+  },
+  "raw_sha256": "1b654644842bd781a65d73f3622bb26823119e7475d39750c798ad419acaf1fd",
+  "sample_sha256": "9d0d4a88f019607261fecb1de265cfd0c8dc1ff287314106562d117397dddca6",
+  "redistribution": "unclear; raw snapshot is gitignored and is not licensed under this repository's Apache-2.0 license"
+}

@@ -232,9 +232,13 @@ reranker. Nothing is faked, and reranking is off by default.
   defaults to `Xenova/all-MiniLM-L6-v2` (~25 MB) for speed; set
   `FACILITATOR_LIVE_MODEL_REPO=Xenova/bge-m3` and
   `FACILITATOR_LIVE_MODEL_DIM=1024` to run the shipped default at full size.
-- The shipped `Xenova/bge-m3` weights have **not** been downloaded in this
-  environment. The retrieval-quality numbers below therefore come from the
-  deterministic fake provider and measure the mechanism, not model quality.
+- The pinned `Xenova/bge-m3` revision has now been run on Apple M4 hardware at
+  its real 1024 dimensions. Dimension, normalization, determinism, semantic
+  ordering, mismatch rejection, and loaded-artifact checksum passed; the
+  machine-readable report is `eva-datasetl/reports/bge-m3-local-v1.json`.
+  This is a provider-runtime measurement, not a release retrieval-quality
+  result. The smoke-suite ranking numbers below still use the deterministic
+  fake provider and measure mechanics only.
 
 ## Profiles
 
@@ -246,6 +250,11 @@ reranker. Nothing is faked, and reranking is off by default.
 
 ## Evaluation
 
+The 300-resource release benchmark, provisional qrels, isolation rules, human
+calibration gates, and exact reproduction commands are documented separately in
+[SEARCH-BENCHMARK.md](SEARCH-BENCHMARK.md). The commands below remain the fast
+12-resource smoke test.
+
 ```sh
 npm run evaluate                                   # fake providers, deterministic
 npm run evaluate -- --provider local --limit 10    # real embeddings
@@ -254,7 +263,7 @@ npm run evaluate -- --json reports/search.json     # machine-readable report
 
 The runner seeds a versioned golden suite, builds the index, then runs the same
 request path three ways — lexical-only, hybrid, hybrid + rerank — and reports
-recall@{1,3,5,10}, precision@k, MRR, nDCG@k, must-not-rank violations, latency
+recall@{1,3,5,10,20}, standard precision@k, MRR, nDCG@k, must-not-rank violations, latency
 percentiles, provider fallback counts, per-class breakdown and catalog size.
 Each profile is only a `SearchConfig` override, so nothing in the evaluator is a
 parallel implementation of search.
