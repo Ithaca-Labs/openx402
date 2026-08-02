@@ -398,12 +398,19 @@ export class CatalogStore {
     );
     // The lexical document is already searchable; the job row is the durable
     // hand-off to the embedding worker. Request-time cataloging never waits for
-    // model inference, and it does not read the active generation on the hot
-    // path: generation 0 means "unassigned", and the worker adopts the row into
-    // whichever generation is active when it next sweeps.
+    // model inference. A running service targets its active generation so jobs
+    // created after startup are immediately claimable; generation 0 is reserved
+    // for catalog writes that happen before the worker creates a generation.
     await client.query(
       `INSERT INTO catalog_index_jobs(kind, resource_id, version_id, source_hash, generation)
-       VALUES ('embedding', $1, $2, $3, 0)
+       VALUES (
+         'embedding', $1, $2, $3,
+         COALESCE((
+           SELECT id FROM search_model_generations
+           WHERE status = 'active'
+           ORDER BY id DESC LIMIT 1
+         ), 0)
+       )
        ON CONFLICT (kind, version_id, generation) DO UPDATE SET
          source_hash = EXCLUDED.source_hash,
          state = CASE WHEN catalog_index_jobs.source_hash = EXCLUDED.source_hash

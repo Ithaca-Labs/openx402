@@ -154,6 +154,26 @@ describe("indexing pipeline", () => {
       .toMatchObject({ done: suite.resources.length });
   });
 
+  it("embeds a document cataloged after the worker has prepared", async () => {
+    const indexer = worker(searchConfig());
+    const prepared = await indexer.prepare();
+    expect(prepared.generation).toBeDefined();
+
+    await catalogOne("https://api.example.com/after-worker-started");
+    const job = await pool.query(
+      "SELECT generation, state FROM catalog_index_jobs WHERE kind = 'embedding'",
+    );
+    expect(job.rows).toEqual([{
+      generation: prepared.generation!.id,
+      state: "pending",
+    }]);
+
+    expect(await indexer.runOnce()).toBe(1);
+    expect(await searchStore.queueDepth(prepared.generation!.id)).toMatchObject({ done: 1 });
+    expect((await pool.query("SELECT status FROM catalog_embeddings_g1")).rows)
+      .toEqual([{ status: "ready" }]);
+  });
+
   it("shares the queue between replicas without double work", async () => {
     await seedGolden();
     const generation = await searchStore.activateGeneration(new FakeEmbeddingProvider(64).identity);
