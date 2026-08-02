@@ -4,13 +4,14 @@
 #   docker compose up -d
 #
 # Brings up PostgreSQL + pgvector, the facilitator, and the MCP discovery
-# server. No API keys are required: the default profile runs a local embedding
-# model (BAAI/bge-m3) and never calls a hosted inference provider.
+# server. No hosted API key is required. The stock image does not install the
+# optional local model runtime, so semantic search degrades explicitly to
+# PostgreSQL full-text search and no model weights are downloaded.
 #
 # Profiles
-#   (default)  local embeddings  — no external calls, larger image, slower cold start
-#   remote     hosted embeddings — set FACILITATOR_EMBEDDING_* in .env
-#   lexical    no embeddings     — set FACILITATOR_SEMANTIC_PROVIDER=disabled
+#   (default)  lexical fallback  - no external calls or model downloads
+#   remote     hosted embeddings - select a remote config and set provider vars
+#   local      custom image      - install the optional transformers runtime
 #
 # See README.md "Self-hosting" for the trade-offs.
 
@@ -56,6 +57,8 @@ services:
       # Only used when the config selects provider: remote
       FACILITATOR_EMBEDDING_URL: ${FACILITATOR_EMBEDDING_URL:-}
       FACILITATOR_EMBEDDING_API_KEY: ${FACILITATOR_EMBEDDING_API_KEY:-}
+      # Used by the checked-in config/railway.yaml OpenRouter profile.
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       FACILITATOR_RERANKER_URL: ${FACILITATOR_RERANKER_URL:-}
       FACILITATOR_RERANKER_API_KEY: ${FACILITATOR_RERANKER_API_KEY:-}
       # Settlement signing. Leave unset to run discovery-only (no payments).
@@ -82,7 +85,9 @@ services:
     environment:
       PORT: 4522
       NODE_ENV: production
-      MCP_SERVER_CONFIG: ${MCP_SERVER_CONFIG:-config/self-hosted.yaml}
+      # The container needs Streamable HTTP. The self-hosted MCP profile uses
+      # stdio for a process launched directly by an agent runtime.
+      MCP_SERVER_CONFIG: ${MCP_SERVER_CONFIG:-config/railway.yaml}
       FACILITATOR_URL: http://facilitator:4022
       MCP_SERVER_API_KEYS: ${MCP_SERVER_API_KEYS:-}
       # Required only for paid tool execution. Unset = discovery-only.

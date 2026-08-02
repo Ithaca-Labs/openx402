@@ -34,6 +34,7 @@ target/
 .env
 .env.*
 !.env.example
+/deploy/railway/template-variables.env
 
 # Example apps pull their own dependencies
 /examples/*/node_modules/

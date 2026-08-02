@@ -46,7 +46,9 @@ services:
       NODE_ENV: development
       DATABASE_URL: postgresql://facilitator:facilitator-development-only@postgres:5432/facilitator
       FACILITATOR_URL: http://facilitator:4022
-      MCP_SERVER_CONFIG: config/self-hosted.yaml
+      # Containers expose Streamable HTTP. config/self-hosted.yaml is the
+      # stdio profile for an MCP process launched directly by an agent.
+      MCP_SERVER_CONFIG: config/railway.yaml
     ports:
       - "4522:4522"
     depends_on:

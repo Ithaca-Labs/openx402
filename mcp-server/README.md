@@ -134,6 +134,10 @@ cd ../facilitator
 docker compose --profile mcp up
 ```
 
+The Compose service selects `config/railway.yaml` because a container needs
+Streamable HTTP. `config/self-hosted.yaml` remains the stdio profile for an MCP
+process launched directly by a local agent runtime.
+
 ## Verification
 
 ```bash
@@ -167,9 +171,3 @@ transaction; it never touches `stellar:pubnet`.
 
 - Stellar `upto` payments: interface-ready, reported blocked (see above).
   Not a canonical-conformance claim.
-- A full Docker Compose run of this session's build was not exercised
-  end-to-end (Docker Hub image pulls were unreachable in the development
-  sandbox this package was built in); the `Dockerfile` and compose profile
-  are reviewed and structurally consistent with the facilitator's own, but
-  treat the first real `docker compose --profile mcp up` as the first live
-  test of that specific path.

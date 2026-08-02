@@ -86,10 +86,9 @@ incompatible vectors can never be mixed.
 ```sh
 npm run index -- status      # generations, queue depth, provider health
 npm run index -- reindex     # explicit migration after a model change
-npm run evaluate             # recall@k, MRR, nDCG, violations, latency, lift
 ```
 
-See [search, indexing and evaluation](docs/SEARCH.md) for the fusion formula,
+See [search and indexing](docs/SEARCH.md) for the fusion formula,
 the degradation matrix, model licences and pinned revisions.
 
 Sellers declare their metadata with [`@openx402/bazaar-sdk`](../packages/bazaar-sdk),
@@ -117,9 +116,7 @@ Run all replicas with the same PostgreSQL database and encryption key. Back up t
 
 See [configuration](docs/CONFIGURATION.md), [catalog trust boundary](docs/CATALOG-TRUST.md),
 [search](docs/SEARCH.md), [x402scan field inventory](docs/X402SCAN-INVENTORY.md)
-and [dependency licences](THIRD_PARTY_LICENSES.md). The unified evaluation
-program and its live-source evidence cohort are documented in
-[docs/ECOSYSTEM-BENCHMARK.md](docs/ECOSYSTEM-BENCHMARK.md).
+and [dependency licences](THIRD_PARTY_LICENSES.md).
 
 ## Verification
 
@@ -130,7 +127,6 @@ npm run build
 npm run licenses
 npm audit --omit=dev
 npm run test:live         # real testnet settlements
-npm run evaluate          # retrieval quality report
 npm run test:live-model   # optional: real ONNX weights, not part of CI
 ```
 
