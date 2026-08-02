@@ -89,8 +89,8 @@ Full pipeline reference: [search, indexing and evaluation](SEARCH.md).
 | --- | --- | --- |
 | `enabled` | `true` | Use the PostgreSQL full-text branch. |
 | `language` | `simple` | Text-search configuration. `simple` avoids language guessing; `english` adds stemming and stopword removal. |
-| `weight` | `0.35` | Branch weight in reciprocal rank fusion. |
-| `candidate_count` | `100` | Candidates retrieved before fusion. |
+| `weight` | `0.7` | Frozen lexical branch weight in reciprocal rank fusion. |
+| `candidate_count` | `250` | Candidates retrieved before fusion. |
 
 ### `search.semantic`
 
@@ -104,9 +104,10 @@ Full pipeline reference: [search, indexing and evaluation](SEARCH.md).
 | `dimension` | `1024` | Validated against what the provider actually returns on every batch. |
 | `pooling` | `cls` | `cls` or `mean`. Part of the generation identity. |
 | `normalization` | `l2` | `l2` or `none`. Part of the generation identity. |
-| `weight` | `0.65` | Branch weight in fusion. |
+| `weight` | `0.3` | Frozen semantic branch weight in fusion. |
 | `timeout_ms` | `500` | Bound on the query-embedding call; a timeout degrades to lexical. |
-| `candidate_count` | `100` | Candidates retrieved before fusion. |
+| `candidate_count` | `250` | Candidates retrieved before fusion. |
+| `max_distance` | `0.9` | Fixed cosine-distance guard when lexical retrieval has no candidate; prevents unrelated nearest-neighbour rows from defeating no-result behavior while allowing hybrid recall expansion when lexical evidence exists. |
 | `remote_url_env` | `FACILITATOR_EMBEDDING_URL` | Required when `provider: remote`. |
 | `remote_api_key_env` | `FACILITATOR_EMBEDDING_API_KEY` | Optional bearer token. |
 
@@ -129,7 +130,7 @@ Full pipeline reference: [search, indexing and evaluation](SEARCH.md).
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `rrf_k` | `60` | Reciprocal-rank-fusion constant: `score(d) = Σ w_b / (k + rank_b(d))`. |
+| `rrf_k` | `20` | Frozen reciprocal-rank-fusion constant: `score(d) = Σ w_b / (k + rank_b(d))`. |
 | `minimum_relevance_score` | `0` | Drop fused results below this score. |
 | `default_result_limit` | inherits `discovery.default_page_size` | Page size for `/discovery/search` when the caller sends no `limit`. |
 | `maximum_result_limit` | inherits `discovery.max_page_size` | Ceiling; a larger `limit` is clamped. |
@@ -231,4 +232,3 @@ forcing a new generation and an explicit reindex; vectors from different
 generations are never compared; embedding dimension is validated on every batch
 before storage; no generative model may produce or rewrite indexed text; and
 search never fails merely because a model is absent.
-

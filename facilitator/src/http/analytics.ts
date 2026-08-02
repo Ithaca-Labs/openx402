@@ -154,11 +154,13 @@ export function createAnalyticsRouter(
     try {
       const status = worker?.status();
       const generation = search ? await search.activeGeneration() : undefined;
+      const coverage = generation && search ? await search.indexCoverage(generation.id) : null;
       res.json({
         lexical: {
           enabled: config.search.lexical.enabled,
           language: config.search.lexical.language,
           weight: config.search.lexical.weight,
+          candidateCount: config.search.lexical.candidateCount,
           // PostgreSQL FTS with ts_rank_cd. This is not BM25.
           ranking: "postgresql_fts_ts_rank_cd",
         },
@@ -171,6 +173,7 @@ export function createAnalyticsRouter(
           weight: config.search.semantic.weight,
           vectorSupport: status?.vectorSupport ?? (search ? await search.hasVectorSupport() : false),
           health: status?.provider ?? { status: "disabled" },
+          candidateCount: config.search.semantic.candidateCount,
         },
         reranking: {
           enabled: config.search.reranking.enabled,
@@ -181,6 +184,7 @@ export function createAnalyticsRouter(
         },
         fusion: { rrfK: config.search.rrfK, minimumRelevanceScore: config.search.minimumRelevanceScore },
         activeGeneration: generation ?? null,
+        indexCoverage: coverage,
         worker: status ?? null,
         queue: generation && search ? await search.queueDepth(generation.id) : {},
       });

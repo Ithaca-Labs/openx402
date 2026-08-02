@@ -14,7 +14,7 @@ numbers or floating-point database values.
 | `resources` | stable key, type, resource URL, HTTP method, MCP tool name, origin, status, active version ID, first/last seen, last seen paid |
 | `resource_versions` | resource ID, canonical metadata JSON, declaration hash, description, service name, tags, schema, provenance, proof status/time, created/activated/retired time |
 | `payment_options` | version ID, network, scheme, asset contract/symbol/decimals, payTo, price atomic, timeout, extra, verification status |
-| `search_documents` | version/payment option ID, resource URL, method, tool name, description, tags, network, asset, scheme, payTo, price, status, last seen, deterministic text, `tsvector` |
+| `search_documents` | version/payment option ID, resource URL, method, tool name, description, tags, network, asset, scheme, payTo, price, status, deterministic human text, weighted high/medium/low lexical fields and `tsvector` |
 | `resource_embeddings` | document ID, model generation, model ID, model revision, dimension, vector, source-text hash, created time |
 | `catalog_observations` | version, source type, verify/settlement ID, origin result, observed hash, time |
 | `index_jobs` | job kind, entity/version, generation, attempt, lease/fencing token, next run, error |
@@ -124,8 +124,8 @@ Search executes:
 
 1. validate and apply the standard network, scheme, payTo, type, and extension
    filters plus internal status/liveness constraints;
-2. retrieve lexical candidates with PostgreSQL
-   `websearch_to_tsquery` and `ts_rank_cd`;
+2. retrieve lexical candidates with PostgreSQL weighted FTS, using a
+   parameterized phrase-plus-token tsquery and `ts_rank_cd`;
 3. retrieve semantic candidates by cosine distance within the active model
    generation;
 4. combine rank positions using weighted reciprocal-rank fusion:
@@ -148,7 +148,13 @@ constrains the network, FTS matches seller text such as weather and Mumbai,
 embeddings connect climate to weather, declared structured asset/price options
 inform bounded query-intent features, and RRF merges the candidate ranks. Asset
 and price do not become private Bazaar request filters, and interpretation never
-changes the seller's declared value.
+changes the seller's declared value. The production fusion profile is frozen at
+lexical/semantic weights `0.7`/`0.3`, `rrf_k = 20`, and candidate pools of 250
+(300 for the isolated release benchmark). Evaluation output records per-branch
+candidate counts and query-shape diagnostics so regressions can be attributed
+to recall or fusion ordering. A fixed cosine-distance guard of `0.9` applies
+when lexical retrieval has no candidate, preserving genuine no-result behavior;
+lexically supported queries retain the full semantic candidate pool for recall.
 
 ## Degradation and timeout semantics
 

@@ -152,6 +152,8 @@ describe("indexing pipeline", () => {
     });
     expect(await searchStore.queueDepth((await searchStore.activeGeneration())!.id))
       .toMatchObject({ done: suite.resources.length });
+    expect(await searchStore.indexCoverage((await searchStore.activeGeneration())!.id))
+      .toMatchObject({ expected: suite.resources.length, indexed: suite.resources.length, complete: true });
   });
 
   it("embeds a document cataloged after the worker has prepared", async () => {
@@ -339,6 +341,24 @@ describe("hybrid retrieval and degradation", () => {
     expect(result.rows[0]!.resource).toBe("https://weather.example.com/current");
   });
 
+  it("keeps unrelated semantic neighbors out of a genuine no-result query", async () => {
+    await seedGolden();
+    const indexer = worker(searchConfig());
+    await indexer.prepare();
+    await indexer.drain();
+
+    const result = await runSearch(
+      service(searchConfig(), new FakeEmbeddingProvider(64)),
+      "quantum entanglement brokerage settlement",
+    );
+    expect(result.rows).toEqual([]);
+    expect(result.degraded.effectiveMode).toBe("lexical");
+    expect(result.degraded.semantic).toBe("empty");
+    expect(result.degraded.candidateCounts.lexical).toBe(0);
+    expect(result.degraded.candidateCounts.semantic).toBe(0);
+    expect(result.degraded.candidateCounts.fused).toBe(0);
+  });
+
   it("falls back to lexical when the embedding provider fails", async () => {
     await seedGolden();
     const indexer = worker(searchConfig());
@@ -372,6 +392,43 @@ describe("hybrid retrieval and degradation", () => {
     expect(result.degraded.semantic).toBe("disabled");
     expect(result.partialResults).toBe(false);
     expect(result.rows[0]!.resource).toBe("https://lingua.example.com/translate");
+  });
+
+  it("handles identifiers and stopword-only input while recording query diagnostics", async () => {
+    await seedGolden();
+    const config = searchConfig({
+      semantic: { ...searchConfig().semantic, enabled: false },
+    });
+    const lexicalOnly = service(config);
+
+    const identifier = await runSearch(lexicalOnly, "https://weather.example.com/current");
+    expect(identifier.rows[0]!.resource).toBe("https://weather.example.com/current");
+    expect(identifier.degraded.queryShape.hasUrl).toBe(true);
+    expect(identifier.degraded.candidateCounts.lexical).toBeGreaterThan(0);
+    expect(identifier.degraded.candidateCounts.fused).toBeGreaterThan(0);
+
+    const stopwords = await runSearch(lexicalOnly, "the and for");
+    expect(stopwords.rows).toEqual([]);
+    expect(stopwords.degraded.queryShape.stopwordOnly).toBe(true);
+
+    const injection = await runSearch(lexicalOnly, "weather:* | !payments");
+    expect(injection.degraded.queryShape.hasPunctuation).toBe(true);
+    expect(injection.rows.length).toBeGreaterThan(0);
+  });
+
+  it("does not semantically expand empty or stopword-only input", async () => {
+    await seedGolden();
+    const config = searchConfig();
+    const indexer = worker(config);
+    await indexer.prepare();
+    await indexer.drain();
+
+    const result = await runSearch(service(config, new FakeEmbeddingProvider(64)), "the and for");
+    expect(result.rows).toEqual([]);
+    expect(result.degraded.semantic).toBe("empty");
+    expect(result.degraded.candidateCounts.lexical).toBe(0);
+    expect(result.degraded.candidateCounts.semantic).toBe(0);
+    expect(result.degraded.queryShape.stopwordOnly).toBe(true);
   });
 
   it("times out a slow embedding provider and still answers", async () => {
@@ -468,7 +525,7 @@ describe("hybrid retrieval and degradation", () => {
     await indexer.drain();
 
     const result = await runSearch(
-      service(searchConfig(), new FakeEmbeddingProvider(64)), "analyze a public company",
+      service(searchConfig(), new FakeEmbeddingProvider(64)), "mcp tool for equities",
       { filters: { type: "mcp" } },
     );
     expect(result.rows.length).toBeGreaterThan(0);
@@ -714,7 +771,7 @@ describe("GET /discovery/search", () => {
     );
     expect(impressions.rowCount).toBe(2);
     expect(impressions.rows[0]).toMatchObject({ mode: "hybrid", reranked: false, position: 1 });
-    expect(impressions.rows[0].ranking_config).toMatchObject({ rrfK: 60, lexicalWeight: 0.35, semanticWeight: 0.65 });
+    expect(impressions.rows[0].ranking_config).toMatchObject({ rrfK: 20, lexicalWeight: 0.7, semanticWeight: 0.3 });
     expect(impressions.rows[0].degraded).toMatchObject({ effectiveMode: "hybrid", semantic: "used" });
     expect(impressions.rows[0].generation_id).toBe(1);
   });
@@ -737,7 +794,7 @@ describe("GET /discovery/search", () => {
     expect(status.body.semantic).toMatchObject({ vectorSupport: true, dimension: 64 });
     expect(status.body.activeGeneration).toMatchObject({ status: "active", dimension: 64 });
     expect(status.body.queue).toMatchObject({ done: suite.resources.length });
-    expect(status.body.fusion).toEqual({ rrfK: 60, minimumRelevanceScore: 0 });
+    expect(status.body.fusion).toEqual({ rrfK: 20, minimumRelevanceScore: 0 });
 
     const generations = await request(server).get("/analytics/v1/search/generations").expect(200);
     expect(generations.body.items).toHaveLength(1);

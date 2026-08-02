@@ -6,8 +6,8 @@
  *
  *     score(d) = Σ_b  w_b / (k + r_b(d))
  *
- * `k` is `search.rrf_k` (default 60, the constant from Cormack, Clarke and
- * Buettcher's original RRF paper). Only rank positions enter the formula: a
+ * `k` is `search.rrf_k` (default 20 for this service). Only rank positions
+ * enter the formula: a
  * `ts_rank_cd` value and a cosine distance are on incomparable scales and are
  * never added, multiplied or normalized against each other. A document missing
  * from a branch simply contributes nothing for that branch.
@@ -43,8 +43,15 @@ export function fuse<T extends FusionInput>(
   const fused = new Map<number, FusedResult>();
   for (const branch of branches) {
     if (branch.weight <= 0) continue;
-    branch.candidates.forEach((candidate, index) => {
-      const rank = index + 1;
+    // A database branch normally returns one row per resource, but providers
+    // and evaluation fixtures can contain duplicates. Deduplicate before rank
+    // assignment so a duplicate cannot consume a rank or contribute twice.
+    const seen = new Set<number>();
+    let rank = 0;
+    for (const candidate of branch.candidates) {
+      if (seen.has(candidate.resourceId)) continue;
+      seen.add(candidate.resourceId);
+      rank += 1;
       const existing = fused.get(candidate.resourceId);
       const contribution = branch.weight / (rrfK + rank);
       if (existing) {
@@ -52,7 +59,7 @@ export function fuse<T extends FusionInput>(
         // first branch chose so the returned row matches the ranked document.
         existing.score += contribution;
         existing.ranks[branch.name] = rank;
-        return;
+        continue;
       }
       fused.set(candidate.resourceId, {
         resourceId: candidate.resourceId,
@@ -60,7 +67,7 @@ export function fuse<T extends FusionInput>(
         score: contribution,
         ranks: { [branch.name]: rank },
       });
-    });
+    }
   }
   return [...fused.values()].sort(compare);
 }

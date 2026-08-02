@@ -13,7 +13,7 @@ seller metadata
   → official Bazaar schema validation        (@x402/extensions/bazaar, Ajv 2020-12)
   → deterministic normalization              (bounds, control/bidi stripping, NFC)
   → readable canonical search text           (src/bazaar/document.ts)
-  → lexical document + tsvector              (catalog_search_documents)
+  → weighted lexical fields + tsvectors      (catalog_search_documents)
   → embedding queue                          (catalog_index_jobs, generation-scoped)
   → embedding provider                       (local | remote | disabled)
   → dimension and model validation           (validateVectors, per-generation CHECK)
@@ -43,9 +43,22 @@ Payment: stellar:testnet, exact, 1000 USDC
 ```
 
 MCP entries render `Type: MCP tool <toolName>` and take their parameter lines
-from `inputSchema.properties.<name>.description`. Raw JSON is never embedded —
-only this text is. `catalog_search_documents.compiler_version` lets a formatter
-change invalidate documents without touching the seller's declaration.
+from `inputSchema.properties.<name>.description`. Examples are flattened into
+deterministic labelled lines, so the same human document is used by embeddings
+and rerankers without a generated summary. `catalog_search_documents.compiler_version`
+lets a formatter change invalidate documents without touching the seller's
+declaration.
+
+PostgreSQL receives a separate weighted lexical projection:
+
+- weight A: service name, MCP tool name, HTTP method, route template and
+  resource URL;
+- weight B: description, output type and parameter names/descriptions;
+- weight C: tags, MIME/transport, examples and payment/network metadata.
+
+URL and identifier components are included as lexical aliases so punctuation
+does not make `/v1/weather/{city}`, tool names, or numeric payment tokens
+unsearchable. These aliases never enter the human document.
 
 ## Retrieval
 
@@ -68,8 +81,8 @@ For document `d` at 1-based rank `r_b(d)` in branch `b` with weight `w_b`:
 score(d) = Σ_b  w_b / (k + r_b(d))
 ```
 
-`k` is `search.rrf_k`, default **60** (the constant from the original RRF
-paper). **Only rank positions enter the formula.** A `ts_rank_cd` value and a
+`k` is `search.rrf_k`, default **20** for the frozen production profile. **Only
+rank positions enter the formula.** A `ts_rank_cd` value and a
 cosine distance are on incomparable scales and are never added, normalized or
 compared to each other. A document missing from a branch contributes nothing for
 that branch.
@@ -83,12 +96,21 @@ resources. `/analytics/v1/search/status` reports
 `lexical.ranking: "postgresql_fts_ts_rank_cd"` so the distinction is visible at
 runtime.
 
-`websearch_to_tsquery` ANDs every term, which under the `simple` configuration
-also means every stopword — `"current weather for a city"` would require the
-document to contain `for` and `a`. `search_or_tsquery` (migration 003) splits
-the query into `[a-z0-9]` tokens and ORs them, letting `ts_rank_cd` order by how
-many terms actually matched. The split admits no tsquery operator, so the text
-cannot inject one.
+Queries are normalized with Unicode NFKC, control/bidi removal and whitespace
+folding. A parameterized tsquery combines a phrase clause with an OR token
+fallback; common English stopwords are removed only when they are not the
+whole query. Identifiers, URLs, HTTP methods, Unicode terms and numeric/payment
+tokens are retained. Empty and stopword-only input becomes a guaranteed
+no-match query. No generated synonym or runtime LLM expansion is used, and
+operator-looking punctuation is tokenized before it reaches PostgreSQL.
+
+The production profile uses lexical weight `0.7`, semantic weight `0.3`,
+`rrf_k: 20`, and candidate pools of 250 in the standard configuration (300 in
+the isolated release benchmark). Its fixed cosine-distance guard is `0.9` when
+lexical retrieval has no candidate at all; lexical evidence lets the semantic
+branch broaden recall, while the guard prevents a weak nearest neighbour from
+defeating a genuine no-result query. These values are frozen after development
+evaluation; callers cannot override them.
 
 ## Degradation
 
@@ -261,10 +283,12 @@ npm run evaluate -- --provider local --limit 10    # real embeddings
 npm run evaluate -- --json reports/search.json     # machine-readable report
 ```
 
-The runner seeds a versioned golden suite, builds the index, then runs the same
-request path three ways — lexical-only, hybrid, hybrid + rerank — and reports
+The runner seeds a versioned golden suite, builds the index, verifies that every
+active document has a current ready vector before semantic scoring, then runs
+the same request path three ways — lexical-only, hybrid, hybrid + rerank — and reports
 recall@{1,3,5,10,20}, standard precision@k, MRR, nDCG@k, must-not-rank violations, latency
-percentiles, provider fallback counts, per-class breakdown and catalog size.
+percentiles, provider fallback counts, branch candidate counts, query-shape
+diagnostics, per-class breakdown and catalog size.
 Each profile is only a `SearchConfig` override, so nothing in the evaluator is a
 parallel implementation of search.
 
@@ -278,18 +302,19 @@ Latest run on this machine (fake providers, 12 resources, 15 queries):
 
 | profile | recall@1 | recall@3 | recall@5 | MRR | nDCG@10 | viol@5 | no-result | p95 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| lexical-only | 0.567 | 0.900 | 1.000 | 0.661 | 0.841 | 5 | 0.067 | 13 ms |
-| hybrid | 0.600 | 1.000 | 1.000 | 0.711 | 0.868 | 4 | 0.000 | 10 ms |
-| hybrid + rerank | 0.600 | 0.967 | 1.000 | 0.700 | 0.860 | 6 | 0.000 | 9 ms |
+| lexical-only | 0.808 | 0.962 | 0.962 | 1.000 | 0.964 | 5 | 0.067 | 4 ms |
+| hybrid | 0.808 | 1.000 | 1.000 | 1.000 | 0.986 | 6 | 0.067 | 3 ms |
+| hybrid + rerank | 0.654 | 0.923 | 0.923 | 0.883 | 0.888 | 6 | 0.067 | 3 ms |
 
 Read these as a mechanism check, not a quality claim. The semantic branch is a
 deterministic hash projection with no linguistic knowledge, so its lift
-(+0.033 recall@1, +0.05 MRR, no-result 6.7% → 0) reflects candidate-set
-broadening, not semantics; and the fake reranker slightly regresses MRR, which
-is exactly what an unmodelled reranker should do. Real quality requires
-`--provider local` against BGE-M3, which this environment has not downloaded.
-Coverage is printed beside ranking quality so a high score on a 12-resource
-catalog cannot be mistaken for ecosystem utility.
+(recall@5 0.962 → 1.000 and nDCG@10 0.964 → 0.986) reflects candidate-set
+broadening, not semantic quality. No-result accuracy is 0.933 for both
+retrieval profiles, and the fake reranker slightly regresses MRR, which is
+expected from an unmodelled reranker. Real quality requires `--provider local`
+against BGE-M3, which this environment has not downloaded. Coverage is printed
+beside ranking quality so a high score on a 12-resource catalog cannot be
+mistaken for ecosystem utility.
 
 ## Search-to-payment conversion
 

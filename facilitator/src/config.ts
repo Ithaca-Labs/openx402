@@ -81,8 +81,8 @@ const searchSchema = z.object({
   lexical: z.object({
     enabled: z.boolean().default(true),
     language: z.string().min(1).default("simple"),
-    weight: z.number().min(0).max(1).default(0.35),
-    candidate_count: z.number().int().positive().max(1000).default(100),
+    weight: z.number().min(0).max(1).default(0.7),
+    candidate_count: z.number().int().positive().max(1000).default(250),
   }).default({}),
   semantic: z.object({
     enabled: z.boolean().default(true),
@@ -93,9 +93,10 @@ const searchSchema = z.object({
     dimension: z.number().int().min(1).max(16_000).default(1024),
     pooling: z.enum(["cls", "mean"]).default("cls"),
     normalization: z.enum(["l2", "none"]).default("l2"),
-    weight: z.number().min(0).max(1).default(0.65),
+    weight: z.number().min(0).max(1).default(0.3),
     timeout_ms: z.number().int().positive().max(60_000).default(500),
-    candidate_count: z.number().int().positive().max(1000).default(100),
+    candidate_count: z.number().int().positive().max(1000).default(250),
+    max_distance: z.number().min(0).max(2).default(0.9),
     remote_url_env: z.string().default("FACILITATOR_EMBEDDING_URL"),
     remote_api_key_env: z.string().default("FACILITATOR_EMBEDDING_API_KEY"),
   }).default({}),
@@ -113,7 +114,7 @@ const searchSchema = z.object({
     remote_url_env: z.string().default("FACILITATOR_RERANKER_URL"),
     remote_api_key_env: z.string().default("FACILITATOR_RERANKER_API_KEY"),
   }).default({}),
-  rrf_k: z.number().int().positive().max(10_000).default(60),
+  rrf_k: z.number().int().positive().max(10_000).default(20),
   minimum_relevance_score: z.number().min(0).default(0),
   // When omitted these inherit the discovery page sizes, so browse and search
   // agree unless an operator deliberately separates them.
@@ -305,6 +306,7 @@ function mapSearch(value: z.infer<typeof searchSchema>, discovery: DiscoveryConf
       weight: value.semantic.weight,
       timeoutMs: value.semantic.timeout_ms,
       candidateCount: value.semantic.candidate_count,
+      maxDistance: value.semantic.max_distance,
       ...(semanticUrl ? { remoteUrl: semanticUrl } : {}),
       ...(semanticKey ? { remoteApiKey: semanticKey } : {}),
     },

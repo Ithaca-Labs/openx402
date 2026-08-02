@@ -127,6 +127,10 @@ export interface SuiteMetrics {
   catalogSize: number;
   /** Fraction of returned top-k resources absent from the judgment evidence. */
   unjudgedRate: Record<number, number>;
+  /** Mean/p95/max retrieval pool sizes, retained to attribute ranking changes. */
+  candidateCounts: Record<"lexical" | "semantic" | "fused" | "reranked", {
+    mean: number; p95: number; max: number;
+  }>;
 }
 
 function percentile(sorted: number[], fraction: number): number {
@@ -189,6 +193,18 @@ export function aggregate(
       }
     }
   }
+  const candidateCounts = {} as SuiteMetrics["candidateCounts"];
+  for (const branch of ["lexical", "semantic", "fused", "reranked"] as const) {
+    const values = results.map(entry => {
+      const counts = entry.degraded.candidateCounts as Record<string, unknown> | undefined;
+      return typeof counts?.[branch] === "number" ? counts[branch] as number : 0;
+    }).sort((left, right) => left - right);
+    candidateCounts[branch] = {
+      mean: mean(values),
+      p95: percentile(values, 0.95),
+      max: values.at(-1) ?? 0,
+    };
+  }
   return {
     queries: results.length,
     evaluableQueries: evaluatedResults.length,
@@ -209,6 +225,7 @@ export function aggregate(
     fallbacks,
     catalogSize,
     unjudgedRate,
+    candidateCounts,
   };
 }
 

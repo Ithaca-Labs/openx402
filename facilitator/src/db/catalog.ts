@@ -1,9 +1,13 @@
 import type { Pool, PoolClient } from "pg";
 import type { CatalogCandidate, PaymentOption, RejectionCode } from "../bazaar/extract.js";
-import { compileSearchDocument } from "../bazaar/document.js";
+import {
+  compileSearchDocumentParts,
+  SEARCH_DOCUMENT_COMPILER_VERSION,
+} from "../bazaar/document.js";
 import { canonicalJson } from "../bazaar/sanitize.js";
 import { generationTable } from "./search.js";
 import { createHash } from "node:crypto";
+import { buildSearchTsquery, describeSearchQuery, normalizeSearchQuery } from "../search/query.js";
 
 export type CatalogOutcome =
   | "indexed"
@@ -379,22 +383,41 @@ export class CatalogStore {
     version: string,
   ): Promise<void> {
     const options = await client.query<Record<string, unknown>>(
-      `SELECT scheme, network, amount, asset, asset_symbol FROM catalog_payment_options
+      `SELECT scheme, network, amount, asset, asset_symbol, pay_to FROM catalog_payment_options
        WHERE version_id = $1 AND retired_version IS NULL ORDER BY network, scheme, asset`,
       [versionId],
     );
-    const document = compileSearchDocument(candidate, options.rows.map(row => ({
+    const compiled = compileSearchDocumentParts(candidate, options.rows.map(row => ({
       scheme: String(row.scheme), network: String(row.network), amount: String(row.amount),
       asset: String(row.asset),
+      ...(row.pay_to ? { payTo: String(row.pay_to) } : {}),
       ...(row.asset_symbol ? { assetSymbol: String(row.asset_symbol) } : {}),
     })));
-    const sourceHash = sha256(canonicalJson({ document }));
+    const sourceHash = sha256(canonicalJson({
+      compilerVersion: SEARCH_DOCUMENT_COMPILER_VERSION,
+      document: compiled.document,
+      lexicalHigh: compiled.lexicalHigh,
+      lexicalMedium: compiled.lexicalMedium,
+      lexicalLow: compiled.lexicalLow,
+    }));
     await client.query(
-      `INSERT INTO catalog_search_documents(version_id, resource_id, source_hash, document, created_version)
-       VALUES ($1,$2,$3,$4,$5)
+      `INSERT INTO catalog_search_documents(
+         version_id, resource_id, source_hash, document,
+         lexical_high, lexical_medium, lexical_low, compiler_version, created_version)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
        ON CONFLICT (version_id) DO UPDATE SET
-         source_hash = EXCLUDED.source_hash, document = EXCLUDED.document, updated_at = now()`,
-      [versionId, resourceId, sourceHash, document, version],
+         source_hash = EXCLUDED.source_hash,
+         document = EXCLUDED.document,
+         lexical_high = EXCLUDED.lexical_high,
+         lexical_medium = EXCLUDED.lexical_medium,
+         lexical_low = EXCLUDED.lexical_low,
+         compiler_version = EXCLUDED.compiler_version,
+         updated_at = now()`,
+      [
+        versionId, resourceId, sourceHash, compiled.document,
+        compiled.lexicalHigh, compiled.lexicalMedium, compiled.lexicalLow,
+        SEARCH_DOCUMENT_COMPILER_VERSION, version,
+      ],
     );
     // The lexical document is already searchable; the job row is the durable
     // hand-off to the embedding worker. Request-time cataloging never waits for
@@ -511,7 +534,8 @@ export class CatalogStore {
    * vector distance — only its rank position enters fusion.
    */
   async lexicalCandidates(options: DiscoveryOptions & { candidateCount: number }): Promise<LexicalCandidateRow[]> {
-    if (!options.query) return [];
+    const normalizedQuery = normalizeSearchQuery(options.query ?? "");
+    if (normalizedQuery.length === 0) return [];
     const { values, snapshotConditions, visibility, from, rank } = this.scope(options);
     values.push(options.candidateCount);
     const result = await this.pool.query<Record<string, unknown>>(
@@ -684,6 +708,7 @@ export class CatalogStore {
   } {
     const filters = options.filters;
     const values: unknown[] = [options.snapshot.toString()];
+    const normalizedQuery = normalizeSearchQuery(options.query ?? "");
     // Conditions that depend only on immutable snapshot columns.
     const snapshotConditions: string[] = [
       "r.created_version <= $1",
@@ -730,12 +755,25 @@ export class CatalogStore {
     if (options.query) {
       values.push(options.language ?? "simple");
       const language = values.length;
-      values.push(options.query);
+      values.push(buildSearchTsquery(options.query ?? ""));
       const index = values.length;
-      // `search_or_tsquery` ORs the query terms; see migrations/003_search.sql
-      // for why an AND-only `websearch_to_tsquery` is unusable here.
-      snapshotConditions.push(`d.tsv @@ search_or_tsquery($${language}::regconfig, $${index})`);
-      rank = `, ts_rank_cd(d.tsv, search_or_tsquery($${language}::regconfig, $${index})) AS rank`;
+      // The expression is built from quoted tokens in query.ts and remains a
+      // parameter. It combines a phrase clause with an OR token fallback.
+      snapshotConditions.push(`d.tsv @@ to_tsquery($${language}::regconfig, $${index})`);
+      rank = `, ts_rank_cd('{1,0.45,0.18,0}'::real[], d.tsv,
+        to_tsquery($${language}::regconfig, $${index}), 32) AS rank`;
+      const shape = describeSearchQuery(options.query ?? "");
+      if (shape.hasIdentifier || shape.hasUrl) {
+        values.push(normalizedQuery.toLowerCase());
+        const exact = values.length;
+        // FTS tokenization is intentionally permissive for punctuation-heavy
+        // identifiers. A bounded exact-substring bonus keeps an explicitly
+        // supplied URL/tool/route identifier ahead of generic shared host
+        // tokens while remaining parameterized and seller-data-only.
+        rank = `, ts_rank_cd('{1,0.45,0.18,0}'::real[], d.tsv,
+          to_tsquery($${language}::regconfig, $${index}), 32)
+          + CASE WHEN position($${exact} IN lower(d.lexical_high)) > 0 THEN 2 ELSE 0 END AS rank`;
+      }
     }
 
     const from = `

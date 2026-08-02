@@ -6,6 +6,7 @@ import type { ModelGeneration, SearchStore } from "../db/search.js";
 import { toVectorLiteral } from "../db/search.js";
 import type { EmbeddingProvider, ProviderHealth, RerankerProvider } from "./types.js";
 import { applyOriginDiversity, compare, fuse, type FusedResult } from "./fusion.js";
+import { describeSearchQuery, normalizeSearchQuery, type SearchQueryShape } from "./query.js";
 
 export type SearchMode = "lexical" | "semantic" | "hybrid";
 
@@ -26,6 +27,14 @@ export interface DegradationReport {
   latencyMs: number;
   semanticLatencyMs?: number;
   rerankLatencyMs?: number;
+  /** Retrieval diagnostics retained for evaluation and operational analytics. */
+  candidateCounts: {
+    lexical: number;
+    semantic: number;
+    fused: number;
+    reranked: number;
+  };
+  queryShape: SearchQueryShape;
 }
 
 export interface SearchResult {
@@ -75,6 +84,7 @@ export class SearchService {
   async search(request: SearchRequest): Promise<SearchResult> {
     const started = Date.now();
     const requestedMode = request.mode ?? (this.config.semantic.enabled ? "hybrid" : "lexical");
+    const queryShape = describeSearchQuery(request.query);
     const degraded: DegradationReport = {
       requestedMode,
       effectiveMode: "lexical",
@@ -82,6 +92,8 @@ export class SearchService {
       semantic: "disabled",
       reranking: "disabled",
       latencyMs: 0,
+      candidateCounts: { lexical: 0, semantic: 0, fused: 0, reranked: 0 },
+      queryShape,
     };
 
     const scoped: DiscoveryOptions & { candidateCount: number } = {
@@ -93,11 +105,13 @@ export class SearchService {
 
     const wantsLexical = this.config.lexical.enabled && requestedMode !== "semantic";
     const lexical = wantsLexical ? await this.catalog.lexicalCandidates(scoped) : [];
+    degraded.candidateCounts.lexical = lexical.length;
     if (wantsLexical) degraded.lexical = "used";
 
     const semantic = requestedMode === "lexical"
       ? []
       : await this.semanticCandidates(request, degraded);
+    degraded.candidateCounts.semantic = semantic.length;
 
     const branches = [
       ...(lexical.length > 0 ? [{ name: "lexical", weight: this.config.lexical.weight, candidates: lexical }] : []),
@@ -111,6 +125,7 @@ export class SearchService {
     if (this.config.minimumRelevanceScore > 0) {
       fused = fused.filter(entry => entry.score >= this.config.minimumRelevanceScore);
     }
+    degraded.candidateCounts.fused = fused.length;
 
     fused = await this.rerank(request.query, fused, degraded);
 
@@ -163,6 +178,10 @@ export class SearchService {
       degraded.semantic = "disabled";
       return [];
     }
+    if (degraded.queryShape.normalizedLength === 0 || degraded.queryShape.stopwordOnly) {
+      degraded.semantic = "empty";
+      return [];
+    }
     if (!await this.store.hasVectorSupport()) {
       degraded.semantic = "unavailable";
       degraded.detail = "pgvector is not installed; serving lexical results";
@@ -175,7 +194,7 @@ export class SearchService {
       return [];
     }
     const embedded = await withTimeout(
-      signal => this.embedder!.embed([request.query], signal),
+      signal => this.embedder!.embed([normalizeSearchQuery(request.query)], signal),
       this.config.semantic.timeoutMs,
     );
     degraded.semanticLatencyMs = embedded.ms;
@@ -195,8 +214,16 @@ export class SearchService {
       toVectorLiteral(vector),
       generation,
     );
-    degraded.semantic = candidates.length > 0 ? "used" : "empty";
-    return candidates;
+    // A nearest-neighbour index always returns rows, even for an unrelated
+    // query. Apply the fixed guard when lexical retrieval has no evidence at
+    // all; once the catalog has lexical evidence, the semantic pool is allowed
+    // to broaden recall and fusion keeps its contribution bounded by weight.
+    const hasLexicalEvidence = degraded.candidateCounts.lexical > 0;
+    const confident = hasLexicalEvidence
+      ? candidates
+      : candidates.filter(candidate => candidate.distance <= this.config.semantic.maxDistance);
+    degraded.semantic = confident.length > 0 ? "used" : "empty";
+    return confident.map(({ resourceId, versionId }) => ({ resourceId, versionId }));
   }
 
   private async rerank(
@@ -223,10 +250,11 @@ export class SearchService {
     }
     const head = fused.slice(0, this.config.reranking.topK);
     const tail = fused.slice(this.config.reranking.topK);
+    degraded.candidateCounts.reranked = head.length;
     const documents = await this.catalog.documents(head.map(entry => entry.versionId));
     const texts = head.map(entry => documents.get(entry.versionId) ?? "");
     const scored = await withTimeout(
-      signal => this.reranker!.rerank(query, texts, signal),
+      signal => this.reranker!.rerank(normalizeSearchQuery(query), texts, signal),
       this.config.reranking.timeoutMs,
     );
     degraded.rerankLatencyMs = scored.ms;

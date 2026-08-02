@@ -48,6 +48,15 @@ describe("weighted reciprocal rank fusion", () => {
     expect(first).toEqual(second);
   });
 
+  it("deduplicates each branch before assigning rank positions", () => {
+    const fused = fuse([
+      { name: "lexical", weight: 1, candidates: [doc(1), doc(1), doc(2)] },
+    ], 0);
+    expect(fused.map(entry => entry.resourceId)).toEqual([1, 2]);
+    expect(fused[0]!.ranks.lexical).toBe(1);
+    expect(fused[1]!.ranks.lexical).toBe(2);
+  });
+
   it("respects the configured rrf constant", () => {
     const branches = [{ name: "lexical", weight: 1, candidates: [doc(1)] }];
     expect(fuse(branches, 0)[0]!.score).toBeCloseTo(1, 12);
