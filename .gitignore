@@ -1,9 +1,24 @@
-# Reference clones (external repos, tracked separately upstream — not vendored here)
-/reference/x402/
-/reference/x402-stellar/
-/reference/x402scan/
-/reference/stellar-docs/
-/reference/stellar-contracts/
+# ---------------------------------------------------------------------------
+# Split-out directories
+#
+# `main` carries only what a self-hoster needs: facilitator, mcp-server,
+# packages, deploy. Everything below lives on the `full-stack` branch:
+#
+#   git checkout full-stack
+#
+#   brand/      brand kit and assets (also on `assets/brandkit`)
+#   frontend/   Next.js explorer dashboard — not required to self-host
+#   tasks/      internal working notes
+#   reference/  external repo clones used while developing (~7.6 GB)
+#
+# These stay on disk when you switch back to `main`; they are simply untracked
+# here. Nothing in facilitator/ or mcp-server/ imports them, and none of them
+# are npm workspaces.
+# ---------------------------------------------------------------------------
+/brand/
+/frontend/
+/tasks/
+/reference/
 
 # OS / editor
 .DS_Store
@@ -13,3 +28,12 @@
 node_modules/
 dist/
 target/
+.next/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Example apps pull their own dependencies
+/examples/*/node_modules/

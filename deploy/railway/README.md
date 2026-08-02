@@ -40,8 +40,23 @@ PORT=5432
 POSTGRES_DB=openx402
 POSTGRES_USER=openx402
 POSTGRES_PASSWORD=${{secret(32)}}
+PGDATA=/var/lib/postgresql/data/pgdata
 DATABASE_URL=postgresql://${{POSTGRES_USER}}:${{POSTGRES_PASSWORD}}@${{RAILWAY_PRIVATE_DOMAIN}}:${{PORT}}/${{POSTGRES_DB}}
 ```
+
+> **`PGDATA` is required, not optional.** The volume mounts directly at
+> `/var/lib/postgresql/data`, which contains a `lost+found` directory, and
+> `initdb` refuses to initialise a non-empty data directory:
+>
+> ```
+> initdb: error: directory "/var/lib/postgresql/data" exists but is not empty
+> initdb: detail: It contains a lost+found directory, perhaps due to it being a mount point.
+> ```
+>
+> Pointing `PGDATA` at a subdirectory of the mount resolves it. Without this the
+> container crash-loops while Railway still reports the deployment as `SUCCESS`,
+> and the facilitator fails later with `Connection terminated due to connection
+> timeout` during migration.
 
 ### 2. Facilitator
 

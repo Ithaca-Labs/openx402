@@ -1,0 +1,101 @@
+# openx402 — self-hosted stack
+#
+#   cp .env.example .env      # edit FACILITATOR_KEY_ENCRYPTION_KEY at minimum
+#   docker compose up -d
+#
+# Brings up PostgreSQL + pgvector, the facilitator, and the MCP discovery
+# server. No API keys are required: the default profile runs a local embedding
+# model (BAAI/bge-m3) and never calls a hosted inference provider.
+#
+# Profiles
+#   (default)  local embeddings  — no external calls, larger image, slower cold start
+#   remote     hosted embeddings — set FACILITATOR_EMBEDDING_* in .env
+#   lexical    no embeddings     — set FACILITATOR_SEMANTIC_PROVIDER=disabled
+#
+# See README.md "Self-hosting" for the trade-offs.
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-openx402}
+      POSTGRES_USER: ${POSTGRES_USER:-openx402}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      # The volume mounts at /var/lib/postgresql/data and contains lost+found,
+      # so initdb refuses it as a data directory. PGDATA must be a subdirectory.
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-openx402} -d ${POSTGRES_DB:-openx402}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    # Not published by default. Uncomment to inspect the database from the host.
+    # ports:
+    #   - "5432:5432"
+
+  facilitator:
+    build:
+      # Repo root: the Dockerfile COPYs both packages/bazaar-sdk and facilitator/.
+      context: .
+      dockerfile: facilitator/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 4022
+      NODE_ENV: production
+      FACILITATOR_CONFIG: ${FACILITATOR_CONFIG:-config/self-hosted.yaml}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-openx402}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-openx402}
+      FACILITATOR_KEY_ENCRYPTION_KEY: ${FACILITATOR_KEY_ENCRYPTION_KEY:?generate one — see .env.example}
+      FACILITATOR_CURSOR_HMAC_KEY: ${FACILITATOR_CURSOR_HMAC_KEY:-}
+      FACILITATOR_API_KEYS: ${FACILITATOR_API_KEYS:-}
+      # Only used when the config selects provider: remote
+      FACILITATOR_EMBEDDING_URL: ${FACILITATOR_EMBEDDING_URL:-}
+      FACILITATOR_EMBEDDING_API_KEY: ${FACILITATOR_EMBEDDING_API_KEY:-}
+      FACILITATOR_RERANKER_URL: ${FACILITATOR_RERANKER_URL:-}
+      FACILITATOR_RERANKER_API_KEY: ${FACILITATOR_RERANKER_API_KEY:-}
+      # Settlement signing. Leave unset to run discovery-only (no payments).
+      STELLAR_TESTNET_SPONSOR_SECRET: ${STELLAR_TESTNET_SPONSOR_SECRET:-}
+      STELLAR_PUBNET_SPONSOR_SECRET: ${STELLAR_PUBNET_SPONSOR_SECRET:-}
+    ports:
+      - "${FACILITATOR_PORT:-4022}:4022"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:4022/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  mcp:
+    build:
+      # mcp-server/ is its own context — its Dockerfile COPYs package.json directly.
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      facilitator:
+        condition: service_healthy
+    environment:
+      PORT: 4522
+      NODE_ENV: production
+      MCP_SERVER_CONFIG: ${MCP_SERVER_CONFIG:-config/self-hosted.yaml}
+      FACILITATOR_URL: http://facilitator:4022
+      MCP_SERVER_API_KEYS: ${MCP_SERVER_API_KEYS:-}
+      # Required only for paid tool execution. Unset = discovery-only.
+      MCP_SIGNER_ENCRYPTION_KEY: ${MCP_SIGNER_ENCRYPTION_KEY:-}
+      STELLAR_SECRET_KEY: ${STELLAR_SECRET_KEY:-}
+    ports:
+      - "${MCP_PORT:-4522}:4522"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:4522/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+volumes:
+  postgres-data:
