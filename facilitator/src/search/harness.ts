@@ -215,10 +215,24 @@ export async function buildIndex(
   searchStore: SearchStore,
   config: SearchConfig,
   workerId: string,
-): Promise<{ stored: number; status: ReturnType<EmbeddingWorker["status"]> }> {
+): Promise<{
+  stored: number;
+  status: ReturnType<EmbeddingWorker["status"]>;
+  coverage: Awaited<ReturnType<SearchStore["indexCoverage"]>>;
+}> {
   const provider = createEmbeddingProvider(config);
   const worker = new EmbeddingWorker(config, searchStore, workerId, provider);
   await worker.prepare();
   const stored = await worker.drain();
-  return { stored, status: worker.status() };
+  const status = worker.status();
+  const coverage = status.generation
+    ? await searchStore.indexCoverage(status.generation.id)
+    : { generationId: 0, expected: 0, indexed: 0, pending: 0, failed: 0, complete: false };
+  if (config.semantic.enabled && status.provider.status === "ready" && !coverage.complete) {
+    throw new Error(
+      `embedding index incomplete for generation ${coverage.generationId}: `
+      + `${coverage.indexed}/${coverage.expected} ready, ${coverage.pending} pending, ${coverage.failed} failed`,
+    );
+  }
+  return { stored, status, coverage };
 }

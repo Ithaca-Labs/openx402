@@ -94,6 +94,8 @@ export interface SearchConfig {
     weight: number;
     timeoutMs: number;
     candidateCount: number;
+    /** Fixed cosine-distance guard for semantic no-result behavior. */
+    maxDistance: number;
     remoteUrl?: string;
     remoteApiKey?: string;
   };

@@ -61,11 +61,11 @@ function searchConfig(): SearchConfig {
   const embeddingUrl = process.env.FACILITATOR_EMBEDDING_URL;
   const remoteEmbedding = embeddingUrl !== undefined;
   return {
-    lexical: { enabled: true, language: "simple", weight: 0.35, candidateCount: 300 },
+    lexical: { enabled: true, language: "simple", weight: 0.7, candidateCount: 300 },
     semantic: {
       enabled: true, provider: remoteEmbedding ? "remote" : "local",
       modelId: "BAAI/bge-m3", repo: "Xenova/bge-m3", revision: "4de13258303883538bd53b696b452bf8099f0858",
-      dimension: 1024, pooling: "cls", normalization: "l2", weight: 0.65, timeoutMs: 60_000, candidateCount: 300,
+      dimension: 1024, pooling: "cls", normalization: "l2", weight: 0.3, timeoutMs: 60_000, candidateCount: 300, maxDistance: 0.9,
       ...(embeddingUrl ? { remoteUrl: embeddingUrl } : {}),
       ...(process.env.FACILITATOR_EMBEDDING_API_KEY ? { remoteApiKey: process.env.FACILITATOR_EMBEDDING_API_KEY } : {}),
     },
@@ -75,7 +75,7 @@ function searchConfig(): SearchConfig {
       ...(rerankerUrl ? { remoteUrl: rerankerUrl } : {}),
       ...(process.env.FACILITATOR_RERANKER_API_KEY ? { remoteApiKey: process.env.FACILITATOR_RERANKER_API_KEY } : {}),
     },
-    rrfK: 60, minimumRelevanceScore, defaultResultLimit: 20, maximumResultLimit: 50,
+    rrfK: 20, minimumRelevanceScore, defaultResultLimit: 20, maximumResultLimit: 50,
     originDiversityLimit: 3, impressions: { enabled: false, retainQueryText: false, retentionDays: 1 },
     models: { cacheDir: ".models", offline: false, dtype: "q8", requirePinnedRevision: true },
     indexing: { batchSize: 8, workerConcurrency: 1, pollMs: 50, leaseMs: 120_000, maxAttempts: 3, backoffBaseMs: 500, backoffMaxMs: 8_000, reindexSchedule: "manual" },
@@ -272,7 +272,7 @@ try {
   });
   const gates = evaluateReleaseGates({
     profiles: gateProfiles,
-    indexedEmbeddings: index.stored,
+    indexedEmbeddings: index.coverage.indexed,
     expectedEmbeddings: dataset.catalog.length,
     embeddingFailures: index.status?.deadLettered ?? 0,
     humanCalibrationPassed: calibration?.passes === true,
@@ -287,7 +287,11 @@ try {
     generated_at: new Date().toISOString(), isolated_schema: schema,
     environment: { node: process.version, platform: process.platform, arch: process.arch, cpu_count: (await import("node:os")).cpus().length },
     database: (await pool.query<{ version: string }>("SHOW server_version")).rows[0]?.version,
-    embedding: { provider: config.semantic.provider, model: config.semantic.modelId, revision: config.semantic.revision, indexed: index.stored, status: index.status },
+    embedding: {
+      provider: config.semantic.provider, model: config.semantic.modelId, revision: config.semantic.revision,
+      indexed: index.coverage.indexed, expected: index.coverage.expected, coverage: index.coverage,
+      status: index.status,
+    },
     reranker: { configured: Boolean(rerankerUrl), model: config.reranking.modelId, revision: config.reranking.revision },
     thresholds: { minimum_relevance_score: minimumRelevanceScore, hybrid_p95_limit_ms: hybridP95LimitMs, reranker_p95_limit_ms: rerankerP95LimitMs },
     unavailable_profiles: unavailableProfiles, profiles: reports,

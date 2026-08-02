@@ -46,8 +46,8 @@ search:
   lexical:
     enabled: true
     language: simple
-    weight: 0.35
-    candidate_count: 100
+    weight: 0.7
+    candidate_count: 250
   semantic:
     enabled: true
     provider: remote
@@ -59,9 +59,10 @@ search:
     dimension: 1536
     pooling: cls
     normalization: l2
-    weight: 0.65
+    weight: 0.3
     timeout_ms: 5000
-    candidate_count: 100
+    candidate_count: 250
+    max_distance: 0.9
     remote_url_env: FACILITATOR_EMBEDDING_URL
     remote_api_key_env: OPENROUTER_API_KEY
   reranking:
@@ -75,7 +76,7 @@ search:
     fallback_to_hybrid: true
     remote_url_env: FACILITATOR_RERANKER_URL
     remote_api_key_env: FACILITATOR_RERANKER_API_KEY
-  rrf_k: 60
+  rrf_k: 20
   minimum_relevance_score: 0
   origin_diversity_limit: 3
   impressions:

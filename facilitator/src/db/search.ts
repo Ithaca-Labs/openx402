@@ -37,6 +37,15 @@ export interface SemanticCandidate {
   distance: number;
 }
 
+export interface IndexCoverage {
+  generationId: number;
+  expected: number;
+  indexed: number;
+  pending: number;
+  failed: number;
+  complete: boolean;
+}
+
 function mapGeneration(row: Record<string, unknown>): ModelGeneration {
   return {
     id: Number(row.id),
@@ -386,6 +395,40 @@ export class SearchStore {
       [generationId],
     );
     return Object.fromEntries(result.rows.map(row => [row.state, Number(row.count)]));
+  }
+
+  /**
+   * Verifies that every active catalog document has a current ready vector for
+   * the generation being evaluated. A partial index can make semantic metrics
+   * look like model quality, so evaluation callers must check this explicitly.
+   */
+  async indexCoverage(generationId: number): Promise<IndexCoverage> {
+    if (!await this.hasVectorSupport()) {
+      return { generationId, expected: 0, indexed: 0, pending: 0, failed: 0, complete: false };
+    }
+    const storage = generationTable(generationId);
+    const tableExists = await this.pool.query<{ present: boolean }>(
+      "SELECT EXISTS (SELECT 1 FROM pg_class WHERE relname = $1) AS present", [storage],
+    );
+    if (tableExists.rows[0]?.present !== true) {
+      return { generationId, expected: 0, indexed: 0, pending: 0, failed: 0, complete: false };
+    }
+    const counts = await this.pool.query<{ expected: string; indexed: string }>(
+      `SELECT
+         (SELECT count(*) FROM catalog_search_documents d
+          JOIN catalog_resource_versions v ON v.id = d.version_id
+          WHERE v.status = 'active') AS expected,
+         (SELECT count(*) FROM ${storage} e
+          JOIN catalog_search_documents d ON d.version_id = e.version_id
+          JOIN catalog_resource_versions v ON v.id = e.version_id
+          WHERE v.status = 'active' AND e.status = 'ready' AND e.source_hash = d.source_hash) AS indexed`,
+    );
+    const queue = await this.queueDepth(generationId);
+    const expected = Number(counts.rows[0]?.expected ?? 0);
+    const indexed = Number(counts.rows[0]?.indexed ?? 0);
+    const pending = (queue.pending ?? 0) + (queue.leased ?? 0);
+    const failed = (queue.failed ?? 0) + (queue.dead ?? 0);
+    return { generationId, expected, indexed, pending, failed, complete: expected === indexed && pending === 0 && failed === 0 };
   }
 
   /** Requeues dead-lettered jobs, for use after fixing whatever broke them. */

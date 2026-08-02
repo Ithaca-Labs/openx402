@@ -10,7 +10,8 @@
 #   reference/  architecture docs + external repo clones
 #
 # `main` is the self-hostable subset — facilitator, mcp-server, packages,
-# deploy, examples — and gitignores the four directories above.
+# deploy, examples — and gitignores the four directories above. The two
+# branches intentionally differ here; do not merge main's version over this.
 # ---------------------------------------------------------------------------
 
 # Reference clones (external repos, tracked upstream — not vendored here)

@@ -66,14 +66,15 @@ function baseSearchConfig(options: Options): SearchConfig {
   };
   const semantic = options.provider === "local" ? localDefaults : fakeDefaults;
   return {
-    lexical: { enabled: true, language: "simple", weight: 0.35, candidateCount: 100 },
+    lexical: { enabled: true, language: "simple", weight: 0.7, candidateCount: 250 },
     semantic: {
       enabled: options.provider !== "disabled",
       provider: options.provider,
       ...semantic,
-      weight: 0.65,
+      weight: 0.3,
       timeoutMs: options.provider === "local" ? 30_000 : 2_000,
-      candidateCount: 100,
+      candidateCount: 250,
+      maxDistance: 0.9,
       ...(process.env.FACILITATOR_EMBEDDING_URL ? { remoteUrl: process.env.FACILITATOR_EMBEDDING_URL } : {}),
       ...(process.env.FACILITATOR_EMBEDDING_API_KEY ? { remoteApiKey: process.env.FACILITATOR_EMBEDDING_API_KEY } : {}),
     },
@@ -87,7 +88,7 @@ function baseSearchConfig(options: Options): SearchConfig {
       ...(process.env.FACILITATOR_RERANKER_URL ? { remoteUrl: process.env.FACILITATOR_RERANKER_URL } : {}),
       ...(process.env.FACILITATOR_RERANKER_API_KEY ? { remoteApiKey: process.env.FACILITATOR_RERANKER_API_KEY } : {}),
     },
-    rrfK: 60,
+    rrfK: 20,
     minimumRelevanceScore: 0,
     defaultResultLimit: options.limit,
     maximumResultLimit: Math.max(options.limit, 50),
@@ -156,7 +157,7 @@ async function main(): Promise<void> {
   const vectorSupport = await searchStore.hasVectorSupport();
   const index = config.semantic.enabled && vectorSupport
     ? await buildIndex(searchStore, config, "evaluate-cli")
-    : { stored: 0, status: undefined };
+    : { stored: 0, status: undefined, coverage: undefined };
 
   const runnerOptions = {
     suite, pool, catalog, searchStore,
@@ -191,6 +192,7 @@ async function main(): Promise<void> {
     vectorSupport,
     indexedVectors: index.stored,
     indexStatus: index.status ?? null,
+    indexCoverage: index.coverage ?? null,
     profiles: profiles.map(profile => ({
       name: profile.name,
       effectiveMode: profile.mode,
@@ -219,6 +221,9 @@ async function main(): Promise<void> {
   console.log(`\nSuite: ${suite.name}`);
   console.log(`Catalog: ${suite.resources.length} resources, ${suite.queries.length} queries`);
   console.log(`Embedding provider: ${options.provider} | reranker: ${options.reranker} | pgvector: ${vectorSupport} | vectors indexed: ${index.stored}`);
+  if (index.coverage) {
+    console.log(`Embedding coverage: ${index.coverage.indexed}/${index.coverage.expected} ready | pending: ${index.coverage.pending} | failed: ${index.coverage.failed}`);
+  }
   if (index.status?.provider.status !== "ready" && config.semantic.enabled) {
     console.log(`Embedding degraded: ${index.status?.provider.detail ?? "unknown"}`);
   }

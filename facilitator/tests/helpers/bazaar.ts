@@ -52,17 +52,17 @@ export function discoveryConfig(overrides: Partial<DiscoveryConfig> = {}): Disco
  */
 export function searchConfig(overrides: Partial<SearchConfig> = {}): SearchConfig {
   return {
-    lexical: { enabled: true, language: "simple", weight: 0.35, candidateCount: 100 },
+    lexical: { enabled: true, language: "simple", weight: 0.7, candidateCount: 250 },
     semantic: {
       enabled: true, provider: "fake", modelId: "fake/deterministic-hash", repo: "",
       revision: "v1", dimension: 64, pooling: "mean", normalization: "l2",
-      weight: 0.65, timeoutMs: 500, candidateCount: 100,
+      weight: 0.3, timeoutMs: 500, candidateCount: 250, maxDistance: 0.9,
     },
     reranking: {
       enabled: false, provider: "fake", modelId: "fake/token-overlap", repo: "",
       revision: "v1", topK: 30, timeoutMs: 800, fallbackToHybrid: true,
     },
-    rrfK: 60,
+    rrfK: 20,
     minimumRelevanceScore: 0,
     defaultResultLimit: 20,
     maximumResultLimit: 50,

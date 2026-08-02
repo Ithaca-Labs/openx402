@@ -192,17 +192,18 @@ search:
   lexical:
     enabled: true
     language: simple
-    weight: 0.35
-    candidate_count: 100
+    weight: 0.7
+    candidate_count: 250
   semantic:
     enabled: true
     provider: local
     model: "BAAI/bge-m3"
     revision: release-pinned
     dimension: 1024
-    weight: 0.65
+    weight: 0.3
     timeout_ms: 500
-    candidate_count: 100
+    candidate_count: 250
+    max_distance: 0.9
     index: hnsw
     exact_scan_below_documents: 2000
   reranking:
@@ -213,7 +214,7 @@ search:
     top_k: 30
     timeout_ms: 800
     fallback_to_hybrid: true
-  rrf_k: 60
+  rrf_k: 20
   minimum_relevance_score: 0
   default_result_limit: 20
   maximum_result_limit: 50

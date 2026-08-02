@@ -48,8 +48,8 @@ search:
     # `simple` avoids language guessing; set `english` for stemming and stopword
     # removal on a mostly-English catalog.
     language: simple
-    weight: 0.35
-    candidate_count: 100
+    weight: 0.7
+    candidate_count: 250
   semantic:
     enabled: true
     # disabled | local | remote. `local` needs the optional runtime:
@@ -64,9 +64,10 @@ search:
     dimension: 1024
     pooling: cls
     normalization: l2
-    weight: 0.65
+    weight: 0.3
     timeout_ms: 500
-    candidate_count: 100
+    candidate_count: 250
+    max_distance: 0.9
     remote_url_env: FACILITATOR_EMBEDDING_URL
     remote_api_key_env: FACILITATOR_EMBEDDING_API_KEY
   reranking:
@@ -83,7 +84,7 @@ search:
     fallback_to_hybrid: true
     remote_url_env: FACILITATOR_RERANKER_URL
     remote_api_key_env: FACILITATOR_RERANKER_API_KEY
-  rrf_k: 60
+  rrf_k: 20
   minimum_relevance_score: 0
   # Omitted: inherits discovery.default_page_size / discovery.max_page_size.
   origin_diversity_limit: 3
