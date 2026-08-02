@@ -20,6 +20,10 @@ export interface EvalQuery {
   filters?: Record<string, string>;
   notes?: string;
   judgments: Judgment[];
+  /** Whether judgments cover the whole catalog, a candidate pool, or nothing. */
+  evidence?: "complete" | "pooled" | "none";
+  /** Explicit no-result intent; absence must not be inferred from missing judgments. */
+  expectsNoResult?: boolean;
 }
 
 export interface EvalSuite {
@@ -42,6 +46,8 @@ export interface QueryMetrics {
   /** Correctly returned nothing for a query with no relevant resource, or returned something otherwise. */
   noResultCorrect: boolean;
   latencyMs: number;
+  evaluable: boolean;
+  unjudgedReturned: Record<number, number>;
 }
 
 export const DEFAULT_CUTOFFS = [1, 3, 5, 10, 20] as const;
@@ -66,6 +72,7 @@ export function scoreQuery(
   const precision: Record<number, number> = {};
   const ndcg: Record<number, number> = {};
   const violations: Record<number, number> = {};
+  const unjudgedReturned: Record<number, number> = {};
 
   const idealGrades = query.judgments.map(entry => entry.grade).sort((left, right) => right - left);
 
@@ -80,10 +87,13 @@ export function scoreQuery(
     ndcg[k] = idealAtK === 0 ? 1 : dcg(head.map(key => graded.get(key) ?? 0)) / idealAtK;
     // A grade-0 judgment is an explicit "this must not rank for this query".
     violations[k] = head.filter(key => graded.get(key) === 0).length;
+    unjudgedReturned[k] = head.filter(key => !graded.has(key)).length;
   }
 
   const firstRelevant = rankedResourceKeys.findIndex(key => relevantKeys.has(key));
-  const expectsResult = relevantKeys.size > 0;
+  const expectsResult = query.expectsNoResult === undefined
+    ? relevantKeys.size > 0
+    : !query.expectsNoResult;
   return {
     recall,
     precision,
@@ -94,11 +104,14 @@ export function scoreQuery(
     hasResult: rankedResourceKeys.length > 0,
     noResultCorrect: expectsResult ? rankedResourceKeys.length > 0 : rankedResourceKeys.length === 0,
     latencyMs,
+    evaluable: (query.evidence ?? "complete") !== "none",
+    unjudgedReturned,
   };
 }
 
 export interface SuiteMetrics {
   queries: number;
+  evaluableQueries: number;
   /** Queries with at least one grade-2-or-higher judgment. */
   rankingQueries: number;
   recall: Record<number, number>;
@@ -112,6 +125,8 @@ export interface SuiteMetrics {
   byClass: Record<string, { queries: number; rankingQueries: number; recall: Record<number, number>; mrr: number }>;
   fallbacks: Record<string, number>;
   catalogSize: number;
+  /** Fraction of returned top-k resources absent from the judgment evidence. */
+  unjudgedRate: Record<number, number>;
 }
 
 function percentile(sorted: number[], fraction: number): number {
@@ -132,21 +147,26 @@ export function aggregate(
   // Queries whose expected outcome is an empty result set are evaluated by
   // noResultAccuracy. Including them in retrieval metrics would assign perfect
   // recall/nDCG to returning nothing and zero precision to correct behaviour.
-  const rankingResults = results.filter(entry =>
+  const evaluatedResults = results.filter(entry => entry.metrics.evaluable);
+  const rankingResults = evaluatedResults.filter(entry =>
     entry.query.judgments.some(judgment => judgment.grade >= RELEVANT_GRADE));
   const recall: Record<number, number> = {};
   const precision: Record<number, number> = {};
   const ndcg: Record<number, number> = {};
   const violations: Record<number, number> = {};
+  const unjudgedRate: Record<number, number> = {};
   for (const k of cutoffs) {
     recall[k] = mean(rankingResults.map(entry => entry.metrics.recall[k] ?? 0));
     precision[k] = mean(rankingResults.map(entry => entry.metrics.precision[k] ?? 0));
     ndcg[k] = mean(rankingResults.map(entry => entry.metrics.ndcg[k] ?? 0));
-    violations[k] = results.reduce((sum, entry) => sum + (entry.metrics.violations[k] ?? 0), 0);
+    violations[k] = evaluatedResults.reduce((sum, entry) => sum + (entry.metrics.violations[k] ?? 0), 0);
+    const returned = evaluatedResults.reduce((sum, entry) => sum + Math.min(k, entry.metrics.returned), 0);
+    const unjudged = evaluatedResults.reduce((sum, entry) => sum + (entry.metrics.unjudgedReturned[k] ?? 0), 0);
+    unjudgedRate[k] = returned === 0 ? 0 : unjudged / returned;
   }
-  const latencies = results.map(entry => entry.metrics.latencyMs).sort((left, right) => left - right);
+  const latencies = evaluatedResults.map(entry => entry.metrics.latencyMs).sort((left, right) => left - right);
   const byClass: SuiteMetrics["byClass"] = {};
-  for (const entry of results) {
+  for (const entry of evaluatedResults) {
     const bucket = byClass[entry.query.queryClass] ??= {
       queries: 0, rankingQueries: 0, recall: {}, mrr: 0,
     };
@@ -171,13 +191,14 @@ export function aggregate(
   }
   return {
     queries: results.length,
+    evaluableQueries: evaluatedResults.length,
     rankingQueries: rankingResults.length,
     recall, precision, ndcg, violations,
     mrr: mean(rankingResults.map(entry => entry.metrics.mrr)),
-    noResultRate: results.length === 0
+    noResultRate: evaluatedResults.length === 0
       ? 0
-      : results.filter(entry => !entry.metrics.hasResult).length / results.length,
-    noResultAccuracy: mean(results.map(entry => entry.metrics.noResultCorrect ? 1 : 0)),
+      : evaluatedResults.filter(entry => !entry.metrics.hasResult).length / evaluatedResults.length,
+    noResultAccuracy: mean(evaluatedResults.map(entry => entry.metrics.noResultCorrect ? 1 : 0)),
     latency: {
       p50: percentile(latencies, 0.5),
       p95: percentile(latencies, 0.95),
@@ -187,6 +208,7 @@ export function aggregate(
     byClass,
     fallbacks,
     catalogSize,
+    unjudgedRate,
   };
 }
 

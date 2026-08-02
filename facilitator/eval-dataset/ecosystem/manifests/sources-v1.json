@@ -1,0 +1,28 @@
+{
+  "fetched_at": "2026-08-02T07:21:40.744Z",
+  "results": [
+    {
+      "source": "cdp",
+      "url": "https://api.cdp.coinbase.com/platform/v2/x402/discovery/resources?type=http&limit=1000&offset=0",
+      "fetched_at": "2026-08-02T07:21:16.958Z",
+      "response_sha256": "e6929eda9a1f10e1875427de584d75e5ae12d9bcd1f7b40c0616f04861c1b5ca",
+      "response_bytes": 37205941,
+      "pages": 15
+    },
+    {
+      "source": "agent-tools",
+      "url": "https://agent-tools.cloud/api/v1/search?q=x402&limit=100",
+      "fetched_at": "2026-08-02T07:21:37.829Z",
+      "response_sha256": "62e69665ac773a48739a5e8443ea131a99730ef9286725c404394230a35c952f",
+      "response_bytes": 175195,
+      "pages": 1
+    }
+  ],
+  "errors": [
+    {
+      "source": "x402.direct",
+      "url": "https://x402.direct/api/services?limit=100&sort=score",
+      "error": "HTTP 500: "
+    }
+  ]
+}

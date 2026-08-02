@@ -12,4 +12,9 @@ eval-dataset/raw-generation-output/foreign_cdp_reference.jsonl
 eval-dataset/raw-generation-output/cdp-sample-v1.jsonl
 eval-dataset/raw-generation-output/openrouter-candidates-v1.json
 eval-dataset/raw-generation-output/openrouter/
+
+# External ecosystem catalog snapshots may contain third-party descriptions and
+# are retained locally until redistribution terms are confirmed.
+eval-dataset/ecosystem/raw/
+eval-dataset/ecosystem/catalog/catalog-v1.jsonl
 eval-dataset/manifests/checkpoints/

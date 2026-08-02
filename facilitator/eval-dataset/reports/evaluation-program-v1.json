@@ -1,0 +1,49 @@
+{
+  "program": "x402-evaluation-v1",
+  "generated_at": "2026-08-02T07:37:26.362Z",
+  "status": "incomplete",
+  "controlled": {
+    "status": "provisional",
+    "resources": 300,
+    "queries": 100,
+    "judgments": 30000,
+    "pending_judgments": 0,
+    "provisional_judgments": 30000,
+    "judge_counts": {
+      "curated": 3000,
+      "deterministic": 7416,
+      "openrouter": 19584
+    },
+    "judge_invoked": false,
+    "latest_measurement": "reports/provisional-v1.json"
+  },
+  "live": {
+    "status": "awaiting_judgments",
+    "resources": 14874,
+    "queries": 100,
+    "judgments": 0,
+    "judge_counts": {},
+    "outcomes": 0,
+    "sources": [
+      "cdp",
+      "agent-tools"
+    ],
+    "source_errors": [
+      {
+        "source": "x402.direct",
+        "error": "https://x402.direct/api/services?limit=100&sort=score: HTTP 500: "
+      }
+    ],
+    "snapshot_generated_at": "2026-08-02T07:22:47.876Z",
+    "liveness": {
+      "observed": 500,
+      "passed": 377,
+      "failed": 123,
+      "unknown": 14374
+    }
+  },
+  "blockers": [
+    "live cohort has no pooled relevance judgments",
+    "controlled cohort has 30000 provisional judgments"
+  ]
+}

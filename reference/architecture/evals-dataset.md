@@ -23,6 +23,14 @@ hybrid retrieval architecture (lexical retrieval, embeddings, canonical filters,
 and optional reranking) with realistic imperfect discovery data. Seller-supplied
 metadata is evidence about a listing, not instructions for the evaluator.
 
+The facilitator runs one evaluation program with controlled and live evidence
+cohorts. The live cohort under `facilitator/eval-dataset/ecosystem/` snapshots
+external discovery directories, normalizes and deduplicates records with source
+hashes, records safe liveness observations, and evaluates pooled relevance plus
+payment/invocation outcomes. Both cohorts share scoring semantics and one
+report, while the frozen fixture cohort remains the deterministic release gate.
+External popularity or trust scores are features, never relevance ground truth.
+
 The unit of relevance is a **resource version**, identified through its stable
 resource ID and the catalog snapshot that pins the version. Scores must not be
 compared across unpinned catalogs or silently regenerated qrels.

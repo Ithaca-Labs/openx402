@@ -1,9 +1,20 @@
-# Stellar Bazaar release search benchmark
+# Stellar Bazaar unified search evaluation
 
-The release benchmark is separate from the 12-resource `golden-v1.json` smoke
-suite. It contains 300 fixtures, 100 queries, and the complete 30,000-pair qrel
+The controlled cohort is separate from the 12-resource `golden-v1.json` smoke
+suite, but it is part of the same evaluation program as the live ecosystem
+cohort. It contains 300 fixtures, 100 queries, and the complete 30,000-pair qrel
 matrix under `eval-dataset/`. Every retrieval profile runs through
-`SearchService`; the benchmark does not contain another ranking implementation.
+`SearchService`; the evaluation does not contain another ranking implementation.
+
+Run `npm run benchmark:run` for the unified fetch, validation, evidence, and
+reporting workflow. The controlled-only commands below remain available when
+producing or calibrating its versioned artifacts.
+
+`OPENROUTER_API_KEY=... npm run benchmark:run -- --judge=openrouter` extends
+the same relevance rubric to a source-diverse pool from the live CDP and Agent
+Tools catalogs. Both cohorts use the shared judge module, while their judgments
+remain separately versioned because their snapshot and calibration guarantees
+differ.
 
 ## Dataset contract
 

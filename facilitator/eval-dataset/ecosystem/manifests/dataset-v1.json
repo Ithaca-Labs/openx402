@@ -1,0 +1,25 @@
+{
+  "dataset_version": "v1.0.0",
+  "generated_at": "2026-08-02T07:22:47.876Z",
+  "hashes": {
+    "catalog/catalog-v1.jsonl": "a83122b0529adff1f75120fcaa23bde70edf65d898e66aab8470686d1f58cfd9",
+    "queries/queries-v1.jsonl": "b252ff74e4dfb6deaaa4ec25ab7cf04174decabda173e3d315052bfa201e53b7"
+  },
+  "counts": {
+    "resources": 14874,
+    "queries": 100,
+    "judgments": 0,
+    "outcomes": 0
+  },
+  "sources": [
+    "cdp",
+    "agent-tools"
+  ],
+  "source_errors": [
+    {
+      "source": "x402.direct",
+      "error": "https://x402.direct/api/services?limit=100&sort=score: HTTP 500: "
+    }
+  ],
+  "redistribution": "Foreign raw responses remain local and ignored. The normalized catalog retains source hashes and provenance; external descriptions are not relicensed by this repository."
+}

@@ -117,7 +117,9 @@ Run all replicas with the same PostgreSQL database and encryption key. Back up t
 
 See [configuration](docs/CONFIGURATION.md), [catalog trust boundary](docs/CATALOG-TRUST.md),
 [search](docs/SEARCH.md), [x402scan field inventory](docs/X402SCAN-INVENTORY.md)
-and [dependency licences](THIRD_PARTY_LICENSES.md).
+and [dependency licences](THIRD_PARTY_LICENSES.md). The unified evaluation
+program and its live-source evidence cohort are documented in
+[docs/ECOSYSTEM-BENCHMARK.md](docs/ECOSYSTEM-BENCHMARK.md).
 
 ## Verification
 
