@@ -68,7 +68,7 @@ async function main(): Promise<void> {
   }
 
   const app = createHttpApp(config, deps);
-  app.listen(config.httpPort, () => {
+  app.listen(config.httpPort, "::", () => {
     console.log(`openx402 mcp-server listening on :${config.httpPort} (transport=${config.transport})`);
   });
 }

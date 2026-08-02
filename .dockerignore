@@ -1,0 +1,13 @@
+.git
+.github
+**/node_modules
+**/.next
+**/dist
+**/target
+reference
+frontend
+mcp-server
+contracts
+eval-dataset
+*.log
+.env*

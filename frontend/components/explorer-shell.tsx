@@ -210,24 +210,19 @@ export function MetricCard({ metric, featured = false }: { metric: Metric; featu
         <div className="metric-card__value">{metric.value}</div>
         <span className="metric-card__context">{metric.context}</span>
       </div>
-      <MetricChart bars={metric.bars} label={metric.label} range={metric.context} />
+      {metric.bars.length
+        ? <MetricChart bars={metric.bars} label={metric.label} range={metric.context} />
+        : <div className="metric-chart-empty">Current snapshot</div>}
       <div className="metric-card__footer" aria-hidden="true">
-        <span className="metric-card__footer-label"><ActivityIcon size={13} /> Trend</span>
-        <span className="metric-card__range"><span>30d ago</span><span>Now</span></span>
+        <span className="metric-card__footer-label"><ActivityIcon size={13} /> {metric.bars.length ? "Trend" : "Snapshot"}</span>
+        {metric.bars.length ? <span className="metric-card__range"><span>30d ago</span><span>Now</span></span> : null}
       </div>
     </Card>
   );
 }
 
 export function MetricChart({ bars, label, range }: { bars: number[]; label: string; range: string }) {
-  const data = bars.flatMap((value, index) => {
-    const next = bars[index + 1] ?? value;
-    return [
-      { label: `${index}-a`, value },
-      { label: `${index}-b`, value: Math.round(value + (next - value) * 0.35) },
-      { label: `${index}-c`, value: Math.round(value + (next - value) * 0.7) },
-    ];
-  });
+  const data = bars.map((value, index) => ({ label: String(index), value }));
 
   return (
     <BarChart
@@ -303,9 +298,9 @@ export function EntityLogo({
   );
 }
 
-export function StatusBadge({ state }: { state: "settled" | "pending" | "online" | "limited" | "preview" }) {
+export function StatusBadge({ state }: { state: "settled" | "pending" | "failed" | "online" | "limited" | "preview" }) {
   const label = state === "settled" ? "Settled" : state === "pending" ? "Pending" : state;
-  const tone = state === "settled" || state === "online" ? "success" : state === "pending" ? "signal" : "neutral";
+  const tone = state === "settled" || state === "online" ? "success" : state === "pending" ? "signal" : state === "failed" ? "danger" : "neutral";
 
   return (
     <Badge className="status-badge" tone={tone}>

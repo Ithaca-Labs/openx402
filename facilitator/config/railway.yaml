@@ -1,0 +1,179 @@
+# Hosted Railway profile. The only operator-supplied external credential is
+# OPENROUTER_API_KEY. Testnet sponsor and channel accounts are created,
+# encrypted, and funded through Friendbot on first boot.
+
+server:
+  port: 4022
+
+database_url_env: DATABASE_URL
+api_keys_env: FACILITATOR_API_KEYS
+key_encryption_key_env: FACILITATOR_KEY_ENCRYPTION_KEY
+
+indexing:
+  auto_catalog: true
+  index_on: verified
+  require_valid_schema: true
+  duplicate_changed: version_and_verify
+  stale_after_hours: 168
+  max_metadata_bytes: 131072
+  max_description_length: 4000
+  max_schema_bytes: 65536
+  max_example_bytes: 16384
+  max_json_depth: 32
+  max_tags: 5
+  max_tag_length: 32
+  max_icon_url_length: 2048
+  max_service_name_length: 32
+  max_route_template_length: 512
+  fetch_icons: false
+  inactive_version_retention_days: 365
+  catalog_observation_retention_days: 90
+
+catalog_security:
+  require_https_origins: true
+  allow_local_origins: false
+
+discovery:
+  enabled: true
+  default_page_size: 20
+  max_page_size: 50
+  cursor_ttl_minutes: 15
+  include_stale: false
+  include_unverified: false
+  cursor_hmac_key_env: FACILITATOR_CURSOR_HMAC_KEY
+
+search:
+  lexical:
+    enabled: true
+    language: simple
+    weight: 0.35
+    candidate_count: 100
+  semantic:
+    enabled: true
+    provider: remote
+    model: openai/text-embedding-3-small
+    repo: ""
+    # Deployment-owned index version. Changing this value creates a new
+    # generation and reindexes instead of mixing vectors across model changes.
+    revision: openrouter-route-2026-08-01
+    dimension: 1536
+    pooling: cls
+    normalization: l2
+    weight: 0.65
+    timeout_ms: 5000
+    candidate_count: 100
+    remote_url_env: FACILITATOR_EMBEDDING_URL
+    remote_api_key_env: OPENROUTER_API_KEY
+  reranking:
+    enabled: false
+    provider: disabled
+    model: disabled
+    repo: ""
+    revision: disabled
+    top_k: 30
+    timeout_ms: 800
+    fallback_to_hybrid: true
+    remote_url_env: FACILITATOR_RERANKER_URL
+    remote_api_key_env: FACILITATOR_RERANKER_API_KEY
+  rrf_k: 60
+  minimum_relevance_score: 0
+  origin_diversity_limit: 3
+  impressions:
+    enabled: true
+    retain_query_text: false
+    retention_days: 90
+  # Remote-only inference. These settings make accidental local model loading
+  # fail closed instead of downloading weights into an ephemeral container.
+  models:
+    cache_dir: /tmp/openx402-model-downloads-disabled
+    offline: true
+    dtype: q8
+    require_pinned_revision: false
+  indexing:
+    batch_size: 32
+    worker_concurrency: 1
+    poll_ms: 500
+    lease_ms: 30000
+    max_attempts: 5
+    backoff_base_ms: 1000
+    backoff_max_ms: 300000
+    reindex_schedule: startup
+
+analytics:
+  enabled: true
+  default_page_size: 50
+  max_page_size: 200
+  redact_addresses: false
+
+limits:
+  max_request_bytes: 262144
+  max_concurrent_simulations: 20
+  max_simulations_per_key_per_minute: 30
+  max_sponsored_stroops_per_key_per_day: "5000000"
+  max_global_sponsored_stroops_per_day: "200000000"
+  max_pending_settlements: 1000
+  channel_lease_ms: 30000
+  settle_poll_ms: 1000
+  settle_timeout_ms: 30000
+
+networks:
+  stellar:testnet:
+    enabled: true
+    rpc_url: https://soroban-testnet.stellar.org
+    horizon_url: https://horizon-testnet.stellar.org
+    friendbot_url: https://friendbot.stellar.org
+    development_auto_fund: true
+    fee_ceilings_calibrated: true
+    channel_account_count: 3
+    channel_min_balance_stroops: "50000000"
+    upto_contract: CDEI3W6ZFW6BFSU37VL265OSOGKSM3BR3TZVUR5NZ4UER6FOMVJUKOOT
+    allowed_settlement_hooks: []
+    max_timeout_seconds: 300
+    assets:
+      - contract: CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
+        symbol: XLM
+        decimals: 7
+        max_payment: "1000000000"
+      - contract: CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA
+        symbol: USDC
+        decimals: 7
+        max_payment: "1000000000"
+    fees:
+      exact:
+        max_resource_fee_stroops: "50000"
+        max_inclusion_fee_stroops: "200"
+        max_total_fee_stroops: "50200"
+      upto:
+        max_resource_fee_stroops: "150000"
+        max_inclusion_fee_stroops: "200"
+        max_total_fee_stroops: "150200"
+
+  # Pubnet code and configuration remain packaged, but startup stays fail-closed
+  # until audited contract, sponsor keys, API auth and measured fees are set.
+  stellar:pubnet:
+    enabled: false
+    rpc_url: https://mainnet.sorobanrpc.com
+    horizon_url: https://horizon.stellar.org
+    development_auto_fund: false
+    fee_ceilings_calibrated: false
+    channel_account_count: 10
+    channel_min_balance_stroops: "50000000"
+    sponsor_secret_env: STELLAR_PUBNET_SPONSOR_SECRET
+    channel_secrets_env: STELLAR_PUBNET_CHANNEL_SECRETS
+    upto_contract_env: STELLAR_PUBNET_UPTO_CONTRACT
+    allowed_settlement_hooks: []
+    max_timeout_seconds: 300
+    assets:
+      - contract: CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75
+        symbol: USDC
+        decimals: 7
+        max_payment: "1000000000"
+    fees:
+      exact:
+        max_resource_fee_stroops: "50000"
+        max_inclusion_fee_stroops: "200"
+        max_total_fee_stroops: "50200"
+      upto:
+        max_resource_fee_stroops: "150000"
+        max_inclusion_fee_stroops: "200"
+        max_total_fee_stroops: "150200"

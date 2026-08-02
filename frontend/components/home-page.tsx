@@ -1,50 +1,28 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-
 import { ArrowUpRightIcon } from "@/components/icons";
-import { Area, AreaChart, ChartTooltip } from "@/components/charts";
-import { featuredEntities, metrics, type Entity } from "@/components/data";
+import { type DashboardData, type Entity } from "@/components/data";
 import {
   AppShell,
   EntityLogo,
   MetricCard,
   PageContainer,
   SectionHeading,
-  TimeControl,
 } from "@/components/explorer-shell";
-import { Card, SelectField } from "@/components/ui";
+import { Card } from "@/components/ui";
 
-const featuredServiceActivity = [
-  [18, 27, 24, 38, 32, 43, 39, 50, 45, 58, 52, 65],
-  [16, 25, 22, 36, 31, 42, 38, 48, 44, 57, 53, 62],
-  [15, 23, 21, 34, 29, 40, 36, 47, 42, 54, 49, 60],
-  [12, 20, 18, 31, 27, 38, 34, 44, 40, 51, 46, 56],
-  [10, 18, 16, 29, 24, 35, 31, 42, 37, 49, 43, 52],
-];
-
-export default function DiscoverPage() {
+export default function DiscoverPage({ data, query }: { data: DashboardData; query?: string }) {
   return (
     <AppShell>
       <PageContainer className="data-page discover-page">
         <section className="discover-section discover-section--stats" aria-labelledby="overall-stats-title">
           <SectionHeading
             title="Overall Stats"
-            description="Global statistics for the x402 ecosystem"
-            action={
-              <div className="control-cluster">
-                <SelectField aria-label="Group overall statistics by" defaultValue="Per bucket">
-                  <option>Per bucket</option>
-                  <option>Per service</option>
-                  <option>Per chain</option>
-                </SelectField>
-                <TimeControl label="Past 30 days" />
-              </div>
-            }
+            description="Observed statistics from this openx402 facilitator"
           />
           <div className="metric-grid">
-            {metrics.map((metric, index) => (
+            {data.metrics.map((metric, index) => (
               <MetricCard key={metric.label} metric={metric} featured={index === 0} />
             ))}
           </div>
@@ -52,34 +30,15 @@ export default function DiscoverPage() {
 
         <section className="discover-section discover-section--services" aria-labelledby="featured-services-title">
           <SectionHeading
-            title="Featured Services"
-            description="x402scan curated services"
-            action={<TimeControl label="Past 30 days" />}
+            title={query ? `Results for “${query}”` : "Indexed Services"}
+            description={query ? "Ranked by the facilitator's live Bazaar search pipeline" : "Seller-declared resources observed by this facilitator"}
           />
-          <FeaturedServicesTable entities={featuredEntities} />
+          {data.entities.length ? <FeaturedServicesTable entities={data.entities} /> : (
+            <Card className="state-panel state-panel--empty"><h3>No resources found</h3><p>The catalog populates after the first verified payment carrying valid Bazaar metadata.</p></Card>
+          )}
         </section>
       </PageContainer>
     </AppShell>
-  );
-}
-
-function FeaturedServiceActivityChart({ index, name }: { index: number; name: string }) {
-  const points = featuredServiceActivity[index % featuredServiceActivity.length].map((activity, pointIndex) => ({
-    date: pointIndex,
-    activity,
-  }));
-
-  return (
-    <AreaChart
-      ariaLabel={`${name} activity trend`}
-      className="table-area-chart"
-      data={points}
-      margin={{ top: 4, right: 2, bottom: 4, left: 2 }}
-      xDataKey="date"
-    >
-      <Area dataKey="activity" fill="var(--color-accent)" fillOpacity={0.24} stroke="var(--color-text)" strokeWidth={1.35} />
-      <ChartTooltip showDatePill={false} valueFormatter={(_, value) => `${value} signal`} />
-    </AreaChart>
   );
 }
 
@@ -92,8 +51,8 @@ function FeaturedServicesTable({ entities }: { entities: Entity[] }) {
           <thead>
             <tr>
               <th scope="col">Server</th>
-              <th scope="col">Activity</th>
-              <th scope="col">Volume</th>
+              <th scope="col">Category</th>
+              <th scope="col">Price</th>
               <th scope="col">Txns</th>
               <th scope="col">Buyers</th>
               <th scope="col">Latest</th>
@@ -102,22 +61,20 @@ function FeaturedServicesTable({ entities }: { entities: Entity[] }) {
             </tr>
           </thead>
           <tbody>
-            {entities.map((entity, index) => (
-              <tr key={entity.name}>
+            {entities.map((entity) => (
+              <tr key={`${entity.url}:${entity.name}`}>
                 <td>
-                  <Link className="table-entity" href={`/marketplace?entity=${encodeURIComponent(entity.name)}`}>
+                  <a className="table-entity" href={entity.url} rel="noreferrer" target="_blank">
                     <EntityLogo accent={entity.accent} name={entity.name} size="sm" />
                     <span>
                       <strong>{entity.name}</strong>
                       <small>{entity.description}</small>
                       <em>{entity.domain}</em>
                     </span>
-                  </Link>
+                  </a>
                 </td>
-                <td>
-                  <FeaturedServiceActivityChart index={index} name={entity.name} />
-                </td>
-                <td><strong className="table-number">{entity.volume}</strong></td>
+                <td><span className="table-muted">{entity.category}</span></td>
+                <td><strong className="table-number">{entity.price}</strong></td>
                 <td><span className="mono table-muted">{entity.transactions}</span></td>
                 <td><span className="mono table-muted">{entity.buyers}</span></td>
                 <td><span className="table-muted">{entity.freshness}</span></td>
@@ -130,10 +87,10 @@ function FeaturedServicesTable({ entities }: { entities: Entity[] }) {
                   </span>
                 </td>
                 <td>
-                  <Link className="table-try" href={`/marketplace?entity=${encodeURIComponent(entity.name)}`}>
+                  <a className="table-try" href={entity.url} rel="noreferrer" target="_blank">
                     <ArrowUpRightIcon size={14} />
                     Try it
-                  </Link>
+                  </a>
                 </td>
               </tr>
             ))}

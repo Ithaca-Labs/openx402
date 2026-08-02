@@ -48,7 +48,7 @@ const impressions = new ImpressionRecorder(pool, config.search);
 const app = createApp(config, core, state, {
   catalog, analytics, search: searchStore, searchService, impressions, worker,
 });
-const server = app.listen(config.port, () => {
+const server = app.listen(config.port, "::", () => {
   console.log(JSON.stringify({
     level: "info",
     event: "facilitator_started",

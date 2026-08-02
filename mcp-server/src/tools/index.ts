@@ -68,7 +68,8 @@ function toErrorContent(error: unknown): ReturnType<typeof toContent> {
 }
 
 /**
- * Registers the three versioned MCP tools. `context` (agent identity, budget
+ * Registers the discovery tools and, only when a signer is configured, the
+ * payment tool. `context` (agent identity, budget
  * scope) is fixed once per connection at registration time -- it is never
  * read from tool arguments, so an agent cannot self-report a different
  * identity to evade its own budget.
@@ -101,6 +102,8 @@ export function registerTools(server: McpServer, deps: ToolDeps, context: ToolCo
       }
     },
   );
+
+  if (!deps.signerProvider) return;
 
   server.tool(
     "x402_call_resource",

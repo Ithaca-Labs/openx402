@@ -1,0 +1,34 @@
+# Public hosted MCP: discovery only. With no signer, x402_call_resource is not
+# registered and no authentication key is required.
+facilitator:
+  base_url: http://facilitator.internal:4022
+  request_timeout_ms: 10000
+
+transport: streamable-http
+
+http:
+  port: 4522
+  api_keys_env: MCP_SERVER_API_KEYS
+
+signer:
+  mode: none
+
+networks:
+  stellar:testnet:
+    enabled: true
+  stellar:pubnet:
+    enabled: false
+
+budget:
+  store: memory
+  database_url_env: DATABASE_URL
+  default_per_call_max_atomic: "1000000"
+  default_session_or_day_max_atomic: "50000000"
+
+network_security:
+  allow_insecure_local: false
+  max_response_bytes: 8388608
+  timeout_ms: 15000
+  max_redirects: 3
+  max_concurrent_connections: 10
+  resolved_mcp_endpoints: {}

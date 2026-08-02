@@ -22,7 +22,7 @@ agent-facing MCP leave it disabled.
 |---|---|
 | `x402_search_resources` | Canonical Bazaar search/browse (query, filters, limit, cursor) — returns the untouched canonical resource plus a trust wrapper (`ref`, `versionHash`, `provenance`, `status`, `warnings`) per item. |
 | `x402_get_resource` | Fetch the current canonical resource + payment options by stable `ref` (never an arbitrary URL), with an optional `expectedVersionHash` staleness check. |
-| `x402_call_resource` | The guarded discover-pay-retry loop against one active, cataloged MCP tool: unpaid probe → dual-copy `PaymentRequired` validation → catalog match → budget reservation → sign → paid retry → settlement validation → upstream output + a structured receipt. |
+| `x402_call_resource` | Registered only when a signer is configured. Runs the guarded discover-pay-retry loop against one active, cataloged MCP tool: unpaid probe → dual-copy `PaymentRequired` validation → catalog match → budget reservation → sign → paid retry → settlement validation → upstream output + a structured receipt. |
 
 All amounts are decimal-string atomic units, parsed to `bigint` everywhere —
 never `JavaScript number` — see `src/budget/budgetPolicy.ts`.
@@ -114,6 +114,10 @@ Layered like the facilitator's own config: `config/self-hosted.yaml` +
 `*_env`-indirected secrets + a `FACILITATOR_URL`/`PORT` env override. See
 the comments in `config/self-hosted.yaml` for every field. Fail-closed
 validation happens once, at startup, in `src/config.ts`.
+
+`config/railway.yaml` is the public hosted discovery profile. It uses
+Streamable HTTP with `signer.mode: none`, so only search/get are registered and
+no MCP API key is needed. See `../deploy/railway/README.md`.
 
 ## Running it
 

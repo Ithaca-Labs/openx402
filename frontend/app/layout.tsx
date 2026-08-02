@@ -36,8 +36,8 @@ const plexMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "openx402 — Digital Workers for Mundane Workflows",
-  description: "Deploy digital workers for the routine browser workflows that slow your team down.",
+  title: "openx402 — Stellar payment discovery",
+  description: "Explore Bazaar resources and Stellar x402 settlement activity observed by openx402.",
   icons: {
     icon: "/brand/favicon/favicon.svg",
   },

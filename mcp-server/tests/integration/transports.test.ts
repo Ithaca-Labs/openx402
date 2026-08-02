@@ -58,7 +58,7 @@ network_security:
     await rm(configDir, { recursive: true, force: true });
   });
 
-  it("discovery-only stdio server: initializes, lists three tools, and finds a cataloged resource", async () => {
+  it("discovery-only stdio server: initializes, lists two tools, and finds a cataloged resource", async () => {
     const transport = new StdioClientTransport({
       command: process.execPath,
       args: [serverEntry],
@@ -68,20 +68,11 @@ network_security:
     await client.connect(transport as Parameters<typeof client.connect>[0]);
 
     const tools = await client.listTools();
-    expect(tools.tools.map(t => t.name).sort()).toEqual(["x402_call_resource", "x402_get_resource", "x402_search_resources"]);
+    expect(tools.tools.map(t => t.name).sort()).toEqual(["x402_get_resource", "x402_search_resources"]);
 
     const result = await client.callTool({ name: "x402_search_resources", arguments: { query: "sentiment" } });
     const payload = JSON.parse((result.content as Array<{ text: string }>)[0]!.text) as { resources: unknown[] };
     expect(payload.resources).toHaveLength(1);
-
-    // No signer configured -- a paid call must fail closed, never proceed anonymously.
-    const callResult = await client.callTool({
-      name: "x402_call_resource",
-      arguments: { ref: "v1.bm90LWEtcmVhbC1yZWY", arguments: {}, network: "stellar:testnet", scheme: "exact", asset: "CASSET", maxAtomicAmount: "1" },
-    });
-    expect(callResult.isError).toBe(true);
-    const errorPayload = JSON.parse((callResult.content as Array<{ text: string }>)[0]!.text) as { code: string };
-    expect(["PAYMENT_REJECTED", "INVALID_ARGUMENT"]).toContain(errorPayload.code);
 
     await client.close();
   }, 15_000);
@@ -141,7 +132,7 @@ describe("Streamable HTTP transport smoke test", () => {
     await client.connect(transport as Parameters<typeof client.connect>[0]);
     try {
       const tools = await client.listTools();
-      expect(tools.tools.map(t => t.name).sort()).toEqual(["x402_call_resource", "x402_get_resource", "x402_search_resources"]);
+      expect(tools.tools.map(t => t.name).sort()).toEqual(["x402_get_resource", "x402_search_resources"]);
 
       const result = await client.callTool({ name: "x402_search_resources", arguments: { query: "sentiment" } });
       const payload = JSON.parse((result.content as Array<{ text: string }>)[0]!.text) as { resources: unknown[] };
@@ -151,23 +142,18 @@ describe("Streamable HTTP transport smoke test", () => {
     }
   });
 
-  it("rejects invalid tool arguments (malformed maxAtomicAmount) at the schema layer", async () => {
+  it("rejects invalid discovery arguments at the schema layer", async () => {
     const transport = new StreamableHTTPClientTransport(new URL(`${baseUrl}/mcp`));
     const client = new MCPClient({ name: "smoke-test-invalid-args", version: "0.1.0" }, { capabilities: {} });
     await client.connect(transport as Parameters<typeof client.connect>[0]);
     try {
-      // The MCP SDK reports zod validation failures as a normal isError:true
-      // tool result (a JSON-RPC -32602 message embedded as text), not as a
-      // rejected client promise -- matching how @x402/mcp itself surfaces
-      // errors (see src/tools/callResource.ts's own error contract for the
-      // application-level equivalent once arguments are well-formed).
       const result = await client.callTool({
-        name: "x402_call_resource",
-        arguments: { ref: "v1.x", arguments: {}, network: "stellar:testnet", scheme: "exact", asset: "CASSET", maxAtomicAmount: "not-a-number" },
+        name: "x402_search_resources",
+        arguments: { query: "sentiment", limit: 0 },
       });
       expect(result.isError).toBe(true);
       const text = (result.content as Array<{ text: string }>)[0]!.text;
-      expect(text).toMatch(/maxAtomicAmount/);
+      expect(text).toMatch(/greater than 0|positive/i);
     } finally {
       await client.close();
     }

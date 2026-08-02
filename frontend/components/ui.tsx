@@ -55,7 +55,7 @@ export function Badge({
   children,
   ...props
 }: HTMLAttributes<HTMLSpanElement> & {
-  tone?: "neutral" | "signal" | "success" | "ink";
+  tone?: "neutral" | "signal" | "success" | "danger" | "ink";
   children: ReactNode;
 }) {
   return (
@@ -100,4 +100,3 @@ export function Divider({ className }: { className?: string }) {
 export function Skeleton({ className }: { className?: string }) {
   return <span className={cn("ui-skeleton", className)} aria-hidden="true" />;
 }
-

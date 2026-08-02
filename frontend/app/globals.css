@@ -553,6 +553,12 @@ html[data-theme="dark"] .brand-lockup__image--dark {
   color: var(--color-success);
 }
 
+.ui-badge--danger {
+  border-color: color-mix(in srgb, var(--color-danger) 32%, var(--color-border));
+  background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+  color: var(--color-danger);
+}
+
 .ui-badge--ink {
   background: var(--color-strong-background);
   color: var(--color-strong-foreground);
@@ -1087,6 +1093,18 @@ html[data-theme="dark"] .brand-lockup__image--dark {
   height: 74px;
   min-height: 0;
   margin-top: 13px;
+}
+
+.metric-chart-empty {
+  display: flex;
+  height: 74px;
+  align-items: center;
+  margin-top: 13px;
+  border-block: 1px solid var(--color-border);
+  color: var(--color-text-subtle);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
 }
 
 .metric-bar-chart .chart-axis-label {
