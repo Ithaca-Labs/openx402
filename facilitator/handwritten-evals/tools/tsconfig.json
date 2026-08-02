@@ -1,0 +1,9 @@
+{
+  "//": "Type-checks the evaluation tools. The service tsconfig deliberately does not include this directory: these tools are evaluation-only and must never enter the service build (BUILD-PLAN §10). Run with `npx tsc -p handwritten-evals/tools --noEmit`.",
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["*.ts"]
+}
