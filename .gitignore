@@ -1,24 +1,24 @@
 # ---------------------------------------------------------------------------
-# Split-out directories
+# full-stack branch
 #
-# `main` carries only what a self-hoster needs: facilitator, mcp-server,
-# packages, deploy. Everything below lives on the `full-stack` branch:
-#
-#   git checkout full-stack
+# This branch is the complete monorepo: everything on `main` plus the
+# development material that main leaves out.
 #
 #   brand/      brand kit and assets (also on `assets/brandkit`)
-#   frontend/   Next.js explorer dashboard — not required to self-host
+#   frontend/   Next.js explorer dashboard
 #   tasks/      internal working notes
-#   reference/  external repo clones used while developing (~7.6 GB)
+#   reference/  architecture docs + external repo clones
 #
-# These stay on disk when you switch back to `main`; they are simply untracked
-# here. Nothing in facilitator/ or mcp-server/ imports them, and none of them
-# are npm workspaces.
+# `main` is the self-hostable subset — facilitator, mcp-server, packages,
+# deploy, examples — and gitignores the four directories above.
 # ---------------------------------------------------------------------------
-/brand/
-/frontend/
-/tasks/
-/reference/
+
+# Reference clones (external repos, tracked upstream — not vendored here)
+/reference/x402/
+/reference/x402-stellar/
+/reference/x402scan/
+/reference/stellar-docs/
+/reference/stellar-contracts/
 
 # OS / editor
 .DS_Store
@@ -29,6 +29,9 @@ node_modules/
 dist/
 target/
 .next/
+out/
+coverage/
+*.log
 
 # Local environment
 .env
