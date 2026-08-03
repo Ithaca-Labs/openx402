@@ -42,10 +42,16 @@ export type DiscoveryRequest = {
   limit: number;
 };
 
+const DEFAULT_FACILITATOR_URL = "https://facilitator-production-8430.up.railway.app";
+
 function facilitatorBaseUrl(): string {
-  return process.env.FACILITATOR_INTERNAL_URL
-    ?? process.env.FACILITATOR_URL
-    ?? "http://127.0.0.1:4022";
+  const internalUrl = process.env.FACILITATOR_INTERNAL_URL?.trim();
+  if (internalUrl) return internalUrl;
+
+  const publicUrl = process.env.FACILITATOR_URL?.trim();
+  if (publicUrl) return publicUrl;
+
+  return DEFAULT_FACILITATOR_URL;
 }
 
 async function requestJson<T>(

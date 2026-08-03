@@ -189,6 +189,32 @@ describe("pagination, availability, and explorers", () => {
     await expect(getHealth(10)).resolves.toEqual({ state: "unavailable" });
   });
 
+  it("ignores a blank internal URL and uses the configured facilitator URL", async () => {
+    process.env.FACILITATOR_URL = "https://facilitator.example";
+    process.env.FACILITATOR_INTERNAL_URL = "";
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ status: "ready" }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(getHealth(10)).resolves.toMatchObject({ state: "success", data: { status: "ready" } });
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe("https://facilitator.example/health/ready");
+  });
+
+  it("uses the deployed facilitator when no local URL is configured", async () => {
+    delete process.env.FACILITATOR_URL;
+    delete process.env.FACILITATOR_INTERNAL_URL;
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ status: "ready" }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(getHealth(10)).resolves.toMatchObject({ state: "success", data: { status: "ready" } });
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe("https://facilitator-production-8430.up.railway.app/health/ready");
+  });
+
   it("maps testnet and pubnet transaction hashes to the correct explorer", () => {
     expect(transactionExplorerUrl("stellar:testnet", "abc")).toBe("https://stellar.expert/explorer/testnet/tx/abc");
     expect(transactionExplorerUrl("stellar:pubnet", "def")).toBe("https://stellar.expert/explorer/public/tx/def");

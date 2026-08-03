@@ -107,7 +107,5 @@ export const navItems: NavItem[] = [
   { href: "/all", label: "All activity" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/transactions", label: "Transactions" },
-  { href: "/facilitators", label: "Facilitators" },
-  { href: "/networks", label: "Networks" },
   { href: "/ecosystem", label: "Ecosystem" },
 ];

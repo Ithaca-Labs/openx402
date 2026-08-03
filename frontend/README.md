@@ -6,7 +6,8 @@ the chain or database directly.
 
 ## Development
 
-Run a facilitator on port 4022, then start the dashboard:
+The dashboard uses the deployed facilitator by default. To use a local
+facilitator instead, set its server-only URL before starting the dashboard:
 
 ```bash
 npm ci
@@ -20,8 +21,8 @@ points at the facilitator's private domain, so the browser never needs internal
 network access. `FACILITATOR_API_KEY` is optional and is only needed if the
 facilitator operator protects analytics with bearer authentication.
 
-URL resolution order is `FACILITATOR_INTERNAL_URL`, `FACILITATOR_URL`, then
-`http://127.0.0.1:4022`. All three variables are server-only. Never create a
+URL resolution order is `FACILITATOR_INTERNAL_URL`, `FACILITATOR_URL`, then the
+deployed facilitator URL. Both variables are server-only. Never create a
 `NEXT_PUBLIC_FACILITATOR_API_KEY` variable.
 
 Health check: `GET /api/health`.
