@@ -1,13 +1,12 @@
 # ---------------------------------------------------------------------------
 # Split-out directories
 #
-# `main` carries only what a self-hoster needs: facilitator, mcp-server,
-# packages, deploy. Everything below lives on the `full-stack` branch:
+# `main` carries the self-hostable services and the dashboard. Larger working
+# and reference directories remain branch-local or untracked:
 #
 #   git checkout full-stack
 #
 #   brand/      brand kit and assets (also on `assets/brandkit`)
-#   frontend/   Next.js explorer dashboard — not required to self-host
 #   tasks/      internal working notes
 #   reference/  external repo clones used while developing (~7.6 GB)
 #
@@ -16,7 +15,6 @@
 # are npm workspaces.
 # ---------------------------------------------------------------------------
 /brand/
-/frontend/
 /tasks/
 /reference/
 
