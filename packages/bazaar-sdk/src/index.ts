@@ -14,6 +14,7 @@ export { BazaarConfigError } from "./validate.js";
 export type {
   BazaarMetadata,
   BodyMethod,
+  CompiledInputSchema,
   HttpMetadataConfig,
   HttpMethod,
   McpMetadataConfig,
@@ -24,3 +25,19 @@ export type {
   QueryMethod,
   ServiceMetadataConfig,
 } from "./types.js";
+export { isCompiledInputSchema } from "./types.js";
+
+export { createX402Seller, resolveSellerPublicUrl, SellerConfigError } from "./seller/index.js";
+export type {
+  McpToolDiscoveryConfig,
+  PaymentInput,
+  ResolveSellerPublicUrlOptions,
+  RouteDiscoveryConfig,
+  SellerDefaults,
+  SellerHttpRoute,
+  SellerMcpTool,
+  SellerRouteConfig,
+  SellerToolConfig,
+  X402Seller,
+  X402SellerConfig,
+} from "./seller/index.js";

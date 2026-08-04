@@ -3,8 +3,9 @@ import {
   isValidServiceName,
   sanitizeTags,
 } from "@x402/extensions/bazaar";
+import { isCompiledInputSchema } from "./types.js";
 import type {
-  HttpMetadataConfig, McpMetadataConfig, ParameterConfig, ParameterMap, ServiceMetadataConfig,
+  CompiledInputSchema, HttpMetadataConfig, McpMetadataConfig, ParameterConfig, ParameterMap, ServiceMetadataConfig,
 } from "./types.js";
 
 export class BazaarConfigError extends Error {
@@ -49,8 +50,15 @@ export function validateServiceMetadata(config: ServiceMetadataConfig, issues: s
   }
 }
 
-function validateParameters(label: string, map: ParameterMap | undefined, issues: string[]): void {
+function validateParameters(
+  label: string,
+  map: ParameterMap | CompiledInputSchema | undefined,
+  issues: string[],
+): void {
   if (map === undefined) return;
+  // A pre-compiled schema (e.g. from `fromZod`) is validated by its own adapter; this
+  // helper only understands the readable `ParameterMap` shape.
+  if (isCompiledInputSchema(map)) return;
   for (const [name, parameter] of Object.entries(map)) {
     if (!PARAMETER_NAME.test(name)) {
       issues.push(`${label}.${name}: parameter names must match ${PARAMETER_NAME.source}`);

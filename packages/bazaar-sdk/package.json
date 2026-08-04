@@ -27,6 +27,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./zod": {
+      "types": "./dist/zod.d.ts",
+      "default": "./dist/zod.js"
+    },
+    "./stellar": {
+      "types": "./dist/stellar.d.ts",
+      "default": "./dist/stellar.js"
     }
   },
   "files": [
@@ -52,8 +60,24 @@
     "@x402/core": "2.20.0",
     "@x402/extensions": "2.20.0"
   },
+  "peerDependencies": {
+    "@x402/stellar": "2.20.0",
+    "zod": "^3.25.0 || ^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@x402/stellar": {
+      "optional": true
+    },
+    "zod": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@stellar/stellar-sdk": "16.2.0",
+    "@types/node": "^24.2.0",
+    "@x402/stellar": "2.20.0",
     "typescript": "5.9.2",
-    "vitest": "3.2.7"
+    "vitest": "3.2.7",
+    "zod": "3.25.76"
   }
 }

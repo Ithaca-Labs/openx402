@@ -1,6 +1,7 @@
 import { randomInt } from "node:crypto";
 import express from "express";
-import { bazaar } from "@openx402/bazaar-sdk";
+import { createX402Seller, resolveSellerPublicUrl } from "@openx402/bazaar-sdk";
+import { stellarAssets } from "@openx402/bazaar-sdk/stellar";
 import { HTTPFacilitatorClient } from "@x402/core/server";
 import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { ExactStellarScheme } from "@x402/stellar/exact/server";
@@ -9,37 +10,48 @@ const PORT = Number(process.env.PORT ?? 4788);
 const NETWORK = "stellar:testnet" as const;
 const FACILITATOR_URL = process.env.FACILITATOR_URL
   ?? "https://facilitator-production-8430.up.railway.app";
-const PUBLIC_URL = process.env.SELLER_PUBLIC_URL?.replace(/\/$/, "");
 const PAY_TO = process.env.SELLER_PAY_TO;
 
-// Stellar testnet native XLM SAC. Charging it keeps this self-contained because
-// the existing test identities do not need a separate token faucet or trustline.
-const XLM_SAC = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
-const PRICE_ATOMIC = "1000";
-
-if (!PUBLIC_URL || !PUBLIC_URL.startsWith("https://")) {
-  throw new Error("SELLER_PUBLIC_URL must be the public HTTPS tunnel origin");
-}
 if (!PAY_TO) throw new Error("SELLER_PAY_TO is required");
 
-const metadata = bazaar.http({
-  description: "Plays one round of rock, paper, scissors against the server.",
-  serviceName: "Rock Paper Scissors",
-  tags: ["game", "rps", "random"],
-  method: "POST",
-  body: {
-    move: {
-      type: "string",
-      description: "Player move: rock, paper, or scissors.",
-      enum: ["rock", "paper", "scissors"],
-      required: true,
-      example: "rock",
-    },
+const seller = createX402Seller({
+  // SELLER_PUBLIC_URL (an https tunnel origin) or RAILWAY_PUBLIC_DOMAIN, if either is
+  // set; otherwise falls back to the local loopback origin below, which lets this demo
+  // run standalone but means the facilitator can't reach it to catalog the resource.
+  publicUrl: resolveSellerPublicUrl({ localDevelopmentUrl: `http://127.0.0.1:${PORT}` }),
+  network: NETWORK,
+  payTo: PAY_TO,
+  assets: {
+    // Stellar testnet native XLM SAC. Charging it keeps this self-contained because
+    // the existing test identities do not need a separate token faucet or trustline.
+    XLM: stellarAssets.testnet.XLM,
   },
-  output: {
-    type: "json",
-    description: "The player move, server move, and round result.",
-    example: { player: "rock", server: "scissors", result: "win" },
+  defaults: {
+    scheme: "exact",
+    maxTimeoutSeconds: 60,
+    feesSponsored: true,
+  },
+});
+
+const play = seller.post("/play", {
+  payment: { asset: "XLM", amount: "1000" },
+  discovery: {
+    name: "Rock Paper Scissors",
+    description: "Plays one round of rock, paper, scissors against the server.",
+    tags: ["game", "rps", "random"],
+    body: {
+      move: {
+        type: "string",
+        description: "Player move: rock, paper, or scissors.",
+        enum: ["rock", "paper", "scissors"],
+        required: true,
+        example: "rock",
+      },
+    },
+    output: {
+      description: "The player move, server move, and round result.",
+      example: { player: "rock", server: "scissors", result: "win" },
+    },
   },
 });
 
@@ -51,24 +63,7 @@ const app = express();
 app.use(express.json({ limit: "16kb" }));
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
-app.use(paymentMiddleware({
-  "POST /play": {
-    accepts: [{
-      scheme: "exact",
-      network: NETWORK,
-      price: { asset: XLM_SAC, amount: PRICE_ATOMIC },
-      payTo: PAY_TO,
-      maxTimeoutSeconds: 60,
-      extra: { areFeesSponsored: true },
-    }],
-    resource: `${PUBLIC_URL}/play`,
-    description: metadata.resource.description,
-    serviceName: metadata.resource.serviceName,
-    tags: metadata.resource.tags,
-    mimeType: "application/json",
-    extensions: metadata.extensions,
-  },
-}, resourceServer));
+app.use(paymentMiddleware(play.paymentConfig, resourceServer));
 
 const moves = ["rock", "paper", "scissors"] as const;
 type Move = typeof moves[number];
@@ -87,7 +82,7 @@ function outcome(player: Move, server: Move): "win" | "lose" | "draw" {
   return "lose";
 }
 
-app.post("/play", (req, res) => {
+app.post(play.path, (req, res) => {
   if (!isMove(req.body?.move)) {
     res.status(400).json({ error: "move must be rock, paper, or scissors" });
     return;
@@ -99,11 +94,11 @@ app.post("/play", (req, res) => {
 app.listen(PORT, "127.0.0.1", () => {
   console.log(JSON.stringify({
     status: "listening",
-    localUrl: `http://127.0.0.1:${PORT}/play`,
-    publicUrl: `${PUBLIC_URL}/play`,
+    localUrl: `http://127.0.0.1:${PORT}${play.path}`,
+    publicUrl: play.resourceUrl,
     facilitator: FACILITATOR_URL,
     payTo: PAY_TO,
-    asset: XLM_SAC,
-    amount: PRICE_ATOMIC,
+    asset: stellarAssets.testnet.XLM,
+    amount: "1000",
   }, null, 2));
 });

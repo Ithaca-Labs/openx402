@@ -22,6 +22,22 @@ export interface ParameterConfig {
 
 export type ParameterMap = Record<string, ParameterConfig>;
 
+/**
+ * A JSON Schema fragment plus an example, already compiled by an adapter such as
+ * `fromZod`. Accepted anywhere a `ParameterMap` is accepted for `query`/`body`, so a
+ * seller who already has a validation schema never describes the same input twice.
+ */
+export interface CompiledInputSchema {
+  schema: { properties: Record<string, unknown>; required?: string[] };
+  example?: unknown;
+}
+
+export function isCompiledInputSchema(
+  value: ParameterMap | CompiledInputSchema | undefined,
+): value is CompiledInputSchema {
+  return value !== undefined && "schema" in value;
+}
+
 export interface OutputConfig {
   /** Response content type, for example `json` or `text`. Defaults to `json`. */
   type?: string;
@@ -46,12 +62,12 @@ export type HttpMethod = QueryMethod | BodyMethod;
 
 export interface HttpMetadataConfig extends ServiceMetadataConfig {
   method: HttpMethod;
-  /** Query-string parameters. */
-  query?: ParameterMap;
+  /** Query-string parameters, or a pre-compiled schema from an adapter such as `fromZod`. */
+  query?: ParameterMap | CompiledInputSchema;
   /** Path parameters of a dynamic route such as `/users/:userId`. */
   path?: ParameterMap;
-  /** Request body fields. Only valid for POST, PUT and PATCH. */
-  body?: ParameterMap;
+  /** Request body fields, or a pre-compiled schema from an adapter such as `fromZod`. Only valid for POST, PUT and PATCH. */
+  body?: ParameterMap | CompiledInputSchema;
   /** Body encoding. Defaults to `json` when `body` is present. */
   bodyType?: "json" | "form-data" | "text";
   /** Custom request headers the caller must send. */

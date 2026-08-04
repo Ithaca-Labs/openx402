@@ -1,5 +1,5 @@
 import { declareDiscoveryExtension, type DiscoveryExtension } from "@x402/extensions/bazaar";
-import type { BazaarMetadata, HttpMetadataConfig } from "./types.js";
+import { isCompiledInputSchema, type BazaarMetadata, type HttpMetadataConfig } from "./types.js";
 import { applyHeaders, applyOutput, parametersToExample, parametersToSchema, serviceMetadata } from "./compile.js";
 import { validateHttpConfig } from "./validate.js";
 
@@ -32,8 +32,10 @@ export function http(config: HttpMetadataConfig): BazaarMetadata {
   const isBody = BODY_METHODS.has(config.method) && config.body !== undefined;
 
   const parameters = isBody ? config.body : config.query;
-  const inputSchema = parametersToSchema(parameters);
-  const input = parametersToExample(parameters);
+  const inputSchema = isCompiledInputSchema(parameters) ? parameters.schema : parametersToSchema(parameters);
+  const input = (
+    isCompiledInputSchema(parameters) ? parameters.example : parametersToExample(parameters)
+  ) as Record<string, unknown> | undefined;
   const pathSchema = parametersToSchema(config.path);
   const pathExample = parametersToExample(config.path);
 
