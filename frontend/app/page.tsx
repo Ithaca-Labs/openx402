@@ -63,6 +63,8 @@ export default function Home() {
                 className="text-sm font-medium text-[#111111]/75 transition-colors duration-200 hover:text-[#111111]"
                 href={item.href}
                 key={item.href}
+                rel={item.external ? "noreferrer noopener" : undefined}
+                target={item.external ? "_blank" : undefined}
               >
                 {item.label}
               </Link>

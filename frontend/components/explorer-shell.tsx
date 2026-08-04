@@ -21,6 +21,8 @@ import { Badge, Card, cn } from "@/components/ui";
 
 type Theme = "dark" | "light";
 
+const ENTITY_AVATAR_API = "https://api.dicebear.com/10.x/identicon/svg";
+
 const themeListeners = new Set<() => void>();
 const themeStore = {
   getSnapshot: (): Theme =>
@@ -102,7 +104,7 @@ export function SiteHeader() {
           id="primary-navigation"
         >
           {navItems.map((item) => {
-            const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
+            const active = !item.external && (pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`)));
 
             return (
               <Link
@@ -111,6 +113,8 @@ export function SiteHeader() {
                 href={item.href}
                 key={item.href}
                 onClick={() => setMenuOpen(false)}
+                rel={item.external ? "noreferrer noopener" : undefined}
+                target={item.external ? "_blank" : undefined}
               >
                 {item.label}
               </Link>
@@ -290,10 +294,26 @@ export function EntityLogo({
     .join("")
     .slice(0, 2)
     .toUpperCase();
+  const [imageFailed, setImageFailed] = useState(false);
+  const imageSize = size === "sm" ? 27 : size === "lg" ? 46 : 34;
+  const imageSrc = `${ENTITY_AVATAR_API}?backgroundColor=ffd21c&backgroundType=solid&radius=18&seed=${encodeURIComponent(name)}`;
 
   return (
-    <span className={cn("entity-logo", `entity-logo--${accent}`, `entity-logo--${size}`)} aria-hidden="true">
-      {initials}
+    <span aria-hidden="true" className={cn("entity-logo", `entity-logo--${accent}`, `entity-logo--${size}`)}>
+      {imageFailed ? (
+        <span className="entity-logo__fallback">{initials}</span>
+      ) : (
+        <Image
+          alt=""
+          aria-hidden="true"
+          className="entity-logo__image"
+          height={imageSize}
+          onError={() => setImageFailed(true)}
+          src={imageSrc}
+          unoptimized
+          width={imageSize}
+        />
+      )}
     </span>
   );
 }

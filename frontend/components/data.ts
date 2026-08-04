@@ -1,6 +1,7 @@
 export type NavItem = {
   href: string;
   label: string;
+  external?: boolean;
 };
 
 export type Trend = "up" | "down" | "flat";
@@ -108,4 +109,5 @@ export const navItems: NavItem[] = [
   { href: "/marketplace", label: "Marketplace" },
   { href: "/transactions", label: "Transactions" },
   { href: "/ecosystem", label: "Ecosystem" },
+  { href: "https://docs.stellarx402.xyz/", label: "Docs", external: true },
 ];

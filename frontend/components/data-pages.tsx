@@ -196,7 +196,7 @@ export function EcosystemPage({ data, search }: { data: DashboardData; search: D
                 <div className="ecosystem-group__top"><span className="mono">{String(index + 1).padStart(2, "0")}</span></div>
                 <div className="ecosystem-group__icon">{index === 0 ? <ServerIcon size={22} /> : index === 1 ? <NetworkIcon size={22} /> : <DatabaseIcon size={22} />}</div>
                 <h3>{group.category}</h3>
-                <div className="ecosystem-group__entities">{group.entities.map(entity => <span key={entity}>{entity}</span>)}</div>
+                <div className="ecosystem-group__entities">{group.entities.map(entity => <span className="ecosystem-group__entity" key={entity}><EntityLogo accent={group.category === "MCP resources" ? "yellow" : "graphite"} name={entity} size="sm" />{entity}</span>)}</div>
               </Card>
             ))}
           </div>
