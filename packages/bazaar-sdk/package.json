@@ -1,6 +1,6 @@
 {
   "name": "@openx402/bazaar-sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Typed seller helpers that compile readable configuration into official x402 Bazaar discovery metadata.",
   "keywords": [
     "x402",
