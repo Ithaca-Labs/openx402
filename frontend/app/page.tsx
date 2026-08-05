@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { navItems } from "@/components/data";
+import { SiteAnalyticsTracker } from "@/components/site-analytics-tracker";
 
 export const metadata: Metadata = {
   title: "openx402 — x402 for the Stellar ecosystem",
@@ -14,7 +15,8 @@ const VIDEO_URL =
 
 export default function Home() {
   return (
-    <main className="brand-page relative flex h-screen w-full flex-col overflow-hidden bg-[#F4F0E6] text-[#111111]">
+    <main className="brand-page relative flex h-screen w-full flex-col overflow-hidden bg-[#F4F0E6] text-[#111111]" data-site-analytics-impression>
+      <SiteAnalyticsTracker />
       <video
         aria-hidden="true"
         autoPlay
