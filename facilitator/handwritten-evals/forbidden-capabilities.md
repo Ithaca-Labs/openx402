@@ -89,7 +89,7 @@ generates language tokens; none creates or edits images.
 **Boundary basis.** F16 extracts text from documents/images and F19 operates on written language,
 but neither accepts speech audio; no family includes automatic speech recognition.
 
-**Scanner signatures.** `speech transcription`; `audio transcription`; `speech to text`;
+**Scanner signatures.** `speech transcription`; `audio transcription`; `speech to text`; `voice to text`;
 `automatic speech recognition`; `asr transcription`; `transcribe audio`.
 
 ## FC-09 — Text-to-speech synthesis
@@ -129,7 +129,7 @@ sections and this block synchronized; the merger fails if ids, names, or signatu
   {"id":"FC-05","name":"Managed relational database queries","signatures":["managed sql","sql query api","execute sql","database query api","postgres hosting","mysql hosting","relational database"]},
   {"id":"FC-06","name":"Hosted code execution sandbox","signatures":["code execution","execute code","run code","sandboxed runtime","compiler api","code runner"]},
   {"id":"FC-07","name":"Generative image synthesis","signatures":["image generation","generate image","text to image","image synthesis","image editing model","diffusion image"]},
-  {"id":"FC-08","name":"Speech-to-text transcription","signatures":["speech transcription","audio transcription","speech to text","automatic speech recognition","asr transcription","transcribe audio"]},
+  {"id":"FC-08","name":"Speech-to-text transcription","signatures":["speech transcription","audio transcription","speech to text","voice to text","automatic speech recognition","asr transcription","transcribe audio"]},
   {"id":"FC-09","name":"Text-to-speech synthesis","signatures":["text to speech","speech synthesis","synthetic voice","voice generation","tts api","generate speech"]},
   {"id":"FC-10","name":"Video transcoding and streaming packaging","signatures":["video transcoding","transcode video","video encoding","adaptive bitrate","hls packaging","streaming rendition"]}
 ]

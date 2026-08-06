@@ -128,6 +128,12 @@ export class SearchService {
     degraded.candidateCounts.fused = fused.length;
 
     fused = await this.rerank(request.query, fused, degraded);
+    // Rerankers replace the fused score. Re-apply the configured threshold to
+    // the score that is actually returned, otherwise a low-confidence reranked
+    // result can violate threshold soundness (§12.4 invariant 2).
+    if (this.config.minimumRelevanceScore > 0) {
+      fused = fused.filter(entry => entry.score >= this.config.minimumRelevanceScore);
+    }
 
     const origins = await this.catalog.origins(fused.map(entry => entry.resourceId));
     fused = applyOriginDiversity(fused, origins, this.config.originDiversityLimit);

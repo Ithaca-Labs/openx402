@@ -365,6 +365,20 @@ export const SidecarRecordSchema = z.object({
       message: "distractors are unlabeled: family and family_slot must be null",
     });
   }
+  if (!labeled && value.axes) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["axes"],
+      message: "distractors must omit labeled-resource axis assignments",
+    });
+  }
+  if (!labeled && value.mcp) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["mcp"],
+      message: "distractors must omit labeled-resource MCP axis assignments",
+    });
+  }
   if (value.axes && value.axes.resource_type !== value.resource_type) {
     context.addIssue({
       code: z.ZodIssueCode.custom,

@@ -80,13 +80,16 @@ Empty directories are placeholders for build-order steps that have not run yet (
 | `bm25.ts` | evaluation-only BM25 comparability baseline (§10) |
 | `agreement.ts` | stratified κ and the grade confusion matrix (§8 pass 3) |
 | `significance.ts` | paired permutation test and bootstrap CI (§10) |
+| `merge-distractors.ts` | validates and merges Step 4 shards; scans the complete catalog for forbidden capabilities (§6) |
 | `metamorphic.test.ts` | the six label-free CI invariants (§12.4) |
+| `release-gates-v2.ts` | validates present artifacts, reports §9 build status, and blocks absent §11 release evidence |
 
 ```sh
 npx tsc --noEmit -p tsconfig.json      # the v2 schema module
 npx tsc --noEmit -p tools              # the evaluation tools
 npx tsx tools/check-schema.ts          # schema refinements
 python3 tools/check-families.py        # family spec distributions
+npm run benchmark:v2:status            # write the current blocked/ready gate report
 ```
 
 Two tsconfigs, deliberately. The one in this directory covers `schema/`; `tools/tsconfig.json`
@@ -139,13 +142,15 @@ Known conflicts between §3's axis values and the v1 field enums are listed at t
 
 | step (§9) | state |
 |---|---|
-| 0 — v2 schema | done: `schema/schema-v2.ts` carries the agent-provenance model (`authorship: "agent"`, `generation`, `review_status`, `AgentCalibrationSchema`, `judge: agent/reviewed_agent`, MCP transports restricted to `streamable-http`/`sse`) |
-| 1 — pilot (1 family end to end, measure annotation speed and `judged@10`) | **skipped by owner decision** — proceeding straight to full-scale build; process defects that the pilot would have caught (isolation leaks, judged@k threshold, agent cost/rate) will only surface at full scale |
+| 0 — v2 schema and v1 archive | done: current schema validates; specified v1 artifacts are preserved under `archive/v1/`; the golden wire fixture remains active |
+| 1 — mandatory end-to-end pilot | **blocked**: no pilot artifacts, measured `judged@10` threshold, exclusion-audit cost, dual grading, or owner review exist |
 | 2 — 20 families + axis assignments | done: `spec/families.md`, `spec/axes.md` |
-| 3 — author 100 resources | not started |
-| 4 — author ~900 distractors, validate no-result exclusion | not started |
+| 3 — author 100 resources | partial: all 100 labeled records are merged and schema-valid; all 100 sidecars remain `review_status: "pending"`, and release-grade provenance/owner acceptance is absent |
+| 4 — author ~900 distractors, validate no-result exclusion | package ready, authoring blocked: shared brief, scanner, assignment policy, and 90 isolated prompts exist; 0/900 distractors authored; labeled `res-0045` currently matches FC-08 (`voice-to-text`) |
 | 5 — author 100 queries + pass-1 labels | not started |
 | 6–10 — freeze, pool, grade, review, score | not started |
 
-Step 1 is not optional. Scaling an unmeasured process to 100 resources is how v1 produced 30,000
-unusable judgments.
+Run `npm run benchmark:v2:status` for the evidence-backed snapshot in
+`reports/release-gates-v2.json`. Missing semantic or owner-review evidence is always reported as
+blocked, never inferred. Step 1 remains mandatory before any full-scale authoring wave is launched.
+The existing FC-08 catalog conflict also requires owner review before Step 4 dispatch.

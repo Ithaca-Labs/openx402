@@ -518,6 +518,23 @@ describe("hybrid retrieval and degradation", () => {
     expect(result.rows).toHaveLength(0);
   });
 
+  it("re-applies the minimum relevance threshold after reranking", async () => {
+    await seedGolden();
+    const lowConfidence: RerankerProvider = {
+      identity: { modelId: "low-confidence", modelRevision: "1", provider: "test" },
+      health: async () => ({ status: "ready" }),
+      rerank: async (_query, documents) => documents.map((_document, index) => ({ index, score: 0.005 })),
+    };
+    const config = searchConfig({
+      semantic: { ...searchConfig().semantic, enabled: false },
+      reranking: { ...searchConfig().reranking, enabled: true },
+      minimumRelevanceScore: 0.01,
+    });
+    const result = await runSearch(service(config, undefined, lowConfidence), "weather");
+    expect(result.degraded.reranking).toBe("used");
+    expect(result.rows).toHaveLength(0);
+  });
+
   it("keeps structured filters applied to every branch", async () => {
     await seedGolden();
     const indexer = worker(searchConfig());

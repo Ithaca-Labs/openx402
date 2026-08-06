@@ -33,7 +33,6 @@
     "benchmark:evaluate-ecosystem": "tsx src/cli/evaluate-ecosystem.ts",
     "benchmark:generate": "tsx src/cli/generate-release-dataset.ts",
     "benchmark:generate-candidates": "tsx src/cli/generate-openrouter-candidates.ts",
-    "benchmark:judge": "tsx src/cli/judge-release-qrels.ts",
     "benchmark:curate-no-results": "tsx src/cli/curate-no-result-qrels.ts",
     "benchmark:calibration": "tsx src/cli/calibration-report.ts",
     "benchmark:import-human": "tsx src/cli/import-human-calibration.ts",
@@ -41,6 +40,8 @@
     "benchmark:evaluate": "tsx src/cli/evaluate-release.ts",
     "benchmark:model-report": "tsx src/cli/report-bge-m3.ts",
     "benchmark:gates": "tsx src/cli/release-gates.ts",
+    "benchmark:v2:status": "tsx handwritten-evals/tools/release-gates-v2.ts --report-only",
+    "benchmark:v2:gates": "tsx handwritten-evals/tools/release-gates-v2.ts",
     "index": "tsx src/cli/index-search.ts",
     "test:live-model": "vitest run --config vitest.live-model.config.ts"
   },

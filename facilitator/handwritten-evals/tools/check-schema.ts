@@ -215,6 +215,27 @@ ok(
     axes: { ...axes, input_shape: "tool_arguments" },
   }).success,
 );
+ok(
+  "distractor with axes rejected",
+  !SidecarRecordSchema.safeParse({
+    ...sidecarRecord,
+    is_distractor: true,
+    family: null,
+    family_slot: null,
+  }).success,
+);
+ok(
+  "distractor with mcp metadata rejected",
+  !SidecarRecordSchema.safeParse({
+    ...sidecarRecord,
+    resource_type: "mcp",
+    is_distractor: true,
+    family: null,
+    family_slot: null,
+    axes: undefined,
+    mcp: mcpTool,
+  }).success,
+);
 
 // --- provenance and owner review (§0.2b, §1.1, §11) ---------------------------------------------
 ok(

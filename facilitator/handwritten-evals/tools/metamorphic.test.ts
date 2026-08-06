@@ -415,7 +415,7 @@ describe("invariant 2 — threshold soundness", () => {
     for (const url of urls(bounded)) expect(urls(unbounded)).toContain(url);
   });
 
-  it("does not let reranking readmit a document the threshold excluded", async () => {
+  it("does not let reranking return excluded or below-threshold documents", async () => {
     await seedGolden();
     await indexAll();
     const base = searchConfig();
@@ -438,8 +438,13 @@ describe("invariant 2 — threshold soundness", () => {
       "current weather for a city", { limit: 50, snapshot },
     );
     expect(withRerank.degraded.reranking).toBe("used");
-    // Reranking reorders the surviving set; it must not grow it.
-    expect(new Set(urls(withRerank))).toEqual(new Set(urls(withoutRerank)));
+    // Reranking may remove a survivor after replacing its fused score, but it
+    // must never grow the pre-threshold set or return a final score below the
+    // configured threshold.
+    for (const url of urls(withRerank)) expect(urls(withoutRerank)).toContain(url);
+    for (const row of withRerank.rows) {
+      expect(withRerank.scores.get(row.versionId)!, row.resource).toBeGreaterThanOrEqual(threshold);
+    }
   });
 });
 

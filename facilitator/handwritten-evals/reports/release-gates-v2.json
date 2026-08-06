@@ -1,0 +1,340 @@
+{
+  "generated_at": "2026-08-06T22:23:53.632Z",
+  "status": "blocked",
+  "counts": {
+    "catalog": 100,
+    "sidecars": 100,
+    "labeled": 100,
+    "distractors": 0,
+    "queries": 0,
+    "pool": 0,
+    "qrels": 0,
+    "calibration": 0
+  },
+  "validation_errors": {
+    "schema": [],
+    "cross_record": [],
+    "axes": []
+  },
+  "steps": [
+    {
+      "step": 0,
+      "name": "v2 schema and v1 archive",
+      "status": "done",
+      "evidence": [
+        "archive complete",
+        "0 current schema errors"
+      ],
+      "blockers": []
+    },
+    {
+      "step": 1,
+      "name": "mandatory end-to-end pilot",
+      "status": "blocked",
+      "evidence": [
+        "pilot report missing"
+      ],
+      "blockers": [
+        "pilot evidence and owner review missing"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "families and axes",
+      "status": "done",
+      "evidence": [
+        "100/100 labeled slots",
+        "0 axis failures"
+      ],
+      "blockers": []
+    },
+    {
+      "step": 3,
+      "name": "100 labeled resources",
+      "status": "partial",
+      "evidence": [
+        "100/100 authored",
+        "100 pending review"
+      ],
+      "blockers": [
+        "owner acceptance and release-grade provenance missing"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "900 distractors and exclusion audit",
+      "status": "not_started",
+      "evidence": [
+        "0/900 distractors"
+      ],
+      "blockers": [
+        "authoring waves, critics, audits, and owner review missing"
+      ]
+    },
+    {
+      "step": 5,
+      "name": "100 queries and pass-1 grading",
+      "status": "not_started",
+      "evidence": [
+        "0/100 queries"
+      ],
+      "blockers": [
+        "Step 4 and query authoring not complete"
+      ]
+    },
+    {
+      "step": 6,
+      "name": "freeze split and manifest",
+      "status": "not_started",
+      "evidence": [
+        "manifest missing"
+      ],
+      "blockers": [
+        "dataset incomplete"
+      ]
+    },
+    {
+      "step": 7,
+      "name": "five-system pool",
+      "status": "not_started",
+      "evidence": [
+        "0/5 systems",
+        "0 pool rows"
+      ],
+      "blockers": [
+        "runs and pool builder output missing"
+      ]
+    },
+    {
+      "step": 8,
+      "name": "dual grading and unpooled audit",
+      "status": "not_started",
+      "evidence": [
+        "0 qrels"
+      ],
+      "blockers": [
+        "pool and grading absent"
+      ]
+    },
+    {
+      "step": 9,
+      "name": "adjudication and owner review",
+      "status": "not_started",
+      "evidence": [
+        "0 calibration rows"
+      ],
+      "blockers": [
+        "adjudication/calibration/owner review absent"
+      ]
+    },
+    {
+      "step": 10,
+      "name": "score, significance, and report",
+      "status": "not_started",
+      "evidence": [
+        "final report missing"
+      ],
+      "blockers": [
+        "judgments and run outputs absent"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "schema",
+      "requirement": "All records schema-valid; zero wire validation errors",
+      "status": "pass",
+      "evidence": [
+        "0 schema errors",
+        "0 wire/sidecar errors"
+      ]
+    },
+    {
+      "id": "counts",
+      "requirement": "100 labeled resources, 900 distractors, 100 queries, frozen split and hashes",
+      "status": "blocked",
+      "evidence": [
+        "resources 100/1000",
+        "queries 0/100",
+        "manifest missing"
+      ]
+    },
+    {
+      "id": "axis-differences",
+      "requirement": "Every labeled sibling pair differs on at least two axes",
+      "status": "pass",
+      "evidence": [
+        "0 failures"
+      ]
+    },
+    {
+      "id": "anti-correlation",
+      "requirement": "upto, mcp, and network show no prohibited correlation",
+      "status": "blocked",
+      "evidence": [
+        "distribution audit missing"
+      ]
+    },
+    {
+      "id": "adversarial",
+      "requirement": "At least six adversarial kinds are present",
+      "status": "pass",
+      "evidence": [
+        "9/9 kinds"
+      ]
+    },
+    {
+      "id": "mcp-queries",
+      "requirement": "All four MCP query subtypes are covered",
+      "status": "blocked",
+      "evidence": [
+        "0/9 MCP queries",
+        "0/4 subtypes"
+      ]
+    },
+    {
+      "id": "pool",
+      "requirement": "Pool covers top-20 of all five systems and every pooled pair is judged",
+      "status": "blocked",
+      "evidence": [
+        "0/5 systems",
+        "0 unjudged pooled pairs"
+      ]
+    },
+    {
+      "id": "unpooled-audit",
+      "requirement": "Unpooled audit performed and relevance rate reported",
+      "status": "blocked",
+      "evidence": [
+        "unpooled audit missing"
+      ]
+    },
+    {
+      "id": "judged-at-k",
+      "requirement": "judged@10 meets the pilot-derived threshold",
+      "status": "blocked",
+      "evidence": [
+        "pilot missing/incomplete"
+      ]
+    },
+    {
+      "id": "no-result",
+      "requirement": "Forbidden capabilities scanned, independently audited, owner-approved",
+      "status": "blocked",
+      "evidence": [
+        "forbidden audit missing"
+      ]
+    },
+    {
+      "id": "metric-contract",
+      "requirement": "Relevance thresholds and nDCG gains are stated",
+      "status": "blocked",
+      "evidence": [
+        "expected thresholds {\"mrr\":2,\"recall_at_k\":2,\"bpref\":2,\"judged_at_k\":\"any_judgment\"}",
+        "expected gains [0,1,3,7]"
+      ]
+    },
+    {
+      "id": "provenance",
+      "requirement": "Every generated artifact has exact revision, hash, run/shard, temperature, and review status",
+      "status": "blocked",
+      "evidence": [
+        "missing or placeholder provenance"
+      ]
+    },
+    {
+      "id": "isolation",
+      "requirement": "No author graded own output; task-pack isolation is auditable",
+      "status": "blocked",
+      "evidence": [
+        "isolation audit missing"
+      ]
+    },
+    {
+      "id": "blindness",
+      "requirement": "Grading was blind to system, score, rank, author, and other grader",
+      "status": "blocked",
+      "evidence": [
+        "blindness audit missing"
+      ]
+    },
+    {
+      "id": "agreement",
+      "requirement": "Restricted weighted kappa is reported and at least 0.6",
+      "status": "blocked",
+      "evidence": [
+        "calibration missing"
+      ]
+    },
+    {
+      "id": "rationales",
+      "requirement": "All release judgments carry rationales",
+      "status": "blocked",
+      "evidence": [
+        "0/50 release queries",
+        "0 total qrels"
+      ]
+    },
+    {
+      "id": "owner-review",
+      "requirement": "Owner reviewed every resource, query, qrel, adjudication, and correction",
+      "status": "blocked",
+      "evidence": [
+        "resources reviewed 0/100",
+        "queries reviewed 0/0"
+      ]
+    },
+    {
+      "id": "correction-rates",
+      "requirement": "Owner correction and rejection rates are reported; originals preserved",
+      "status": "blocked",
+      "evidence": [
+        "final report missing"
+      ]
+    },
+    {
+      "id": "significance",
+      "requirement": "Significance tests accompany point estimates",
+      "status": "blocked",
+      "evidence": [
+        "significance missing"
+      ]
+    },
+    {
+      "id": "bm25",
+      "requirement": "BM25 baseline is present and participated in pooling",
+      "status": "blocked",
+      "evidence": [
+        "BM25 not run"
+      ]
+    },
+    {
+      "id": "limitations",
+      "requirement": "Limitations section is written",
+      "status": "blocked",
+      "evidence": [
+        "limitations missing"
+      ]
+    }
+  ],
+  "blockers": [
+    "counts",
+    "anti-correlation",
+    "mcp-queries",
+    "pool",
+    "unpooled-audit",
+    "judged-at-k",
+    "no-result",
+    "metric-contract",
+    "provenance",
+    "isolation",
+    "blindness",
+    "agreement",
+    "rationales",
+    "owner-review",
+    "correction-rates",
+    "significance",
+    "bm25",
+    "limitations"
+  ]
+}
