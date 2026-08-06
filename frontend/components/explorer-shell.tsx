@@ -17,6 +17,7 @@ import {
 } from "@/components/icons";
 import { Bar, BarBaseline, BarChart } from "@/components/charts";
 import { navItems, type Metric } from "@/components/data";
+import { SiteAnalyticsTracker } from "@/components/site-analytics-tracker";
 import { Badge, Card, cn } from "@/components/ui";
 
 type Theme = "dark" | "light";
@@ -47,8 +48,9 @@ const themeStore = {
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="site-frame">
+      <SiteAnalyticsTracker />
       <SiteHeader />
-      <main className="site-main">{children}</main>
+      <main className="site-main" data-site-analytics-impression>{children}</main>
       <SiteFooter />
     </div>
   );

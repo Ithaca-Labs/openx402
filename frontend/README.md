@@ -25,6 +25,13 @@ URL resolution order is `FACILITATOR_INTERNAL_URL`, `FACILITATOR_URL`, then the
 deployed facilitator URL. Both variables are server-only. Never create a
 `NEXT_PUBLIC_FACILITATOR_API_KEY` variable.
 
+The private `/analytics` route is fully independent of the facilitator. Set
+`ANALYTICS_DATABASE_URL` to a server-only PostgreSQL connection and
+`ANALYTICS_ACCESS_SECRET` to a long random server-only value in the frontend
+deployment. On its first request, the frontend creates its own
+`frontend_analytics_events` table and indexes; it records only a hashed random
+browser identifier, route path, event type, and timestamp.
+
 Health check: `GET /api/health`.
 
 ## Production
