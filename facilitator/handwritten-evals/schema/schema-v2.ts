@@ -224,8 +224,12 @@ export const AxesSchema = z.object({
   attestation: z.enum(ATTESTATIONS),
 }).strict();
 
-/** MCP-specific variation required by §4: tool tuple, schema shape, transport, tool count. */
-export const MCP_TRANSPORTS = ["stdio", "streamable-http"] as const;
+/**
+ * MCP-specific variation required by §4: tool tuple, schema shape, transport, tool count.
+ * §6: the only two transports the official Bazaar extension permits. Local `stdio` tools are
+ * not valid Bazaar transport declarations and must not appear here.
+ */
+export const MCP_TRANSPORTS = ["streamable-http", "sse"] as const;
 
 export const McpAxesSchema = z.object({
   server_name: z.string().min(1).max(64),
@@ -254,12 +258,31 @@ export const ADVERSARIAL_KINDS = [
 
 export const AdversarialKindSchema = z.enum(ADVERSARIAL_KINDS);
 
+/**
+ * §1.1 / §11 — exact model/run provenance for one generated artifact.
+ * `temperature` and `generated_at` are the "temperature, timestamp" §1.1 requires alongside
+ * provider, model, prompt hash, run ID, and shard ID.
+ */
+export const GenerationSchema = z.object({
+  provider: z.literal("anthropic"),
+  model: z.string().min(1), // exact model/revision, never a family name alone
+  prompt_hash: z.string().min(1),
+  run_id: z.string().min(1),
+  shard_id: z.string().min(1),
+  temperature: z.number().min(0).max(2).optional(),
+  generated_at: z.string().datetime(),
+}).strict();
+
+/** §0.2b / §11 — owner acceptance state. No artifact ships without owner review. */
+export const REVIEW_STATUSES = ["pending", "approved", "corrected", "rejected"] as const;
+export const ReviewStatusSchema = z.enum(REVIEW_STATUSES);
+
 export const SidecarRecordSchema = z.object({
   resource_id: ResourceIdSchema,
 
   // --- §0.2b orthogonal fields. There is no `source_class` and no `adversarial` boolean. ---
-  /** Provenance of the *meaning*. v2 is hand-authored end to end. */
-  authorship: z.enum(["human"]),
+  /** Provenance of the *meaning*. v2 is authored by isolated fresh-context Claude subagents. */
+  authorship: z.enum(["agent"]),
   /** Transport, NOT provenance. `generated_mcp` was never provenance (§0.2b). */
   resource_type: ResourceTypeSchema,
   /** Unlabeled corpus padding. Distractors are unjudged, not grade 0 (§0.3, §1). */
@@ -270,12 +293,19 @@ export const SidecarRecordSchema = z.object({
   adversarial_kind: AdversarialKindSchema.nullable(),
 
   provider_id: ProviderIdSchema,
+  /** §0.2b: exact model/run provenance for the isolated authoring agent that wrote this record. */
+  generation: GenerationSchema,
   derived_from: z.object({
-    kind: z.literal("curated"), // §5: v2 is curated end to end; no cdp/openrouter provenance
+    kind: z.literal("agent_generated"), // §5: was "curated" — v2 is agent-authored end to end
     generation_id: z.string().min(1),
     /** §6 rule 2 / §5: real provenance — family, use case, trap. Never a placeholder. */
-    rationale: z.string().min(1).max(2_000).optional(),
+    rationale: z.string().min(1).max(2_000),
   }).strict(),
+  /** §0.2b / §11 — owner acceptance state; the release gate requires every artifact reviewed. */
+  review_status: ReviewStatusSchema,
+  reviewed_at: z.string().datetime().nullable().default(null),
+  /** §1.1: owner corrections are append-only provenance, never an overwrite of agent output. */
+  owner_note: z.string().min(1).max(2_000).nullable().default(null),
 
   /** §2 family index, 1..20, and the 1..5 slot within it. Null for distractors. */
   family: z.number().int().min(1).max(FAMILY_COUNT).nullable(),
@@ -298,6 +328,20 @@ export const SidecarRecordSchema = z.object({
   /** §4 MCP variation. Required when `resource_type === "mcp"` and the record is labeled. */
   mcp: McpAxesSchema.optional(),
 }).strict().superRefine((value, context) => {
+  if (value.review_status !== "pending" && !value.reviewed_at) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["reviewed_at"],
+      message: "approved/corrected/rejected records must record when the owner reviewed them",
+    });
+  }
+  if ((value.review_status === "corrected" || value.review_status === "rejected") && !value.owner_note) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["owner_note"],
+      message: "corrections and rejections must record the owner's reason (§1.1 append-only provenance)",
+    });
+  }
   const labeled = !value.is_distractor;
 
   if (labeled && !value.axes) {
@@ -496,14 +540,34 @@ export const QueryRecordSchema = z.object({
    * Mirrored into `forbidden-capabilities.md` and checked by the exclusion scanner.
    */
   forbidden_capability: z.string().min(1).max(200).optional(),
+  /** §11: every generated artifact, queries included, records exact model/run provenance. */
+  generation: GenerationSchema,
   derived_from: z.object({
-    kind: z.literal("curated"),
+    kind: z.literal("agent_generated"), // was "curated" — see SidecarRecordSchema
     generation_id: z.string().min(1),
     /** §6 rule 2 — real provenance: family, use case, trap. A placeholder here is a defect. */
     use_case: z.string().min(1).max(1_000),
     trap: z.string().min(1).max(1_000).optional(),
   }).strict(),
+  /** §11: owner reviews and accepts every query before release, same as resources. */
+  review_status: ReviewStatusSchema,
+  reviewed_at: z.string().datetime().nullable().default(null),
+  owner_note: z.string().min(1).max(2_000).nullable().default(null),
 }).strict().superRefine((value, context) => {
+  if (value.review_status !== "pending" && !value.reviewed_at) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["reviewed_at"],
+      message: "approved/corrected/rejected queries must record when the owner reviewed them",
+    });
+  }
+  if ((value.review_status === "corrected" || value.review_status === "rejected") && !value.owner_note) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["owner_note"],
+      message: "corrections and rejections must record the owner's reason (§1.1 append-only provenance)",
+    });
+  }
   if (value.query_class === "mcp" && !value.mcp_subtype) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
@@ -562,11 +626,14 @@ export const QueryRecordSchema = z.object({
 /**
  * `qrels-v2.jsonl` contains ONLY judged pairs.
  *
- * - grade 0 here means "a human read this and determined it irrelevant" (§7).
+ * - grade 0 here means "an isolated fresh-context grading agent inspected this pair and
+ *   determined it irrelevant" (§7), not "nobody looked."
  * - ABSENCE of a (query_id, resource_id) pair means UNJUDGED — a distinct state that contributes
  *   0 to DCG but is counted and reported separately via `judged@k` (§10).
  * - There is no `pending` judge and no `provisional` flag: both encoded "unjudged" inside the
  *   qrels file, which is exactly the v1 conflation this schema removes.
+ * - `judge: "agent"` is a raw isolated-grader grade (§8 pass 1/2). `judge: "reviewed_agent"` is
+ *   one the owner has reviewed, adjudicated, or corrected (§8 pass 3) — release qrels are this.
  */
 export const QrelRecordSchema = z.object({
   query_id: QueryIdSchema,
@@ -575,9 +642,10 @@ export const QrelRecordSchema = z.object({
   /** false = deterministic hard-filter exclusion (network/scheme/type/asset/price), §7. */
   eligible: z.boolean(),
   hard_constraint_reason: z.string().min(1).max(200).optional(),
-  judge: z.enum(["deterministic", "human", "curated"]), // openrouter/pending retired (§0.2)
+  judge: z.enum(["deterministic", "agent", "reviewed_agent"]), // human/openrouter/curated/pending retired (§0.2)
   /** §8: required on release judgments. Enforced by the release gate, which knows the split. */
   rationale: z.string().max(1_000).optional(),
+  /** Identifies who judged: an agent run_id when `judge: "agent"`, or the owner when `reviewed_agent`. */
   annotator: z.string().min(1).optional(),
   judged_at: z.string().datetime().optional(),
 }).strict().superRefine((value, context) => {
@@ -596,18 +664,18 @@ export const QrelRecordSchema = z.object({
     });
   }
   // §0.3: the v1 "eligible requires OpenRouter judgment" rule is replaced by this.
-  if (value.eligible && value.judge !== "human" && value.judge !== "curated") {
+  if (value.eligible && value.judge !== "agent" && value.judge !== "reviewed_agent") {
     context.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["judge"],
-      message: "eligible qrels require a human or curated judgment",
+      message: "eligible qrels require an agent or reviewed_agent judgment",
     });
   }
   if (value.eligible && value.judge !== "deterministic" && !value.annotator) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["annotator"],
-      message: "human/curated judgments must record who made them",
+      message: "agent/reviewed_agent judgments must record who made them",
     });
   }
 });
@@ -704,24 +772,36 @@ export function unjudgedPooledPairs(
  * §0.5 — calibration
  * ---------------------------------------------------------------------------------------------- */
 
+/** §0.5 — which isolated grading agent produced one grade. Same shape as `GenerationSchema`'s core. */
+export const GraderRefSchema = z.object({
+  run_id: z.string().min(1),
+  model: z.string().min(1),
+  prompt_hash: z.string().min(1),
+}).strict();
+
 /**
- * v1's `agent_grade` assumed an LLM judge. v2 calibration is annotator-vs-annotator (§8 pass 3).
+ * §0.5 — calibration is isolated-grader vs isolated-grader, never human ground truth.
+ * Agreement measures consistency between fresh-context agents; it is not presented as human
+ * inter-annotator agreement or proof of ground-truth validity (§1.1, §8 pass 3).
  * `boundary_case` marks the 2-vs-3 region where the benchmark lives (§7).
  */
-export const HumanCalibrationSchema = z.object({
+export const AgentCalibrationSchema = z.object({
   query_id: QueryIdSchema,
   resource_id: ResourceIdSchema,
-  annotator_a_grade: z.number().int().min(0).max(3),
-  annotator_b_grade: z.number().int().min(0).max(3).nullable(),
+  grader_a_grade: z.number().int().min(0).max(3),
+  grader_b_grade: z.number().int().min(0).max(3).nullable(),
   adjudicated_grade: z.number().int().min(0).max(3).nullable(),
-  annotator_a: z.string().min(1),
-  annotator_b: z.string().min(1).nullable(),
+  grader_a: GraderRefSchema,
+  grader_b: GraderRefSchema.nullable(),
+  adjudicator: GraderRefSchema.nullable(),
+  /** §8 pass 3 / §11 — the owner reviews, approves, corrects, or rejects every calibration row. */
+  owner_review: ReviewStatusSchema,
   reviewed_at: z.string().datetime().nullable(),
   /** true when either grade is 2 or 3 (§0.5). */
   boundary_case: z.boolean(),
   notes: z.string().nullable(),
 }).strict().superRefine((value, context) => {
-  const grades = [value.annotator_a_grade, value.annotator_b_grade].filter(
+  const grades = [value.grader_a_grade, value.grader_b_grade].filter(
     (grade): grade is number => grade !== null,
   );
   const expected = grades.some(grade => grade === 2 || grade === 3);
@@ -732,31 +812,43 @@ export const HumanCalibrationSchema = z.object({
       message: `boundary_case must be ${expected}: true iff either grade is 2 or 3`,
     });
   }
-  if (value.annotator_b === null && value.annotator_b_grade !== null) {
+  if (value.grader_b === null && value.grader_b_grade !== null) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
-      path: ["annotator_b"],
-      message: "annotator_b_grade requires a named annotator_b",
+      path: ["grader_b"],
+      message: "grader_b_grade requires a named grader_b",
     });
   }
-  if (
-    value.annotator_b_grade !== null &&
-    value.annotator_b_grade !== value.annotator_a_grade &&
-    value.adjudicated_grade === null
-  ) {
+  const disagreement = value.grader_b_grade !== null && value.grader_b_grade !== value.grader_a_grade;
+  if (disagreement && value.adjudicated_grade === null) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["adjudicated_grade"],
       message: "§8 pass 3: disagreements must be adjudicated and the resolution recorded",
     });
   }
+  if (disagreement && value.adjudicator === null) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["adjudicator"],
+      message: "§8 pass 3: a disagreement resolved without a recorded adjudicator is not traceable",
+    });
+  }
+  if (value.owner_review !== "pending" && value.reviewed_at === null) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["reviewed_at"],
+      message: "approved/corrected/rejected calibration rows must record when the owner reviewed them",
+    });
+  }
 });
 
-export const HumanReviewImportSchema = z.object({
+/** §1.1: the owner's final acceptance pass over a grade, imported as an append-only record. */
+export const OwnerReviewImportSchema = z.object({
   query_id: QueryIdSchema,
   resource_id: ResourceIdSchema,
   grade: z.number().int().min(0).max(3),
-  annotator: z.string().min(1),
+  reviewer: z.string().min(1),
   reviewed_at: z.string().datetime(),
   rationale: z.string().max(1_000).nullable().default(null),
   notes: z.string().nullable().default(null),
@@ -783,4 +875,8 @@ export type SidecarRecord = z.infer<typeof SidecarRecordSchema>;
 export type QueryRecord = z.infer<typeof QueryRecordSchema>;
 export type QrelRecord = z.infer<typeof QrelRecordSchema>;
 export type PoolRecord = z.infer<typeof PoolRecordSchema>;
-export type HumanCalibrationRecord = z.infer<typeof HumanCalibrationSchema>;
+export type Generation = z.infer<typeof GenerationSchema>;
+export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
+export type GraderRef = z.infer<typeof GraderRefSchema>;
+export type AgentCalibrationRecord = z.infer<typeof AgentCalibrationSchema>;
+export type OwnerReviewImport = z.infer<typeof OwnerReviewImportSchema>;

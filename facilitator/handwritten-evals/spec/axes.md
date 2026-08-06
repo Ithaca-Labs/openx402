@@ -92,7 +92,7 @@ MCP resources must additionally vary on these, or `type: mcp` collapses into one
 |---|---|
 | `mcp.server_name` | free, ≤64 chars |
 | `mcp.tool_name` | free, ≤64 chars |
-| `mcp.transport` | `stdio`, `streamable-http` |
+| `mcp.transport` | `streamable-http`, `sse` |
 | `mcp.tool_count` | 1–32 |
 | `mcp.input_schema_shape` | `flat_scalars`, `nested_object`, `array_input`, `enum_union`, `no_input` |
 
@@ -107,7 +107,7 @@ These are independent booleans/enums, not a partition. A resource may carry seve
 
 | field | values | meaning |
 |---|---|---|
-| `authorship` | `human` | provenance of the **meaning** |
+| `authorship` | `agent` | provenance of the **meaning**; exact model/run metadata is also required |
 | `is_distractor` | boolean | unlabeled corpus padding; unjudged, **not** grade 0 |
 | `is_sparse` | boolean | no `description`, no `tags`, terse `serviceName` |
 | `adversarial_kind` | enum \| `null` | `null` means not adversarial; there is no separate boolean |
@@ -137,7 +137,8 @@ and `scheme_mismatch_claim` needs prose or a service name that contradicts the `
 - [ ] `payTo` is a valid Stellar G or C address
 - [ ] `asset_decimals` is `7`
 - [ ] `price_usd_snapshot.basis` is `fixed_fixture_minimum_option_value`
-- [ ] `derived_from.kind` is `curated` with a real `generation_id` and a real rationale
+- [ ] `derived_from.kind` is `agent_generated` with exact model revision, prompt hash, run ID,
+      shard ID, generation timestamp, and a real rationale
 - [ ] no CDP prose or schemas copied, even lightly reworded (§5 licensing)
 
 ---

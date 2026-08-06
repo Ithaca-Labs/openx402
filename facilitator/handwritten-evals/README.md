@@ -1,7 +1,7 @@
 # handwritten-evals
 
-The v2 Stellar Bazaar search benchmark: a hand-authored replacement for the v1 dataset in
-`../eval-dataset/`. `BUILD-PLAN.md` in this directory is the authoritative spec; everything else
+The v2 Stellar Bazaar search benchmark: an isolated-agent-authored, human-reviewed replacement for
+the v1 dataset in `../eval-dataset/`. `BUILD-PLAN.md` is the authoritative spec; everything else
 here implements some section of it.
 
 v1 is not deleted. Per BUILD-PLAN §0.6 it is archived with a note explaining what was tried and why
@@ -12,10 +12,17 @@ repository.
 
 ## The rule that shapes everything here
 
-> **Humans write meaning. Machines write syntax.**
-> Never hand-type wire JSON; never machine-generate relevance.
+> **Fresh-context agents write meaning. Deterministic programs validate syntax. The owner accepts
+> every artifact.**
+>
+> No authoring agent sees another author's output. No grader sees retrieval-system identity, rank,
+> score, authoring context, or another grader's decision.
 
-Concretely, a script in `tools/` may:
+Claude subagents may independently author resources, distractors, queries, semantic grades,
+rationales, critiques, and adjudication drafts. Every run records its model revision, prompt hash,
+run ID, shard ID, and review status. The same agent may not author and grade the same work.
+
+A deterministic program in `tools/` may:
 
 - emit wire JSON from an authored record (ids, URLs, `accepts` entries, stroop amounts, schema
   scaffolding)
@@ -23,23 +30,25 @@ Concretely, a script in `tools/` may:
 - compute hashes, freeze the release split, and check distributions
 - run retrieval profiles, build the pool, and compute metrics
 
-A script here may **never**:
+A deterministic program may **never** invent semantic content or relevance. An authoring agent may
+never:
 
-- invent a capability, a description, a service name, or a tag
-- decide that a resource is relevant to a query, or assign a grade
+- read another authoring agent's shard
+- read retrieval runs, qrels, or release answers while authoring
+- grade its own resource or query
 - template a resource from another resource
 - generate distractors from a pattern
 
 That last one is not a stylistic preference. v1's `CDP-shaped weather 001` … `030` were mechanically
 generated variants of one record, and that is precisely why v1 turned out to be unmeasurable: 30,000
 judgments that were category-matching, and a κ that was never computable. Distractors in v2 are
-authored individually against a "plausible listing, satisfies no planted capability need" brief
-(§1, §9 step 4).
+produced in small shards by fresh-context agents against a "plausible listing, satisfies no planted
+capability need" brief (§1, §9 step 4).
 
-The same rule applies in reverse to relevance: judgments come from humans (`judge: "human"` or
-`"curated"`). The only machine-assigned grade permitted is a deterministic hard-filter exclusion,
-which is `eligible: false` at grade 0 with a named reason — and that is a `WHERE` clause, not a
-relevance opinion (§7).
+Relevance comes from two isolated grading agents and a separate adjudicator, followed by owner
+review. The benchmark is reported as **agent-authored, human-reviewed**, not human-authored ground
+truth. Deterministic hard-filter exclusions remain `eligible: false` at grade 0 with a named reason;
+they are `WHERE` clauses, not relevance opinions (§7).
 
 ---
 
@@ -48,12 +57,12 @@ relevance opinion (§7).
 | path | contents | who writes it |
 |---|---|---|
 | `BUILD-PLAN.md` | the spec. Read §0, §2, §3, §4 before authoring anything | — |
-| `schema/schema-v2.ts` | the complete v2 zod schema: wire, catalog, sidecar, queries, qrels, pool, calibration, `RELEASE_COUNTS` | human |
-| `spec/families.md` | the 20 capability families, their boundaries, and 100 planned resource slots with full axis assignments | human |
-| `spec/axes.md` | the §3 axis reference with concrete allowed values; the authoring checklist | human |
-| `catalog/` | `catalog-v2.jsonl` (wire) and `sidecar-v2.jsonl` (axes, tags, provenance) | authored meaning, emitted syntax |
-| `queries/` | `queries-v2.jsonl` — 100 queries, 50 dev / 50 release | human |
-| `qrels/` | `qrels-v2.jsonl` — **only judged pairs**; absence means unjudged | human |
+| `schema/schema-v2.ts` | the v2 zod schema: wire, catalog, sidecar, queries, qrels, pool, calibration, `RELEASE_COUNTS` | maintainer |
+| `spec/families.md` | the 20 capability families, their boundaries, and 100 planned resource slots with full axis assignments | maintainer |
+| `spec/axes.md` | the §3 axis reference with concrete allowed values; the authoring checklist | maintainer |
+| `catalog/` | `catalog-v2.jsonl` (wire) and `sidecar-v2.jsonl` (axes, tags, provenance) | isolated author agents + owner review |
+| `queries/` | `queries-v2.jsonl` — 100 queries, 50 dev / 50 release | isolated query agents + owner review |
+| `qrels/` | `qrels-v2.jsonl` — **only judged pairs**; absence means unjudged | isolated graders/adjudicator + owner review |
 | `pool/` | `pool-v2.jsonl` — which pairs entered the pool and from which systems | script |
 | `manifests/` | dataset manifest, frozen release split, content hashes | script |
 | `reports/` | release gates, stratified κ, metric reports | script |
@@ -103,15 +112,15 @@ frozen. Summary of the differences (BUILD-PLAN §0):
   `is_sparse` and `adversarial_kind` (nullable; `null` means not adversarial, and there is no
   separate boolean to contradict it).
 - **Unjudged is a first-class state.** `qrels-v2.jsonl` contains only judged pairs. Grade 0 there
-  means a human read the record and called it irrelevant. A returned resource with no qrel entry is
+  means isolated graders inspected the record and called it irrelevant. A returned resource with no qrel entry is
   unjudged: it contributes 0 to DCG, but it is counted and reported separately via `judged@k`. The
   `pending` judge and the `provisional` flag are both gone — they encoded "unjudged" inside the
   qrels file, which is exactly the conflation v2 removes.
 - **`pool-v2.jsonl` exists.** Everything pooled must be judged; the pool file is the completeness
   audit trail, and `unjudgedPooledPairs()` turns that into a gate.
-- **Calibration is annotator-vs-annotator.** v1's `agent_grade` presumed an LLM judge. v2 records
-  two independent annotators, the adjudicated grade, and `boundary_case` — the 2-vs-3 region where
-  the benchmark actually lives.
+- **Calibration is isolated-grader vs isolated-grader.** v2 records two independent agent grades,
+  a separate adjudication, owner review status, and `boundary_case` — the 2-vs-3 region where the
+  benchmark actually lives. Agreement measures consistency, not human ground-truth validity.
 
 The v1 wire constraints are all preserved unchanged: `.example` hostnames, `serviceName` ≤ 32,
 `tags` ≤ 5, `description` ≤ 4,000, `accepts` 1–3, network-matched USDC contract, valid Stellar G or
@@ -130,8 +139,8 @@ Known conflicts between §3's axis values and the v1 field enums are listed at t
 
 | step (§9) | state |
 |---|---|
-| 0 — v2 schema | done: `schema/schema-v2.ts`, typechecks clean, smoke checks pass |
-| 1 — pilot (1 family end to end, measure annotation speed and `judged@10`) | **not started — do this before authoring at scale** |
+| 0 — v2 schema | done: `schema/schema-v2.ts` carries the agent-provenance model (`authorship: "agent"`, `generation`, `review_status`, `AgentCalibrationSchema`, `judge: agent/reviewed_agent`, MCP transports restricted to `streamable-http`/`sse`) |
+| 1 — pilot (1 family end to end, measure annotation speed and `judged@10`) | **skipped by owner decision** — proceeding straight to full-scale build; process defects that the pilot would have caught (isolation leaks, judged@k threshold, agent cost/rate) will only surface at full scale |
 | 2 — 20 families + axis assignments | done: `spec/families.md`, `spec/axes.md` |
 | 3 — author 100 resources | not started |
 | 4 — author ~900 distractors, validate no-result exclusion | not started |

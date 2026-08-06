@@ -9,10 +9,10 @@
  */
 
 import {
+  AgentCalibrationSchema,
   assertReleaseCounts,
   axisDifferences,
   CatalogRecordSchema,
-  HumanCalibrationSchema,
   PoolRecordSchema,
   PUBNET_USDC,
   QrelRecordSchema,
@@ -78,15 +78,28 @@ const axes: Axes = {
   attestation: "unsigned",
 };
 
+const generation = {
+  provider: "anthropic" as const,
+  model: "claude-sonnet-5-20260115",
+  prompt_hash: "sha256:deadbeef",
+  run_id: "run-f01-s01",
+  shard_id: "shard-resources-01",
+  generated_at: "2026-01-01T00:00:00.000Z",
+};
+
 const sidecarRecord = {
   resource_id: "res-0001",
-  authorship: "human" as const,
+  authorship: "agent" as const,
   resource_type: "http" as const,
   is_distractor: false,
   is_sparse: false,
   adversarial_kind: null,
   provider_id: "provider-001",
-  derived_from: { kind: "curated" as const, generation_id: "handwritten-v2", rationale: "family 1 slot 1" },
+  generation,
+  derived_from: { kind: "agent_generated" as const, generation_id: "handwritten-v2", rationale: "family 1 slot 1" },
+  review_status: "pending" as const,
+  reviewed_at: null,
+  owner_note: null,
   family: 1,
   family_slot: 1,
   category: "onchain-state",
@@ -158,10 +171,19 @@ const mcpAxes = { ...axes, resource_type: "mcp" as const, input_method: "not_app
 const mcpTool = {
   server_name: "ledger-tools",
   tool_name: "get_entry",
-  transport: "stdio" as const,
+  transport: "streamable-http" as const,
   tool_count: 3,
   input_schema_shape: "flat_scalars" as const,
 };
+ok(
+  "stdio transport rejected (§6: not a valid Bazaar transport)",
+  !SidecarRecordSchema.safeParse({
+    ...sidecarRecord,
+    resource_type: "mcp",
+    axes: mcpAxes,
+    mcp: { ...mcpTool, transport: "stdio" },
+  }).success,
+);
 ok(
   "mcp + adversarial + sparse coexist",
   SidecarRecordSchema.safeParse({
@@ -194,6 +216,29 @@ ok(
   }).success,
 );
 
+// --- provenance and owner review (§0.2b, §1.1, §11) ---------------------------------------------
+ok(
+  "approved without reviewed_at rejected",
+  !SidecarRecordSchema.safeParse({ ...sidecarRecord, review_status: "approved" }).success,
+);
+ok(
+  "corrected without owner_note rejected",
+  !SidecarRecordSchema.safeParse({
+    ...sidecarRecord,
+    review_status: "corrected",
+    reviewed_at: "2026-01-02T00:00:00.000Z",
+  }).success,
+);
+ok(
+  "corrected with reviewed_at and owner_note accepted",
+  SidecarRecordSchema.safeParse({
+    ...sidecarRecord,
+    review_status: "corrected",
+    reviewed_at: "2026-01-02T00:00:00.000Z",
+    owner_note: "fixed price tier to match minimum accepts option",
+  }).success,
+);
+
 // --- axis differentiation (§3) ------------------------------------------------------------------
 ok("identical axes differ on nothing", axisDifferences(axes, axes).length === 0);
 ok(
@@ -206,12 +251,20 @@ const query = {
   query_id: "qry-001",
   split: "development" as const,
   query_class: "mcp" as const,
-  query: "mcp server exposing a get_entry tool over stdio",
+  query: "mcp server exposing a get_entry tool over streamable-http",
   expects_no_result: false,
   phrasing_register: "keyword_only" as const,
   mcp_subtype: "transport" as const,
   family: 1,
-  derived_from: { kind: "curated" as const, generation_id: "handwritten-v2", use_case: "agent needs a stdio MCP tool" },
+  generation: { ...generation, run_id: "run-q01", shard_id: "shard-queries-01" },
+  derived_from: {
+    kind: "agent_generated" as const,
+    generation_id: "handwritten-v2",
+    use_case: "agent needs a streamable-http MCP tool",
+  },
+  review_status: "pending" as const,
+  reviewed_at: null,
+  owner_note: null,
 };
 ok("query_class mcp accepted", QueryRecordSchema.safeParse(query).success);
 ok(
@@ -230,24 +283,29 @@ ok(
 );
 
 // --- qrels (§0.3) -------------------------------------------------------------------------------
-const humanQrel = {
+const agentQrel = {
   query_id: "qry-001",
   resource_id: "res-0001",
   grade: 3,
   eligible: true,
-  judge: "human" as const,
-  annotator: "annotator-a",
+  judge: "agent" as const,
+  annotator: "run-grader-01",
 };
-ok("human eligible qrel accepted", QrelRecordSchema.safeParse(humanQrel).success);
+ok("agent eligible qrel accepted", QrelRecordSchema.safeParse(agentQrel).success);
+ok(
+  "reviewed_agent eligible qrel accepted",
+  QrelRecordSchema.safeParse({ ...agentQrel, judge: "reviewed_agent", annotator: "owner" }).success,
+);
 ok(
   "deterministic eligible qrel rejected",
-  !QrelRecordSchema.safeParse({ ...humanQrel, judge: "deterministic" }).success,
+  !QrelRecordSchema.safeParse({ ...agentQrel, judge: "deterministic" }).success,
 );
 ok(
   "openrouter judge rejected",
-  !QrelRecordSchema.safeParse({ ...humanQrel, judge: "openrouter" }).success,
+  !QrelRecordSchema.safeParse({ ...agentQrel, judge: "openrouter" }).success,
 );
-ok("pending judge rejected", !QrelRecordSchema.safeParse({ ...humanQrel, judge: "pending" }).success);
+ok("human judge rejected (v2 has no human judge)", !QrelRecordSchema.safeParse({ ...agentQrel, judge: "human" }).success);
+ok("pending judge rejected", !QrelRecordSchema.safeParse({ ...agentQrel, judge: "pending" }).success);
 ok(
   "ineligible must be deterministic grade 0",
   QrelRecordSchema.safeParse({
@@ -292,34 +350,45 @@ ok(
 ok(
   "unjudged pooled pair detected",
   unjudgedPooledPairs([PoolRecordSchema.parse(pooled)], []).length === 1 &&
-  unjudgedPooledPairs([PoolRecordSchema.parse(pooled)], [QrelRecordSchema.parse(humanQrel)]).length === 0,
+  unjudgedPooledPairs([PoolRecordSchema.parse(pooled)], [QrelRecordSchema.parse(agentQrel)]).length === 0,
 );
 
 // --- calibration (§0.5) -------------------------------------------------------------------------
+const graderRef = (runId: string) => ({ run_id: runId, model: generation.model, prompt_hash: generation.prompt_hash });
 const calibration = {
   query_id: "qry-001",
   resource_id: "res-0001",
-  annotator_a_grade: 3,
-  annotator_b_grade: 2,
+  grader_a_grade: 3,
+  grader_b_grade: 2,
   adjudicated_grade: 3,
-  annotator_a: "annotator-a",
-  annotator_b: "annotator-b",
-  reviewed_at: "2026-01-01T00:00:00.000Z",
+  grader_a: graderRef("run-grader-a"),
+  grader_b: graderRef("run-grader-b"),
+  adjudicator: graderRef("run-adjudicator"),
+  owner_review: "pending" as const,
+  reviewed_at: null,
   boundary_case: true,
   notes: null,
 };
-ok("calibration record accepted", HumanCalibrationSchema.safeParse(calibration).success);
+ok("calibration record accepted", AgentCalibrationSchema.safeParse(calibration).success);
 ok(
   "boundary_case must be true when a grade is 2 or 3",
-  !HumanCalibrationSchema.safeParse({ ...calibration, boundary_case: false }).success,
+  !AgentCalibrationSchema.safeParse({ ...calibration, boundary_case: false }).success,
 );
 ok(
-  "agent_grade rejected",
-  !HumanCalibrationSchema.safeParse({ ...calibration, agent_grade: 2 }).success,
+  "annotator_a_grade rejected (v1/v2-second-rev field name)",
+  !AgentCalibrationSchema.safeParse({ ...calibration, annotator_a_grade: 2 }).success,
 );
 ok(
   "unadjudicated disagreement rejected",
-  !HumanCalibrationSchema.safeParse({ ...calibration, adjudicated_grade: null }).success,
+  !AgentCalibrationSchema.safeParse({ ...calibration, adjudicated_grade: null }).success,
+);
+ok(
+  "adjudicated disagreement without adjudicator rejected",
+  !AgentCalibrationSchema.safeParse({ ...calibration, adjudicator: null }).success,
+);
+ok(
+  "owner_review approved without reviewed_at rejected",
+  !AgentCalibrationSchema.safeParse({ ...calibration, owner_review: "approved" }).success,
 );
 
 // --- counts (§0.4) ------------------------------------------------------------------------------

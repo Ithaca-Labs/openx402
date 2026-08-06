@@ -1,9 +1,12 @@
 # Stellar Bazaar Search Benchmark — Build Plan v2
 
-Hand-authored replacement for the v1 dataset. Supersedes `manifests/dataset-v1.json`.
+Agent-authored, human-reviewed replacement for the v1 dataset. Supersedes
+`manifests/dataset-v1.json`.
 
-**Core principle:** humans write meaning, machines write syntax.
-Never hand-type wire JSON; never machine-generate relevance.
+**Core principle:** isolated agents write meaning, deterministic programs validate syntax, and the
+project owner reviews every accepted artifact. No authoring agent sees another authoring agent's
+output. No grading agent sees retrieval-system identity, rank, score, another grader's decision, or
+the authoring context.
 
 > **Revision note.** This plan was revised after external review. Corrected: unjudged is now a
 > first-class state distinct from grade 0 (§10); MCP resources and queries restored (§3, §4, §6);
@@ -17,6 +20,13 @@ Never hand-type wire JSON; never machine-generate relevance.
 > corpus (§6); relevance thresholds and nDCG gains pinned explicitly, infAP dropped, `judged@k`
 > threshold moved from an invented 0.7 to a pilot-derived figure (§10); distractors are authored
 > individually rather than script-generated, per the syntax-only rule (§1, §9).
+>
+> **Third revision — isolated-agent experiment.** Resource metadata, distractors, queries,
+> relevance judgments, rationales, and adjudication drafts are produced by fresh-context Claude
+> subagents. Ten subagents may run concurrently, but each receives only its frozen task pack and
+> writes only to its assigned staging shard. Separate critic and grading agents review merged
+> outputs. The project owner performs the final review and accepts or rejects every artifact. This
+> is reported as **agent-authored, human-reviewed**, never as human-authored ground truth.
 
 ---
 
@@ -48,7 +58,10 @@ QueryRecordSchema.query_class:
 
 QrelRecordSchema.judge:
   ["deterministic", "openrouter", "curated", "pending"]
-  -> ["deterministic", "human", "curated"]        (openrouter/pending retired)
+  -> ["deterministic", "agent", "reviewed_agent"]
+
+SidecarRecordSchema.derived_from.kind:
+  z.literal("curated") -> z.literal("agent_generated")
 ```
 
 ### 0.2b Retire `source_class` — the categories overlap
@@ -61,11 +74,19 @@ Delete `source_class` and `adversarial: boolean`. Replace with orthogonal fields
 
 ```ts
 {
-  authorship:      z.enum(["human"]),            // provenance of the *meaning*
+  authorship:      z.enum(["agent"]),            // provenance of the meaning
   resource_type:   z.enum(["http", "mcp"]),      // transport, NOT provenance
   is_distractor:   z.boolean(),                  // unlabeled corpus padding
   is_sparse:       z.boolean(),                  // minimal metadata
   adversarial_kind: AdversarialKind.nullable(),  // null = not adversarial
+  generation: {
+    provider:       z.literal("anthropic"),
+    model:          z.string(),                  // exact model/revision
+    prompt_hash:    z.string(),
+    run_id:         z.string(),
+    shard_id:       z.string(),
+  },
+  review_status: z.enum(["pending", "approved", "corrected", "rejected"]),
 }
 ```
 
@@ -79,8 +100,8 @@ authorship is a v1 modelling error; do not carry it forward.
 
 **The single most important schema change.** v1 conflated "judged irrelevant" with "never looked at."
 
-- `qrels-v2.jsonl` contains **only judged pairs.** Grade 0 there means *a human read this and
-  determined it irrelevant.*
+- `qrels-v2.jsonl` contains **only judged pairs.** Grade 0 means an isolated grading agent inspected
+  the pair and determined it irrelevant; final release qrels also carry owner review status.
 - A returned resource with no qrel entry is **unjudged** — a distinct state. It contributes 0 to
   DCG (unavoidable) but is counted and reported separately via `judged@k`.
 - Add `pool-v2.jsonl` recording exactly which pairs entered the pool and from which systems.
@@ -90,7 +111,7 @@ Replace the v1 `superRefine` that requires OpenRouter judgment:
 
 ```
 if (value.eligible && value.judge === "deterministic") -> error   // DELETE
-if (value.eligible && value.judge !== "human" && value.judge !== "curated") -> error   // ADD
+if (value.eligible && value.judge !== "agent" && value.judge !== "reviewed_agent") -> error // ADD
 ```
 
 `eligible: false` still means a deterministic hard-filter exclusion at grade 0.
@@ -119,15 +140,20 @@ overlapping minimums, never a partition.
 
 ### 0.5 Calibration schema
 
-`HumanCalibrationSchema` currently requires `agent_grade`, which assumes an LLM judge. Replace:
+Replace `HumanCalibrationSchema` with `AgentCalibrationSchema`. Agreement measures consistency
+between isolated graders; it is not presented as human inter-annotator agreement or proof of
+ground-truth validity.
 
 ```ts
 {
   query_id, resource_id,
-  annotator_a_grade: 0..3,
-  annotator_b_grade: 0..3 | null,
+  grader_a_grade: 0..3,
+  grader_b_grade: 0..3 | null,
   adjudicated_grade: 0..3 | null,
-  annotator_a: string, annotator_b: string | null,
+  grader_a: { run_id, model, prompt_hash },
+  grader_b: { run_id, model, prompt_hash } | null,
+  adjudicator: { run_id, model, prompt_hash } | null,
+  owner_review: "pending" | "approved" | "corrected" | "rejected",
   reviewed_at: datetime | null,
   boundary_case: boolean,        // true when either grade is 2 or 3
   notes: string | null,
@@ -164,11 +190,42 @@ every system looks identical; at 1,000 it returns 2%.
 **Distractors are unjudged, not irrelevant.** A distractor can be genuinely relevant — semantic
 retrieval is exactly the mechanism that would surface one. See §10.
 
-**Distractors are authored, never templated.** Scripts produce syntax only. Each distractor is
-written individually against a "plausible listing, satisfies no planted capability need" brief.
-Script-templating them recreates the v1 failure — `CDP-shaped weather 001` through `…030` were
-mechanically generated variants, and that is precisely why v1 was unmeasurable. Authoring is not
-human-time-bound, so this costs calendar time, not review hours.
+**Distractors are independently authored, never templated.** Each isolated agent writes a small,
+bounded shard against a "plausible listing, satisfies no planted capability need" brief. An agent
+must not generate variants by changing names, locations, prices, or adjectives in a shared
+template. `CDP-shaped weather 001` through `…030` demonstrated why that produces an unmeasurable
+corpus.
+
+### 1.1 Isolated Claude subagent protocol
+
+The orchestrator may run ten subagents concurrently. Isolation is an evaluation control, not merely
+a prompting preference:
+
+1. Freeze the schema, family slots, axis assignments, grading rubric, forbidden-capability list,
+   and prompt templates before the pilot.
+2. Create a minimal task pack per shard. It contains only the assigned IDs and constraints. It does
+   not contain another agent's output, retrieval runs, qrels, or the release answer key.
+3. Run every shard in a fresh context and isolated staging directory such as
+   `staging/<role>/<run-id>/`. Agents must not read sibling staging directories or the merged corpus.
+4. Use ten resource-author agents for the 100 labeled resources: ten assigned resources each.
+5. Produce distractors in nine waves. Each wave uses ten fresh contexts, each writing ten original
+   distractors. A context is discarded after its wave so it cannot build a reusable template.
+6. Use ten separate query-author agents for ten queries each. Query authors see buyer-use-case and
+   capability briefs, not catalog prose or search results.
+7. After merging, run independent critic agents for schema fidelity, duplicate/clone detection,
+   family-boundary leakage, prompt injection, no-result contradictions, and Stellar payment-field
+   correctness. Critics may reject records but may not silently rewrite them.
+8. Regenerate rejected records with a fresh repair agent that receives the slot brief and rejection
+   reason, not the corpus or the original agent's hidden context.
+9. Grade each pooled query twice using separate fresh-context grader agents. Candidate order is
+   randomized; system names, scores, ranks, and the other grade are removed.
+10. Send disagreements to a third fresh-context adjudicator. The project owner then reviews all
+    resources, queries, qrels, rationales, corrections, and release reports before acceptance.
+
+No agent may both author and grade the same query or resource. Record provider, exact model
+revision, prompt hash, run ID, shard ID, temperature, timestamp, and any owner correction in the
+manifest. Agent agreement is useful process evidence, but the final report must disclose the shared
+model-family limitation.
 
 ---
 
@@ -242,7 +299,7 @@ demonstrate it. Ecosystem sparsity is a fact to disclose, not a reason to omit t
 | `mcp` | 15 |
 
 MCP resources must vary on MCP-specific attributes: tool tuple identity, tool schema shape,
-transport (stdio vs streamable HTTP), and tool count. Spread them across ≥8 families so `type: mcp`
+transport (`streamable-http` vs `sse`), and tool count. Spread them across ≥8 families so `type: mcp`
 is not a proxy for one capability.
 
 > A `type: mcp` filtered query pools to only 15 candidates — rankable but thin. If MCP discovery is
@@ -297,8 +354,9 @@ Enforced by `WireSchema`:
 - `payTo` a valid Stellar G or C address
 - `asset_decimals` 7; `price_usd_snapshot.basis` `fixed_fixture_minimum_option_value`
 
-Provenance: `derived_from.kind = "curated"` with a `generation_id`. Record family and axis rationale
-in a notes file.
+Provenance: `derived_from.kind = "agent_generated"` with the exact model revision, prompt hash,
+run ID, shard ID, and generation timestamp. Record family and axis rationale in the sidecar. Owner
+corrections are append-only provenance records; never overwrite the original generated artifact.
 
 **Licensing:** do not copy CDP prose or schemas, even lightly reworded. The manifest already commits
 to this. Derive axes; write original text.
@@ -329,7 +387,8 @@ Must cover, at minimum:
 
 - **Tuple identity** — finding a specific MCP tool by its `(server, tool)` identity
 - **Tool schema** — querying by input/output schema shape
-- **Transport** — stdio vs streamable HTTP
+- **Transport** — `streamable-http` vs `sse`, the two transports permitted by the official Bazaar
+  extension. Local `stdio` tools are not valid Bazaar transport declarations.
 - **HTTP-vs-MCP disambiguation** — same capability available both ways; query specifies which
 
 Split across dev and release proportionally.
@@ -348,20 +407,20 @@ For **all ten** `no_result` queries, all three steps are required:
 2. **Validate the exclusion deterministically.** A script scans the full 1,000-record corpus for the
    forbidden capabilities — keyword, tag, and schema signatures — and fails the build on any hit.
    This is syntax checking, so a script is the correct tool.
-3. **Manually audit the full catalog** for those specific capabilities before freezing. Automated
-   signature matching will not catch a paraphrase; a human pass over 1,000 short descriptions,
-   scoped to ten capabilities, will.
+3. **Independently audit the full catalog.** A fresh-context audit agent receives one forbidden
+   capability at a time and inspects all 1,000 short descriptions without seeing author identities.
+   The project owner reviews every reported match and signs off the final exclusion report.
 
 Record the audit result in the gate report. An unvalidated `no_result` query is worse than no
 `no_result` query at all — it produces a confidently wrong number.
 
 ### Authoring rules
 
-1. Write the query **before** looking at the catalog, from a buyer use case. Then find its answers.
-   Browsing while authoring produces queries you already know retrieve well.
-2. Record real provenance in `derived_from` — family, use case, trap. v1 has
-   `{"generation_id":"query-author-v2","kind":"curated"}` on all 100, which is a placeholder.
-   Reviewers ask about this first.
+1. A query-author agent writes the query **without access to catalog prose or retrieval runs**, from
+   a buyer-use-case task pack. A separate grading agent later identifies answers. This prevents
+   queries that merely repeat catalog wording.
+2. Record real provenance in `derived_from` — family, use case, trap, model revision, prompt hash,
+   run ID, and shard ID. A shared placeholder generation record is prohibited.
 3. If you cannot find an answer, that is a finding: mark `expects_no_result` or log a coverage gap.
 4. Vary phrasing register — terse agent-style, verbose natural language, keyword-only.
 
@@ -377,7 +436,7 @@ Record the audit result in the gate report. An unvalidated `no_result` query is 
 | **0** | Different capability, a planted trap, or prose that contradicts structured fields. **Explicitly judged** — not the same as unjudged. |
 
 **Filters are not relevance.** `network`, `scheme`, `type`, `asset`, and `price` are `WHERE` clauses
-— assert them in code, never spend a human grade on them. Grade relevance only over candidates that
+— assert them in code, never spend a semantic grade on them. Grade relevance only over candidates that
 already pass the filter. v1 burned judgment on exactly this; the damage is visible in rationales
 like `"evaluation-only price constraint"`.
 
@@ -387,32 +446,37 @@ like `"evaluation-only price constraint"`.
 
 ## 8. Labeling procedure
 
-### Pass 1 — during authoring (~6–8 labels/query)
-While writing each query, name from corpus knowledge: the 3s, 2s, 1s, and planted 0s.
+### Pass 1 — independent seed grading (~6–8 labels/query)
+A fresh grading agent receives the query, rubric, and randomized eligible candidates. It does not
+see the query-author context or retrieval-system output. Seed grades must never be supplied by the
+agent that wrote the query.
 
 ### Pass 2 — pooled adjudication (~28 candidates/query)
 
 1. Run **five** systems: lexical, semantic, hybrid, reranked, **and BM25** (§10)
 2. Union the top-20 from each, dedupe
 3. **Strip profile attribution and shuffle** — grading must be blind
-4. Grade every pooled candidate
+4. Grade every pooled candidate twice with independent fresh-context grading agents
 5. Record the pool in `pool-v2.jsonl` with contributing systems
 
-Family triage keeps this tractable: candidates from a non-target family are usually quick 0s.
+Family triage keeps this tractable: candidates from a non-target family are usually quick 0s, but
+the assigned family is hidden from graders when it would reveal the intended answer.
 
 ### Pass 2b — unpooled audit
 
-Randomly sample **~20 topically related but unpooled** resources per 10 queries and judge them. If
+Randomly sample **~20 topically related but unpooled** resources per 10 queries and grade them with
+fresh audit agents. If
 audited relevance is materially above zero, pooling is too shallow — increase depth and re-pool.
 This is the empirical check on the unjudged assumption.
 
-### Pass 3 — independent review (release only)
+### Pass 3 — independent agent review and owner acceptance (release only)
 
-Both annotators grade all 50 release queries independently. Adjudicate disagreements and record
-resolutions.
+Two isolated grader agents grade all 50 release queries independently. A third isolated agent
+adjudicates disagreements. The owner then reviews every release judgment and either approves it,
+corrects it with a rationale, or rejects the query/resource pair.
 
-**Report κ stratified, not as a single number.** A pool dominated by obvious 0s inflates weighted κ
-even when annotators disagree badly at the boundary:
+**Report inter-agent κ stratified, not as a single number.** A pool dominated by obvious 0s inflates
+weighted κ even when graders disagree badly at the boundary:
 
 - weighted κ across all pooled candidates
 - **weighted κ restricted to relevant-family candidates** (the meaningful figure)
@@ -420,7 +484,8 @@ even when annotators disagree badly at the boundary:
 - full 4×4 grade confusion matrix
 - **disagreement rate specifically among grade 2 and 3 pairs**
 
-Target κ ≥ 0.6 on the restricted set, not the full pool.
+Target inter-agent κ ≥ 0.6 on the restricted set, not the full pool. This is a consistency gate,
+not evidence that either grader is correct; owner review is the final acceptance gate.
 
 ### Rationales
 Required on **release** judgments only.
@@ -432,22 +497,25 @@ Required on **release** judgments only.
 | # | Step | Output | Est. |
 |---|---|---|---|
 | 0 | Complete v2 schema + archive v1 (§0) | valid schema | 2 h |
-| 1 | **Pilot: 1 family, 5 resources, 5 queries, end to end — time the grading and measure `judged@10`** | validated format, measured rate, **empirical `judged@k` threshold** | 2 h |
+| 1 | **Pilot: 1 family, 5 resources, 5 queries, two graders and one adjudicator, end to end** | validated isolation, measured agent cost/rate, **empirical `judged@k` threshold** | 1 agent wave + owner review |
 | 2 | Define 20 families + axis assignments | family spec | 2 h |
-| 3 | Author 100 resources (85 HTTP / 15 MCP) | catalog + sidecar | 8 h |
-| 4 | Author ~900 distractors individually (never templated, §1) + validate no-result exclusion (§6) | corpus at 1,000 | authored |
-| 5 | Author 100 queries + pass-1 labels | queries file | 8 h |
+| 3 | Ten isolated agents author 100 resources (10 each; 85 HTTP / 15 MCP) | catalog + sidecar | 10 agent runs + owner review |
+| 4 | Nine waves of ten fresh agents author ~900 distractors (10 each), then critics validate uniqueness and no-result exclusion | corpus at 1,000 | 90 agent runs + owner review |
+| 5 | Ten separate agents author 100 queries (10 each); independent agents perform pass-1 grading | queries file | 20+ agent runs + owner review |
 | 6 | **Freeze release split, hash into manifest** | frozen | 30 min |
 | 7 | Run 5 systems, build pool | `pool-v2.jsonl` | script |
-| 8 | Pass-2 blind grading + unpooled audit | `qrels-v2.jsonl` | 12 h |
-| 9 | Pass-3 independent review + stratified κ | calibration report | 15 h |
+| 8 | Two-way blind agent grading + unpooled audit | `qrels-v2.jsonl` | measured in pilot |
+| 9 | Independent agent adjudication + owner review + stratified κ | calibration report | measured in pilot |
 | 10 | Score, significance, report | final report | script |
 
-**30–50 person-hours across two people.** The earlier 16 h estimate assumed family triage collapsed
-nearly every judgment to seconds; that does not survive genuine rationales and adjudication.
+Do not estimate this experiment in person-hours before the pilot. Report agent runs, input/output
+tokens, wall-clock time, API cost, rejection rate, regeneration rate, owner-review time, and the
+number of owner corrections. Ten-way concurrency reduces elapsed time but not review burden or
+model-correlated error.
 
-**The pilot must measure actual annotation speed** and the remaining estimates re-derived from it.
-Steps 4, 7, and 10 are mechanical.
+**The pilot must measure actual generation, grading, and owner-review cost** and the remaining
+estimates must be re-derived from it. Steps 6, 7, and 10 are deterministic; authoring is never
+described as mechanical.
 
 **Do the pilot.** Scaling a broken process to 100 is how v1 produced 30,000 unusable judgments.
 
@@ -528,11 +596,16 @@ Extend `reports/release-gates-v1.json` → `release-gates-v2.json`:
 - [ ] Unpooled audit performed; audited relevance rate reported
 - [ ] `judged@10` meets the **pilot-derived** threshold (§9 step 1); the figure is reported with its
       derivation, never presented as a universal constant
-- [ ] `no_result` capability exclusion validated deterministically **and** manually audited (§6)
+- [ ] `no_result` capability exclusion validated deterministically, independently agent-audited, and
+      approved by the owner (§6)
 - [ ] Relevance thresholds and nDCG gain values stated in the report (§10)
-- [ ] Grading performed blind
-- [ ] Stratified κ reported; ≥0.6 on relevant-family candidates
+- [ ] Every generated artifact records model revision, prompt hash, run ID, shard ID, and review status
+- [ ] No authoring agent graded its own output; filesystem/task-pack isolation is auditable
+- [ ] Grading performed blind to system, score, rank, author, and the other grader
+- [ ] Inter-agent stratified κ reported; ≥0.6 on relevant-family candidates
 - [ ] Rationales present on all release judgments
+- [ ] Owner reviewed every resource, query, qrel, adjudication, and correction before release
+- [ ] Owner correction and rejection rates reported; original agent output preserved append-only
 - [ ] Significance tests reported alongside point estimates
 - [ ] BM25 baseline present
 - [ ] Limitations section written
@@ -561,7 +634,7 @@ generated final report. Treat any release-set run as a recorded event.
 ### 12.2 Production query logging
 
 Capture query text, returned IDs, and the resource fetched afterward. Fetch-after-search is implicit
-relevance feedback and becomes the query source that eventually replaces hand-authoring.
+relevance feedback and becomes the query source that eventually replaces synthetic authoring.
 
 ### 12.3 Re-pool on change
 
@@ -598,7 +671,9 @@ of defect the embedding-generation assignment bug belonged to.
 
 ## Known limitations (state these in the submission)
 
-- Synthetic corpus; resources are hand-authored, not live listings
+- Synthetic corpus; resources are agent-authored and human-reviewed, not live listings
+- Most authors, graders, critics, and adjudicators may share one model family. Fresh contexts reduce
+  leakage but do not create independent human ground truth or eliminate correlated model bias
 - Single ecosystem (Stellar); real x402 traffic is ~90% EVM/Solana
 - `upto` deliberately oversampled ~50× versus the live ecosystem
 - MCP resources (15) exceed live-ecosystem frequency (0 in the 14,669 sampled) — deliberate, to

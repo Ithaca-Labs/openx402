@@ -156,7 +156,8 @@ Notes on the shapes above:
 - **s5 `archive_state_at_ledger`** — freshness (historical) + input shape vs s1, the other single-chain json slot.
 
 *MCP slot: s3. Its MCP-specific axes (tool tuple, schema shape, transport, tool count)
-are assigned at authoring time and must differ from the other 14 MCP slots (§4).*
+are assigned at authoring time and must differ from the other 14 MCP slots (§4). Only official
+Bazaar transports (`streamable-http`, `sse`) are permitted.*
 
 ---
 
@@ -771,4 +772,3 @@ are assigned at authoring time and must differ from the other 14 MCP slots (§4)
 are assigned at authoring time and must differ from the other 14 MCP slots (§4).*
 
 ---
-
