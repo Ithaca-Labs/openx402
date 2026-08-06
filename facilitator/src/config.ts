@@ -123,7 +123,7 @@ const searchSchema = z.object({
   origin_diversity_limit: z.number().int().positive().max(100).default(3),
   impressions: z.object({
     enabled: z.boolean().default(true),
-    retain_query_text: z.boolean().default(false),
+    retain_query_text: z.boolean().default(true),
     retention_days: z.number().int().positive().max(3650).default(90),
   }).default({}),
   models: z.object({

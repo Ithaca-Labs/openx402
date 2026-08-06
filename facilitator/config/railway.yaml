@@ -81,7 +81,7 @@ search:
   origin_diversity_limit: 3
   impressions:
     enabled: true
-    retain_query_text: false
+    retain_query_text: true
     retention_days: 90
   # Remote-only inference. These settings make accidental local model loading
   # fail closed instead of downloading weights into an ephemeral container.

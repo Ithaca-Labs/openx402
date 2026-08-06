@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T22:23:53.632Z",
+  "generated_at": "2026-08-06T23:02:27.238Z",
   "status": "blocked",
   "counts": {
     "catalog": 100,
@@ -90,7 +90,7 @@
         "manifest missing"
       ],
       "blockers": [
-        "dataset incomplete"
+        "dataset incomplete or frozen hashes do not verify"
       ]
     },
     {
@@ -132,10 +132,11 @@
       "name": "score, significance, and report",
       "status": "not_started",
       "evidence": [
-        "final report missing"
+        "final report missing",
+        "final holdout ledger incomplete"
       ],
       "blockers": [
-        "judgments and run outputs absent"
+        "judgments, run outputs, owner review, or final ledger event absent"
       ]
     }
   ],
@@ -156,7 +157,16 @@
       "evidence": [
         "resources 100/1000",
         "queries 0/100",
-        "manifest missing"
+        "frozen manifest missing"
+      ]
+    },
+    {
+      "id": "holdout-ledger",
+      "requirement": "Final release-set access is hash-chained and recorded",
+      "status": "blocked",
+      "evidence": [
+        "0 ledger events",
+        "completed final holdout run missing"
       ]
     },
     {
@@ -281,7 +291,8 @@
       "status": "blocked",
       "evidence": [
         "resources reviewed 0/100",
-        "queries reviewed 0/0"
+        "queries reviewed 0/0",
+        "owner decision report missing"
       ]
     },
     {
@@ -319,6 +330,7 @@
   ],
   "blockers": [
     "counts",
+    "holdout-ledger",
     "anti-correlation",
     "mcp-queries",
     "pool",

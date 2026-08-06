@@ -34,6 +34,10 @@ import {
   type QueryRecord,
   type SidecarRecord,
 } from "../schema/schema-v2.js";
+import { DatasetManifestV2Schema } from "./manifest-v2.js";
+import { readReleaseRunLedger, verifyFrozenDataset } from "./release-run-ledger-v2.js";
+import { OwnerReviewReportSchema } from "./grading-pipeline.js";
+import { EvaluationReportV2Schema, PilotReportEvidenceSchema } from "./report-v2.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const REPORTS = resolve(ROOT, "reports");
@@ -132,30 +136,34 @@ function exactModelRevision(value: string): boolean {
 }
 
 async function main(): Promise<void> {
-  const [catalogResult, sidecarResult, queryResult, poolResult, qrelResult, calibrationResult] = await Promise.all([
+  const [catalogResult, sidecarResult, queryResult, poolResult, developmentQrelResult,
+    releaseQrelResult, calibrationResult] = await Promise.all([
     validateJsonl(resolve(ROOT, "catalog/catalog-v2.jsonl"), CatalogRecordSchema),
     validateJsonl(resolve(ROOT, "catalog/sidecar-v2.jsonl"), SidecarRecordSchema),
     validateJsonl(resolve(ROOT, "queries/queries-v2.jsonl"), QueryRecordSchema),
     validateJsonl(resolve(ROOT, "pool/pool-v2.jsonl"), PoolRecordSchema),
-    validateJsonl(resolve(ROOT, "qrels/qrels-v2.jsonl"), QrelRecordSchema),
+    validateJsonl(resolve(ROOT, "qrels/development-v2.jsonl"), QrelRecordSchema),
+    validateJsonl(resolve(ROOT, "qrels/release-v2.jsonl"), QrelRecordSchema),
     validateJsonl(resolve(ROOT, "reports/calibration-records-v2.jsonl"), AgentCalibrationSchema),
   ]);
   const catalog = catalogResult.records as CatalogRecord[];
   const sidecars = sidecarResult.records as SidecarRecord[];
   const queries = queryResult.records as QueryRecord[];
   const pool = poolResult.records as PoolRecord[];
-  const qrels = qrelResult.records as QrelRecord[];
+  const qrels = [...developmentQrelResult.records, ...releaseQrelResult.records] as QrelRecord[];
   const schemaErrors = [
     ...catalogResult.errors,
     ...sidecarResult.errors,
     ...queryResult.errors,
     ...poolResult.errors,
-    ...qrelResult.errors,
+    ...developmentQrelResult.errors,
+    ...releaseQrelResult.errors,
     ...calibrationResult.errors,
   ];
 
   const catalogById = new Map(catalog.map(record => [record.resource_id, record]));
   const sidecarById = new Map(sidecars.map(record => [record.resource_id, record]));
+  const queryById = new Map(queries.map(record => [record.query_id, record]));
   const crossErrors: string[] = [];
   for (const sidecar of sidecars) {
     const wire = catalogById.get(sidecar.resource_id);
@@ -164,6 +172,21 @@ async function main(): Promise<void> {
   }
   for (const record of catalog) {
     if (!sidecarById.has(record.resource_id)) crossErrors.push(`${record.resource_id}: catalog has no sidecar`);
+  }
+  const qrelPairs = new Set<string>();
+  for (const [split, records] of [
+    ["development", developmentQrelResult.records],
+    ["release", releaseQrelResult.records],
+  ] as const) {
+    for (const qrel of records) {
+      const query = queryById.get(qrel.query_id);
+      if (!query) crossErrors.push(`${qrel.query_id}/${qrel.resource_id}: qrel references unknown query`);
+      else if (query.split !== split) crossErrors.push(`${qrel.query_id}/${qrel.resource_id}: qrel is in the wrong split file`);
+      if (!catalogById.has(qrel.resource_id)) crossErrors.push(`${qrel.query_id}/${qrel.resource_id}: qrel references unknown resource`);
+      const pair = `${qrel.query_id}\0${qrel.resource_id}`;
+      if (qrelPairs.has(pair)) crossErrors.push(`${qrel.query_id}/${qrel.resource_id}: duplicate qrel pair`);
+      qrelPairs.add(pair);
+    }
   }
 
   const labeled = sidecars.filter(record => !record.is_distractor);
@@ -220,7 +243,7 @@ async function main(): Promise<void> {
     && await fileExists(resolve(ROOT, "../tests/fixtures/search/golden-v1.json"));
 
   const [pilot, distributionAudit, unpooledAudit, forbiddenAudit, calibrationReport, finalReport,
-    isolationAudit, blindnessAudit, manifest] = await Promise.all([
+    isolationAudit, blindnessAudit, manifest, ownerReviewRaw] = await Promise.all([
     loadJson(resolve(REPORTS, "pilot-v2.json")),
     loadJson(resolve(REPORTS, "distribution-audit-v2.json")),
     loadJson(resolve(REPORTS, "unpooled-audit-v2.json")),
@@ -230,11 +253,34 @@ async function main(): Promise<void> {
     loadJson(resolve(REPORTS, "isolation-audit-v2.json")),
     loadJson(resolve(REPORTS, "grading-blindness-v2.json")),
     loadJson(resolve(ROOT, "manifests/dataset-v2.json")),
+    loadJson(resolve(REPORTS, "owner-review-v2.json")),
   ]);
+  const ownerReview = ownerReviewRaw === null ? null : OwnerReviewReportSchema.safeParse(ownerReviewRaw);
+  const parsedPilot = pilot === null ? null : PilotReportEvidenceSchema.safeParse(pilot);
+  const parsedFinalReport = finalReport === null ? null : EvaluationReportV2Schema.safeParse(finalReport);
+  const parsedManifest = manifest === null ? null : DatasetManifestV2Schema.safeParse(manifest);
+  let frozenDatasetVerified = false;
+  let frozenDatasetError: string | null = null;
+  let releaseLedgerEntries = 0;
+  let completedFinalHoldoutRun = false;
+  if (parsedManifest?.success) {
+    try {
+      await verifyFrozenDataset(ROOT);
+      frozenDatasetVerified = true;
+      const ledger = await readReleaseRunLedger(resolve(ROOT, parsedManifest.data.release_holdout.release_run_ledger_path));
+      releaseLedgerEntries = ledger.length;
+      completedFinalHoldoutRun = ledger.some(entry =>
+        entry.phase === "completed"
+        && entry.purpose === "final"
+        && entry.report?.path === "reports/final-v2.json");
+    } catch (error) {
+      frozenDatasetError = (error as Error).message;
+    }
+  } else if (parsedManifest && !parsedManifest.success) {
+    frozenDatasetError = parsedManifest.error.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`).join("; ");
+  }
 
-  const pilotComplete = evidenceApproved(pilot)
-    && typeof pilot?.judged_at_10_threshold === "number"
-    && typeof pilot?.forbidden_audit_cost === "object";
+  const pilotComplete = parsedPilot?.success === true;
   const allResourcesPresent = catalog.length === RELEASE_COUNTS.resources.total
     && sidecars.length === RELEASE_COUNTS.resources.total
     && labeled.length === RELEASE_COUNTS.resources.labeled
@@ -257,22 +303,26 @@ async function main(): Promise<void> {
     && releaseQrels.length > 0
     && releaseQrels.every(qrel => Boolean(qrel.rationale));
 
-  const thresholdsReported = finalReport?.relevance_thresholds !== undefined
-    && JSON.stringify(finalReport?.ndcg_gains) === JSON.stringify(NDCG_GAINS);
+  const thresholdsReported = parsedFinalReport?.success === true;
   const calibrationPassed = evidenceApproved(calibrationReport)
     && typeof calibrationReport?.relevant_family_weighted_kappa === "number"
     && calibrationReport.relevant_family_weighted_kappa >= 0.6;
-  const significanceReported = finalReport?.significance_reported === true;
-  const bm25Reported = finalReport?.bm25_baseline === true && systemsInPool.has("bm25");
-  const limitationsReported = Array.isArray(finalReport?.limitations) && finalReport.limitations.length > 0;
+  const significanceReported = parsedFinalReport?.success === true && parsedFinalReport.data.significance_reported;
+  const bm25Reported = parsedFinalReport?.success === true
+    && parsedFinalReport.data.bm25_baseline && systemsInPool.has("bm25");
+  const limitationsReported = parsedFinalReport?.success === true && parsedFinalReport.data.limitations.length > 0;
 
   const gates: Gate[] = [
     gate("schema", "All records schema-valid; zero wire validation errors",
       schemaErrors.length === 0 && crossErrors.length === 0,
       `${schemaErrors.length} schema errors`, `${crossErrors.length} wire/sidecar errors`),
     gate("counts", "100 labeled resources, 900 distractors, 100 queries, frozen split and hashes",
-      allResourcesPresent && allQueriesPresent && evidenceApproved(manifest),
-      `resources ${catalog.length}/1000`, `queries ${queries.length}/100`, `manifest ${manifest ? "present" : "missing"}`),
+      allResourcesPresent && allQueriesPresent && frozenDatasetVerified,
+      `resources ${catalog.length}/1000`, `queries ${queries.length}/100`,
+      `frozen manifest ${frozenDatasetVerified ? "verified" : frozenDatasetError ?? "missing"}`),
+    gate("holdout-ledger", "Final release-set access is hash-chained and recorded",
+      completedFinalHoldoutRun,
+      `${releaseLedgerEntries} ledger events`, `completed final holdout run ${completedFinalHoldoutRun ? "present" : "missing"}`),
     gate("axis-differences", "Every labeled sibling pair differs on at least two axes",
       labeled.length === 100 && axisErrors.length === 0, `${axisErrors.length} failures`),
     gate("anti-correlation", "upto, mcp, and network show no prohibited correlation",
@@ -289,7 +339,7 @@ async function main(): Promise<void> {
       evidenceApproved(unpooledAudit) && typeof unpooledAudit?.audited_relevance_rate === "number",
       `unpooled audit ${unpooledAudit ? "present" : "missing"}`),
     gate("judged-at-k", "judged@10 meets the pilot-derived threshold",
-      pilotComplete && finalReport?.judged_at_10_gate_passed === true,
+      pilotComplete && parsedFinalReport?.success === true && parsedFinalReport.data.judged_at_10_gate_passed,
       `pilot ${pilotComplete ? "complete" : "missing/incomplete"}`),
     gate("no-result", "Forbidden capabilities scanned, independently audited, owner-approved",
       evidenceApproved(forbiddenAudit) && forbiddenAudit?.deterministic_scan_passed === true,
@@ -308,11 +358,15 @@ async function main(): Promise<void> {
     gate("rationales", "All release judgments carry rationales", releaseRationales,
       `${releaseIds.size}/50 release queries`, `${qrels.length} total qrels`),
     gate("owner-review", "Owner reviewed every resource, query, qrel, adjudication, and correction",
-      ownerReviewedResources && ownerReviewedQueries && evidenceApproved(calibrationReport),
+      ownerReviewedResources && ownerReviewedQueries && ownerReview?.success === true
+        && ownerReview.data.pairs.rejected === 0 && ownerReview.data.queries.rejected === 0
+        && evidenceApproved(calibrationReport),
       `resources reviewed ${sidecars.filter(record => record.review_status !== "pending").length}/${sidecars.length}`,
-      `queries reviewed ${queries.filter(record => record.review_status !== "pending").length}/${queries.length}`),
+      `queries reviewed ${queries.filter(record => record.review_status !== "pending").length}/${queries.length}`,
+      `owner decision report ${ownerReview?.success ? "valid" : ownerReviewRaw ? "invalid" : "missing"}`),
     gate("correction-rates", "Owner correction and rejection rates are reported; originals preserved",
-      finalReport?.owner_rates_reported === true && evidenceApproved(isolationAudit),
+      parsedFinalReport?.success === true && parsedFinalReport.data.owner_rates_reported
+        && ownerReview?.success === true && evidenceApproved(isolationAudit),
       `final report ${finalReport ? "present" : "missing"}`),
     gate("significance", "Significance tests accompany point estimates", significanceReported,
       `significance ${significanceReported ? "reported" : "missing"}`),
@@ -338,16 +392,18 @@ async function main(): Promise<void> {
       evidence: [`${distractors.length}/900 distractors`], blockers: step4Done ? [] : ["authoring waves, critics, audits, and owner review missing"] },
     { step: 5, name: "100 queries and pass-1 grading", status: allQueriesPresent ? "partial" : "not_started",
       evidence: [`${queries.length}/100 queries`], blockers: allQueriesPresent ? ["pass-1 grading/owner review incomplete"] : ["Step 4 and query authoring not complete"] },
-    { step: 6, name: "freeze split and manifest", status: evidenceApproved(manifest) ? "done" : "not_started",
-      evidence: [`manifest ${manifest ? "present" : "missing"}`], blockers: evidenceApproved(manifest) ? [] : ["dataset incomplete"] },
+    { step: 6, name: "freeze split and manifest", status: frozenDatasetVerified ? "done" : "not_started",
+      evidence: [`manifest ${frozenDatasetVerified ? "verified" : frozenDatasetError ?? "missing"}`],
+      blockers: frozenDatasetVerified ? [] : ["dataset incomplete or frozen hashes do not verify"] },
     { step: 7, name: "five-system pool", status: fiveSystemPool ? "done" : "not_started",
       evidence: [`${systemsInPool.size}/5 systems`, `${pool.length} pool rows`], blockers: fiveSystemPool ? [] : ["runs and pool builder output missing"] },
     { step: 8, name: "dual grading and unpooled audit", status: qrels.length > 0 ? "partial" : "not_started",
       evidence: [`${qrels.length} qrels`], blockers: qrels.length > 0 ? ["pool completeness/unpooled audit incomplete"] : ["pool and grading absent"] },
     { step: 9, name: "adjudication and owner review", status: calibrationPassed ? "done" : "not_started",
       evidence: [`${calibrationResult.records.length} calibration rows`], blockers: calibrationPassed ? [] : ["adjudication/calibration/owner review absent"] },
-    { step: 10, name: "score, significance, and report", status: evidenceApproved(finalReport) ? "done" : "not_started",
-      evidence: [`final report ${finalReport ? "present" : "missing"}`], blockers: evidenceApproved(finalReport) ? [] : ["judgments and run outputs absent"] },
+    { step: 10, name: "score, significance, and report", status: completedFinalHoldoutRun ? "done" : "not_started",
+      evidence: [`final report ${finalReport ? "present" : "missing"}`, `final holdout ledger ${completedFinalHoldoutRun ? "complete" : "incomplete"}`],
+      blockers: completedFinalHoldoutRun ? [] : ["judgments, run outputs, owner review, or final ledger event absent"] },
   ];
 
   const blockers = gates.filter(item => item.status === "blocked").map(item => item.id);

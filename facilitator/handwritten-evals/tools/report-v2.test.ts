@@ -1,0 +1,177 @@
+import { describe, expect, it } from "vitest";
+import { POOL_SYSTEMS, type QrelRecord, type QueryRecord } from "../schema/schema-v2.js";
+import {
+  buildEvaluationReport, PilotReportEvidenceSchema, scoringRunsFromPoolRuns, type SystemRun,
+} from "./report-v2.js";
+import type { SystemRuns } from "./pool.js";
+
+const generatedAt = "2026-08-07T00:00:00.000Z";
+
+function releaseQueries(): QueryRecord[] {
+  return Array.from({ length: 50 }, (_, index) => ({
+    query_id: `qry-${String(index + 1).padStart(3, "0")}`,
+    split: "release",
+    query_class: "capability",
+    query: `buyer capability ${index + 1}`,
+    filters: {},
+    evaluation_constraints: {},
+    expects_no_result: false,
+    phrasing_register: "terse_agent",
+    family: (index % 20) + 1,
+    generation: {
+      provider: "anthropic",
+      model: "claude-revision-2026-08-07",
+      prompt_hash: `sha256:${"a".repeat(64)}`,
+      run_id: `query-run-${index + 1}`,
+      shard_id: `query-shard-${index + 1}`,
+      temperature: 0,
+      generated_at: generatedAt,
+    },
+    derived_from: {
+      kind: "agent_generated",
+      generation_id: `query-run-${index + 1}`,
+      use_case: `use case ${index + 1}`,
+    },
+    review_status: "approved",
+    reviewed_at: generatedAt,
+    owner_note: null,
+  }));
+}
+
+function releaseQrels(queries: readonly QueryRecord[]): QrelRecord[] {
+  return queries.map(query => ({
+    query_id: query.query_id,
+    resource_id: "res-0001",
+    grade: 3,
+    eligible: true,
+    judge: "reviewed_agent",
+    rationale: "Exact capability match reviewed by the owner.",
+    annotator: "owner",
+    judged_at: generatedAt,
+  }));
+}
+
+function runs(queries: readonly QueryRecord[]): SystemRun[] {
+  return POOL_SYSTEMS.map(system => ({
+    system,
+    results: queries.map(query => ({
+      queryId: query.query_id,
+      ranking: ["res-0001", "res-0002"],
+      latencyMs: 10,
+    })),
+  }));
+}
+
+const options = {
+  split: "release" as const,
+  generatedAt,
+  datasetManifestSha256: "b".repeat(64),
+  pilotJudgedAt10Threshold: 0.5,
+  ownerRates: { reviewed: 50, corrected: 5, rejected: 0, correction_rate: 0.1, rejection_rate: 0 },
+  limitations: ["The corpus is synthetic and judgments are incomplete by construction."],
+  significanceIterations: 100,
+};
+
+describe("v2 evaluation report", () => {
+  it("requires measured pilot costs and a full-scale exclusion projection", () => {
+    expect(PilotReportEvidenceSchema.safeParse({
+      status: "approved",
+      judged_at_10_threshold: 0.8,
+      forbidden_audit_cost: {},
+    }).success).toBe(false);
+    expect(PilotReportEvidenceSchema.safeParse({
+      status: "approved",
+      pilot_scope: {
+        resources: 5, distractors: 10, capability_queries: 5,
+        no_result_queries: 1, graders: 2, adjudicators: 1,
+      },
+      judged_at_10_threshold: 0.8,
+      generation_grading_cost: {
+        agent_runs: 7, input_tokens: 10_000, output_tokens: 2_000,
+        wall_clock_seconds: 300, api_cost_usd: 1.2,
+        rejection_count: 1, regeneration_count: 1,
+        owner_review_seconds: 600, owner_corrections: 2,
+      },
+      forbidden_audit_cost: {
+        scanner_wall_clock_seconds: 0.1,
+        agent_audit: {
+          agent_runs: 1, input_tokens: 4_000, output_tokens: 300,
+          wall_clock_seconds: 60, api_cost_usd: 0.2,
+        },
+        owner_review_seconds: 120,
+        projection: {
+          catalog_records: 1_000, capabilities: 10, agent_runs: 10,
+          input_tokens: 2_666_667, output_tokens: 200_000,
+          api_cost_usd: 133.34, owner_review_seconds: 8_000,
+        },
+      },
+    }).success).toBe(true);
+  });
+
+  it("preserves canonical per-query latency when adapting pool runs", () => {
+    const canonical = Object.fromEntries(POOL_SYSTEMS.map((system, systemIndex) => [system, [{
+      system,
+      query_id: "qry-001",
+      run_id: `run-${system}`,
+      generated_at: generatedAt,
+      latency_ms: 12.5 + systemIndex,
+      requested_depth: 20,
+      total_results: 1,
+      results: [{ resource_id: "res-0001", rank: 1, score: 1 }],
+    }]])) as SystemRuns;
+
+    const adapted = scoringRunsFromPoolRuns(canonical, new Set(["qry-001"]));
+    expect(adapted.map(run => run.results[0]!.latencyMs)).toEqual([12.5, 13.5, 14.5, 15.5, 16.5]);
+  });
+
+  it("reports every required system, metric contract, coverage, and significance", () => {
+    const queries = releaseQueries();
+    const report = buildEvaluationReport(queries, releaseQrels(queries), runs(queries), options);
+
+    expect(Object.keys(report.systems)).toEqual(POOL_SYSTEMS);
+    expect(report.ndcg_gains).toEqual([0, 1, 3, 7]);
+    expect(report.relevance_thresholds).toMatchObject({ mrr: 2, recall_at_k: 2, bpref: 2 });
+    expect(report.systems.lexical.primary.ndcg_at_10.value).toBe(1);
+    expect(report.systems.lexical.primary.judged_at_10.value).toBe(0.5);
+    expect(report.judged_at_10_gate_passed).toBe(true);
+    expect(report.significance.reranked!.ndcg_at_10!.summary).toContain("NOT significant");
+    expect(report.bm25_baseline).toBe(true);
+    expect(report.owner_rates_reported).toBe(true);
+  });
+
+  it("refuses a release report without pilot and owner evidence", () => {
+    const queries = releaseQueries();
+    const {
+      pilotJudgedAt10Threshold: _pilot,
+      ownerRates: _ownerRates,
+      ...withoutReleaseEvidence
+    } = options;
+    expect(() => buildEvaluationReport(
+      queries,
+      releaseQrels(queries),
+      runs(queries),
+      withoutReleaseEvidence,
+    )).toThrow(/pilot-derived/);
+  });
+
+  it("refuses unreviewed release qrels or incomplete system runs", () => {
+    const queries = releaseQueries();
+    const qrels = releaseQrels(queries);
+    qrels[0] = { ...qrels[0]!, judge: "agent", rationale: undefined };
+    expect(() => buildEvaluationReport(queries, qrels, runs(queries), options)).toThrow(/not owner-reviewed/);
+
+    const incomplete = runs(queries);
+    incomplete[0] = { ...incomplete[0]!, results: incomplete[0]!.results.slice(1) };
+    expect(() => buildEvaluationReport(queries, releaseQrels(queries), incomplete, options)).toThrow(/every release query/);
+  });
+
+  it("refuses duplicate resources in a ranking", () => {
+    const queries = releaseQueries();
+    const duplicated = runs(queries);
+    duplicated[0]!.results[0] = {
+      ...duplicated[0]!.results[0]!,
+      ranking: ["res-0001", "res-0001"],
+    };
+    expect(() => buildEvaluationReport(queries, releaseQrels(queries), duplicated, options)).toThrow(/duplicate resource/);
+  });
+});

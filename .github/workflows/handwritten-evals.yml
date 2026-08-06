@@ -1,0 +1,56 @@
+name: handwritten eval invariants
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  metamorphic:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: facilitator_test
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d facilitator_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            facilitator/package-lock.json
+            packages/bazaar-sdk/package-lock.json
+
+      - name: Install Bazaar SDK dependencies
+        working-directory: packages/bazaar-sdk
+        run: npm ci
+
+      - name: Build Bazaar SDK
+        working-directory: packages/bazaar-sdk
+        run: npm run build
+
+      - name: Install facilitator dependencies
+        working-directory: facilitator
+        run: npm ci
+
+      - name: Run label-free search invariants
+        working-directory: facilitator
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:test@127.0.0.1:55432/facilitator_test
+        run: npx vitest run handwritten-evals/tools/metamorphic.test.ts

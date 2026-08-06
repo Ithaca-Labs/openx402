@@ -90,7 +90,7 @@ search:
   origin_diversity_limit: 3
   impressions:
     enabled: true
-    retain_query_text: false
+    retain_query_text: true
     retention_days: 90
   models:
     cache_dir: .models

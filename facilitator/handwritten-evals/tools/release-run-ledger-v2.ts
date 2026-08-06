@@ -1,0 +1,307 @@
+#!/usr/bin/env node
+
+/**
+ * Append-only release holdout access ledger (BUILD-PLAN §12.1).
+ *
+ * A release runner must append `started` before it reads release inputs, then append exactly one
+ * `completed` or `failed` event. Two independent acknowledgements keep normal development tuning
+ * from accidentally invoking this command.
+ */
+
+import { createHash } from "node:crypto";
+import { mkdir, open, readFile, unlink } from "node:fs/promises";
+import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
+import { pathToFileURL } from "node:url";
+import { z } from "zod";
+import {
+  canonicalJson,
+  DATASET_MANIFEST_PATH,
+  DatasetManifestV2Schema,
+  hashFile,
+  RELEASE_QUERY_INDEX_PATH,
+  RELEASE_RUN_LEDGER_PATH,
+  ReleaseQueryIndexV2Schema,
+  sha256Bytes,
+  type DatasetManifestV2,
+  type ReleaseQueryIndexV2,
+} from "./manifest-v2.js";
+
+export const RELEASE_HOLDOUT_CLI_ACKNOWLEDGEMENT = "RELEASE_HOLDOUT_ACCESS_RECORDED";
+export const RELEASE_HOLDOUT_ENV_NAME = "STELLAR_BAZAAR_RELEASE_HOLDOUT";
+export const RELEASE_HOLDOUT_ENV_ACKNOWLEDGEMENT = "I_ACKNOWLEDGE_THIS_IS_A_RECORDED_HOLDOUT_RUN";
+
+const sha256 = z.string().regex(/^[a-f0-9]{64}$/);
+const relativeArtifactPath = z.string().min(1).refine(
+  value => !isAbsolute(value) && value !== ".." && !value.startsWith(`..${sep}`),
+  "must be a path below the handwritten-evals root",
+);
+
+export const RELEASE_RUN_PHASES = ["started", "completed", "failed"] as const;
+export const RELEASE_RUN_PURPOSES = ["milestone", "final"] as const;
+
+export const ReleaseRunLedgerEntryV2Schema = z.object({
+  sequence: z.number().int().positive(),
+  previous_event_hash: sha256.nullable(),
+  event_hash: sha256,
+  recorded_at: z.string().datetime(),
+  phase: z.enum(RELEASE_RUN_PHASES),
+  run_id: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$/),
+  purpose: z.enum(RELEASE_RUN_PURPOSES),
+  actor: z.string().min(1).max(200),
+  reason: z.string().min(1).max(1_000),
+  dataset_manifest_path: z.literal(DATASET_MANIFEST_PATH),
+  dataset_manifest_sha256: sha256,
+  release_query_index_sha256: sha256,
+  report: z.object({ path: relativeArtifactPath, sha256 }).strict().nullable(),
+  failure_reason: z.string().min(1).max(2_000).nullable(),
+}).strict().superRefine((value, context) => {
+  if (value.phase === "completed" && value.report === null) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["report"], message: "completed events require a final report hash" });
+  }
+  if (value.phase !== "completed" && value.report !== null) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["report"], message: "only completed events carry a report" });
+  }
+  if (value.phase === "failed" && value.failure_reason === null) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["failure_reason"], message: "failed events require a reason" });
+  }
+  if (value.phase !== "failed" && value.failure_reason !== null) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["failure_reason"], message: "only failed events carry a failure reason" });
+  }
+});
+
+export type ReleaseRunLedgerEntryV2 = z.infer<typeof ReleaseRunLedgerEntryV2Schema>;
+export type ReleaseRunPhase = typeof RELEASE_RUN_PHASES[number];
+export type ReleaseRunPurpose = typeof RELEASE_RUN_PURPOSES[number];
+
+export interface VerifiedFrozenDataset {
+  manifest: DatasetManifestV2;
+  manifestSha256: string;
+  releaseQueryIndex: ReleaseQueryIndexV2;
+}
+
+export interface RecordReleaseRunOptions {
+  root: string;
+  phase: ReleaseRunPhase;
+  runId: string;
+  purpose: ReleaseRunPurpose;
+  actor: string;
+  reason: string;
+  acknowledgement: string;
+  environmentAcknowledgement: string | undefined;
+  reportPath?: string;
+  failureReason?: string;
+  recordedAt?: string;
+  ledgerPath?: string;
+}
+
+export function releaseRunEventHash(entry: Omit<ReleaseRunLedgerEntryV2, "event_hash">): string {
+  return createHash("sha256").update(canonicalJson(entry)).digest("hex");
+}
+
+function withoutEventHash(entry: ReleaseRunLedgerEntryV2): Omit<ReleaseRunLedgerEntryV2, "event_hash"> {
+  const { event_hash: _eventHash, ...body } = entry;
+  return body;
+}
+
+function rootRelativePath(root: string, path: string): string {
+  const absoluteRoot = resolve(root);
+  const absolutePath = resolve(absoluteRoot, path);
+  const result = relative(absoluteRoot, absolutePath);
+  if (!result || result === ".." || result.startsWith(`..${sep}`) || isAbsolute(result)) {
+    throw new Error(`${path}: must name a file below the handwritten-evals root`);
+  }
+  return result.split(sep).join("/");
+}
+
+export async function readReleaseRunLedger(path: string): Promise<ReleaseRunLedgerEntryV2[]> {
+  let text: string;
+  try {
+    text = await readFile(path, "utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw error;
+  }
+  const entries: ReleaseRunLedgerEntryV2[] = [];
+  for (const [index, line] of text.split(/\r?\n/).entries()) {
+    if (!line.trim()) continue;
+    let raw: unknown;
+    try {
+      raw = JSON.parse(line);
+    } catch (error) {
+      throw new Error(`${path}:${index + 1}: invalid JSON: ${(error as Error).message}`);
+    }
+    const parsed = ReleaseRunLedgerEntryV2Schema.safeParse(raw);
+    if (!parsed.success) throw new Error(`${path}:${index + 1}: ${parsed.error.message}`);
+    entries.push(parsed.data);
+  }
+  for (const [index, entry] of entries.entries()) {
+    const expectedPrevious = index === 0 ? null : entries[index - 1]!.event_hash;
+    if (entry.sequence !== index + 1) throw new Error(`${path}:${index + 1}: broken sequence`);
+    if (entry.previous_event_hash !== expectedPrevious) throw new Error(`${path}:${index + 1}: broken hash chain`);
+    if (entry.event_hash !== releaseRunEventHash(withoutEventHash(entry))) {
+      throw new Error(`${path}:${index + 1}: event hash mismatch`);
+    }
+  }
+  return entries;
+}
+
+/** Validates the freeze and proves that no frozen byte has changed. */
+export async function verifyFrozenDataset(rootInput: string): Promise<VerifiedFrozenDataset> {
+  const root = resolve(rootInput);
+  const manifestPath = resolve(root, DATASET_MANIFEST_PATH);
+  const manifestText = await readFile(manifestPath, "utf8");
+  const manifest = DatasetManifestV2Schema.parse(JSON.parse(manifestText));
+  for (const [relativePath, expected] of Object.entries(manifest.hashes)) {
+    rootRelativePath(root, relativePath);
+    const actual = await hashFile(resolve(root, relativePath));
+    if (actual.sha256 !== expected) throw new Error(`${relativePath}: differs from frozen SHA-256`);
+  }
+  const releaseIndexText = await readFile(resolve(root, RELEASE_QUERY_INDEX_PATH), "utf8");
+  const releaseQueryIndex = ReleaseQueryIndexV2Schema.parse(JSON.parse(releaseIndexText));
+  const releaseIndexHash = sha256Bytes(releaseIndexText);
+  if (releaseIndexHash !== manifest.release_holdout.query_index_sha256) {
+    throw new Error(`${RELEASE_QUERY_INDEX_PATH}: does not match manifest release holdout hash`);
+  }
+  return { manifest, manifestSha256: sha256Bytes(manifestText), releaseQueryIndex };
+}
+
+function validateTransition(entries: ReleaseRunLedgerEntryV2[], options: RecordReleaseRunOptions): void {
+  const runEntries = entries.filter(entry => entry.run_id === options.runId);
+  if (options.phase === "started") {
+    if (runEntries.length > 0) throw new Error(`${options.runId}: run_id already exists in release ledger`);
+    return;
+  }
+  const started = runEntries.filter(entry => entry.phase === "started");
+  const terminal = runEntries.filter(entry => entry.phase !== "started");
+  if (started.length !== 1) throw new Error(`${options.runId}: terminal event requires exactly one prior started event`);
+  if (terminal.length > 0) throw new Error(`${options.runId}: release run already has a terminal event`);
+  if (started[0]!.purpose !== options.purpose) throw new Error(`${options.runId}: purpose differs from started event`);
+}
+
+/**
+ * Appends one hash-chained event. There is intentionally no update/delete API.
+ *
+ * The filesystem lock serializes readers/writers so concurrent invocations cannot fork the chain.
+ */
+export async function recordReleaseRunEvent(options: RecordReleaseRunOptions): Promise<ReleaseRunLedgerEntryV2> {
+  if (options.acknowledgement !== RELEASE_HOLDOUT_CLI_ACKNOWLEDGEMENT) {
+    throw new Error(`release run refused: pass the exact holdout acknowledgement ${RELEASE_HOLDOUT_CLI_ACKNOWLEDGEMENT}`);
+  }
+  if (options.environmentAcknowledgement !== RELEASE_HOLDOUT_ENV_ACKNOWLEDGEMENT) {
+    throw new Error(`release run refused: set ${RELEASE_HOLDOUT_ENV_NAME} to the documented acknowledgement`);
+  }
+  if (options.phase === "completed" && !options.reportPath) throw new Error("completed event requires --report");
+  if (options.phase === "failed" && !options.failureReason) throw new Error("failed event requires --failure-reason");
+  if (options.phase !== "completed" && options.reportPath) throw new Error("--report is valid only for completed events");
+  if (options.phase !== "failed" && options.failureReason) throw new Error("--failure-reason is valid only for failed events");
+
+  const root = resolve(options.root);
+  const ledgerPath = resolve(root, options.ledgerPath ?? RELEASE_RUN_LEDGER_PATH);
+  rootRelativePath(root, ledgerPath);
+  await mkdir(dirname(ledgerPath), { recursive: true });
+  const lockPath = `${ledgerPath}.lock`;
+  let lock;
+  try {
+    lock = await open(lockPath, "wx", 0o600);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "EEXIST") {
+      throw new Error(`${ledgerPath}: another ledger writer is active (or a stale lock requires owner review)`);
+    }
+    throw error;
+  }
+  try {
+    const frozen = await verifyFrozenDataset(root);
+    const entries = await readReleaseRunLedger(ledgerPath);
+    validateTransition(entries, options);
+    const started = entries.find(entry => entry.run_id === options.runId && entry.phase === "started");
+    if (started && started.dataset_manifest_sha256 !== frozen.manifestSha256) {
+      throw new Error(`${options.runId}: frozen manifest differs from the started event`);
+    }
+    let report: ReleaseRunLedgerEntryV2["report"] = null;
+    if (options.reportPath) {
+      const path = rootRelativePath(root, options.reportPath);
+      report = { path, sha256: (await hashFile(resolve(root, path))).sha256 };
+    }
+    const body: Omit<ReleaseRunLedgerEntryV2, "event_hash"> = {
+      sequence: entries.length + 1,
+      previous_event_hash: entries.at(-1)?.event_hash ?? null,
+      recorded_at: options.recordedAt ?? new Date().toISOString(),
+      phase: options.phase,
+      run_id: options.runId,
+      purpose: options.purpose,
+      actor: options.actor,
+      reason: options.reason,
+      dataset_manifest_path: DATASET_MANIFEST_PATH,
+      dataset_manifest_sha256: frozen.manifestSha256,
+      release_query_index_sha256: frozen.manifest.release_holdout.query_index_sha256,
+      report,
+      failure_reason: options.failureReason ?? null,
+    };
+    const entry = ReleaseRunLedgerEntryV2Schema.parse({ ...body, event_hash: releaseRunEventHash(body) });
+    const ledger = await open(ledgerPath, "a", 0o600);
+    try {
+      await ledger.writeFile(`${JSON.stringify(entry)}\n`, "utf8");
+      await ledger.sync();
+    } finally {
+      await ledger.close();
+    }
+    return entry;
+  } finally {
+    await lock.close();
+    await unlink(lockPath);
+  }
+}
+
+interface ReleaseLedgerCliOptions extends Omit<RecordReleaseRunOptions, "environmentAcknowledgement"> {}
+
+export function parseReleaseRunLedgerArgs(argv: string[]): ReleaseLedgerCliOptions {
+  const values = new Map<string, string>();
+  for (let index = 0; index < argv.length; index++) {
+    const flag = argv[index]!;
+    if (!flag.startsWith("--")) throw new Error(`unexpected argument: ${flag}`);
+    const value = argv[++index];
+    if (!value) throw new Error(`${flag} requires a value`);
+    values.set(flag, value);
+  }
+  const required = (flag: string): string => {
+    const value = values.get(flag);
+    if (!value) throw new Error(`missing ${flag}`);
+    return value;
+  };
+  const phase = z.enum(RELEASE_RUN_PHASES).parse(required("--phase"));
+  const purpose = z.enum(RELEASE_RUN_PURPOSES).parse(required("--purpose"));
+  const known = new Set([
+    "--root", "--phase", "--run-id", "--purpose", "--actor", "--reason",
+    "--confirm-release-holdout", "--report", "--failure-reason", "--recorded-at",
+  ]);
+  for (const flag of values.keys()) if (!known.has(flag)) throw new Error(`unknown argument: ${flag}`);
+  const root = values.get("--root") ?? resolve(import.meta.dirname, "..");
+  return {
+    root,
+    phase,
+    runId: required("--run-id"),
+    purpose,
+    actor: required("--actor"),
+    reason: required("--reason"),
+    acknowledgement: required("--confirm-release-holdout"),
+    ...(values.has("--report") ? { reportPath: values.get("--report")! } : {}),
+    ...(values.has("--failure-reason") ? { failureReason: values.get("--failure-reason")! } : {}),
+    ...(values.has("--recorded-at") ? { recordedAt: values.get("--recorded-at")! } : {}),
+  };
+}
+
+export async function runReleaseRunLedgerCli(argv: string[]): Promise<void> {
+  const options = parseReleaseRunLedgerArgs(argv);
+  const entry = await recordReleaseRunEvent({
+    ...options,
+    environmentAcknowledgement: process.env[RELEASE_HOLDOUT_ENV_NAME],
+  });
+  console.log(`release holdout ${entry.phase}: ${entry.run_id}; ledger sequence ${entry.sequence}`);
+}
+
+if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
+  runReleaseRunLedgerCli(process.argv.slice(2)).catch(error => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });
+}

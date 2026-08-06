@@ -760,8 +760,11 @@ export class CatalogStore {
       // The expression is built from quoted tokens in query.ts and remains a
       // parameter. It combines a phrase clause with an OR token fallback.
       snapshotConditions.push(`d.tsv @@ to_tsquery($${language}::regconfig, $${index})`);
+      // Normalization 34 combines document-length normalization (2) with
+      // rank/(rank+1) scaling (32). Repeated query terms therefore cannot win
+      // simply by inflating a description with a keyword block.
       rank = `, ts_rank_cd('{1,0.45,0.18,0}'::real[], d.tsv,
-        to_tsquery($${language}::regconfig, $${index}), 32) AS rank`;
+        to_tsquery($${language}::regconfig, $${index}), 34) AS rank`;
       const shape = describeSearchQuery(options.query ?? "");
       if (shape.hasIdentifier || shape.hasUrl) {
         values.push(normalizedQuery.toLowerCase());
@@ -771,7 +774,7 @@ export class CatalogStore {
         // supplied URL/tool/route identifier ahead of generic shared host
         // tokens while remaining parameterized and seller-data-only.
         rank = `, ts_rank_cd('{1,0.45,0.18,0}'::real[], d.tsv,
-          to_tsquery($${language}::regconfig, $${index}), 32)
+          to_tsquery($${language}::regconfig, $${index}), 34)
           + CASE WHEN position($${exact} IN lower(d.lexical_high)) > 0 THEN 2 ELSE 0 END AS rank`;
       }
     }

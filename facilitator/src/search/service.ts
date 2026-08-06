@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type { Pool } from "pg";
 import type { SearchConfig } from "../types.js";
 import type { CatalogStore, DiscoveryOptions, DiscoveryRow } from "../db/catalog.js";
@@ -45,6 +45,11 @@ export interface SearchResult {
   sessionId: string;
   generationId?: number;
   scores: Map<number, number>;
+}
+
+/** Stable, non-reversible identifier for query-level impression aggregation. */
+export function hashSearchQuery(query: string): string {
+  return createHash("sha256").update(query, "utf8").digest("hex");
 }
 
 function withTimeout<T>(
@@ -290,7 +295,7 @@ export class ImpressionRecorder {
     sessionId: string; query: string; result: SearchResult; rows: DiscoveryRow[];
   }): Promise<void> {
     if (!this.config.impressions.enabled || args.rows.length === 0) return;
-    const queryHash = Buffer.from(args.query).toString("base64url").slice(0, 64);
+    const queryHash = hashSearchQuery(args.query);
     const rankingConfig = {
       rrfK: this.config.rrfK,
       lexicalWeight: this.config.lexical.weight,

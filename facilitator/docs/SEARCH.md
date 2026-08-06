@@ -327,9 +327,10 @@ presented as exact.
 
 Impressions record position, score, mode, reranked flag, generation id, the
 ranking configuration and the full degradation report, so a ranking change can
-be attributed afterwards. Raw query text is retained only when
-`search.impressions.retain_query_text` is set (default off); aggregate
-conversion works either way, and rows are pruned after
+be attributed afterwards. Raw query text is retained by default so real buyer
+needs can replace synthetic benchmark queries over time; operators whose policy
+forbids query retention can disable `search.impressions.retain_query_text`.
+Aggregate conversion works either way, and rows are pruned after
 `search.impressions.retention_days`.
 
 ## Agent-facing safety
