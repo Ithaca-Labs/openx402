@@ -414,6 +414,11 @@ For **all ten** `no_result` queries, all three steps are required:
 Record the audit result in the gate report. An unvalidated `no_result` query is worse than no
 `no_result` query at all — it produces a confidently wrong number.
 
+Step 3 is the expensive, unmeasured part of this list — the deterministic scan is free and the brief
+is a one-time document, but "one capability at a time against every description" is 10 full-catalog
+agent passes. **Pilot this at §9 step 1 scale before running it at 1,000×10**, so its token/time/cost
+rate is projected from measurement, not assumed.
+
 ### Authoring rules
 
 1. A query-author agent writes the query **without access to catalog prose or retrieval runs**, from
@@ -497,7 +502,7 @@ Required on **release** judgments only.
 | # | Step | Output | Est. |
 |---|---|---|---|
 | 0 | Complete v2 schema + archive v1 (§0) | valid schema | 2 h |
-| 1 | **Pilot: 1 family, 5 resources, 5 queries, two graders and one adjudicator, end to end** | validated isolation, measured agent cost/rate, **empirical `judged@k` threshold** | 1 agent wave + owner review |
+| 1 | **Pilot: 1 family, 5 resources, 10 distractors (1 shard) authored against a pilot `forbidden-capabilities.md`, 5 capability queries + 1 `no_result` query, two graders and one adjudicator, end to end — including all three §6 exclusion steps (brief, deterministic scan, per-capability agent audit) at pilot scale** | validated isolation, measured agent cost/rate, **empirical `judged@k` threshold**, **measured §6 forbidden-capability audit cost (scanner + agent audit), per-capability and projected to 1,000×10** | 1 agent wave + owner review |
 | 2 | Define 20 families + axis assignments | family spec | 2 h |
 | 3 | Ten isolated agents author 100 resources (10 each; 85 HTTP / 15 MCP) | catalog + sidecar | 10 agent runs + owner review |
 | 4 | Nine waves of ten fresh agents author ~900 distractors (10 each), then critics validate uniqueness and no-result exclusion | corpus at 1,000 | 90 agent runs + owner review |
@@ -510,12 +515,16 @@ Required on **release** judgments only.
 
 Do not estimate this experiment in person-hours before the pilot. Report agent runs, input/output
 tokens, wall-clock time, API cost, rejection rate, regeneration rate, owner-review time, and the
-number of owner corrections. Ten-way concurrency reduces elapsed time but not review burden or
+number of owner corrections — **including the §6 forbidden-capability audit as its own line item**:
+agent runs and tokens per audited capability, wall-clock time to audit the pilot-scale catalog
+(15 records × 1 capability), and the owner-review time to sign off the exclusion report. Project the
+full-scale audit cost (1,000 records × 10 capabilities) from this rate rather than assuming it is
+free because the scan step is. Ten-way concurrency reduces elapsed time but not review burden or
 model-correlated error.
 
-**The pilot must measure actual generation, grading, and owner-review cost** and the remaining
-estimates must be re-derived from it. Steps 6, 7, and 10 are deterministic; authoring is never
-described as mechanical.
+**The pilot must measure actual generation, grading, owner-review, and forbidden-capability-audit
+cost** and the remaining estimates must be re-derived from it. Steps 6, 7, and 10 are deterministic;
+authoring is never described as mechanical.
 
 **Do the pilot.** Scaling a broken process to 100 is how v1 produced 30,000 unusable judgments.
 
