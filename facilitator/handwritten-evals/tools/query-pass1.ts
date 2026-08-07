@@ -1,8 +1,9 @@
 /** Blind, deterministic Step 5 seed grading preparation. Produces no judgments. */
 
 import { createHash } from "node:crypto";
+import { resolve } from "node:path";
 import { z } from "zod";
-import { GraderRefSchema, type CatalogRecord, type QueryRecord, type SidecarRecord } from "../schema/schema-v2.js";
+import { GraderRefSchema, QrelRecordSchema, type CatalogRecord, type QrelRecord, type QueryRecord, type SidecarRecord } from "../schema/schema-v2.js";
 import { PASS1_CANDIDATES_PER_QUERY, queryAssignment } from "../query-config.js";
 import { BlindGradingPackSchema, JudgmentImportSchema } from "./grading-pipeline.js";
 import { deterministicEligibility } from "./pool.js";
@@ -10,6 +11,14 @@ import { deterministicEligibility } from "./pool.js";
 const OpaqueIdSchema = z.string().regex(/^(task|candidate)-[a-f0-9]{16}$/);
 const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
 const opaque = (kind: "task" | "candidate", ...parts: string[]) => `${kind}-${sha256(parts.join("\0")).slice(0, 16)}`;
+
+export function pass1SourceHash(
+  queries: readonly QueryRecord[],
+  catalog: readonly CatalogRecord[],
+  sidecars: readonly SidecarRecord[],
+): string {
+  return `sha256:${sha256(JSON.stringify({ queries, catalog, sidecars }))}`;
+}
 
 export const Pass1SeedAssignmentSchema = z.object({
   task_id: OpaqueIdSchema,
@@ -35,7 +44,21 @@ export const Pass1SeedManifestSchema = z.object({
     query_ids: z.array(z.string().regex(/^qry-\d{3}$/)).length(10),
   }).strict()).length(10),
   assignments: z.array(Pass1SeedAssignmentSchema).length(100 * PASS1_CANDIDATES_PER_QUERY),
-}).strict();
+}).strict().superRefine((value, context) => {
+  const packIds = value.packs.map(pack => pack.pack_id);
+  const graderRuns = value.packs.map(pack => pack.grader_run_id);
+  if (new Set(packIds).size !== packIds.length) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["packs"], message: "pack_id values must be unique" });
+  }
+  if (new Set(graderRuns).size !== graderRuns.length) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["packs"], message: "every pass-1 shard requires a fresh grader run" });
+  }
+  const opaque = value.assignments.map(item => `${item.task_id}\0${item.candidate_id}`);
+  const source = value.assignments.map(item => `${item.query_id}\0${item.resource_id}`);
+  if (new Set(opaque).size !== opaque.length || new Set(source).size !== source.length) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["assignments"], message: "assignments must be unique by opaque and source pair" });
+  }
+});
 
 export const Pass1SeedImportSchema = z.object({
   version: z.literal(1),
@@ -43,6 +66,27 @@ export const Pass1SeedImportSchema = z.object({
   pack_id: z.string().min(1),
   grader: GraderRefSchema,
   judgments: z.array(JudgmentImportSchema),
+}).strict();
+
+const HashSchema = z.string().regex(/^sha256:[a-f0-9]{64}$/);
+export const Pass1SeedReportSchema = z.object({
+  version: z.literal(1),
+  artifact: z.literal("pass1-seed-report-v2"),
+  status: z.literal("pass"),
+  generated_at: z.string().datetime(),
+  source_hash: HashSchema,
+  manifest_hash: HashSchema,
+  import_hashes: z.record(z.string().min(1), HashSchema),
+  query_count: z.literal(100),
+  candidates_per_query: z.literal(PASS1_CANDIDATES_PER_QUERY),
+  pair_count: z.literal(100 * PASS1_CANDIDATES_PER_QUERY),
+  grader_run_ids: z.array(z.string().min(1)).length(10),
+  checks: z.object({
+    exact_pack_coverage: z.literal(true),
+    exact_pair_coverage: z.literal(true),
+    all_rationales_present: z.literal(true),
+    graders_are_distinct_non_authors: z.literal(true),
+  }).strict(),
 }).strict();
 
 function listing(catalog: CatalogRecord, sidecar: SidecarRecord) {
@@ -59,14 +103,16 @@ function listing(catalog: CatalogRecord, sidecar: SidecarRecord) {
 
 export function preparePass1Seed(
   queries: readonly QueryRecord[], catalog: readonly CatalogRecord[], sidecars: readonly SidecarRecord[], createdAt: string,
+  sealedImportDirectory: string,
 ) {
   z.string().datetime().parse(createdAt);
+  if (!sealedImportDirectory.trim()) throw new Error("sealed pass-1 import directory is required");
   if (queries.length !== 100 || catalog.length !== 1_000 || sidecars.length !== 1_000) {
     throw new Error(`pass-1 seed requires 100 queries and 1,000 paired resources; got ${queries.length}/${catalog.length}/${sidecars.length}`);
   }
   const catalogById = new Map(catalog.map(item => [item.resource_id, item]));
   const sidecarById = new Map(sidecars.map(item => [item.resource_id, item]));
-  const sourceHash = `sha256:${sha256(JSON.stringify({ queries, catalog, sidecars }))}`;
+  const sourceHash = pass1SourceHash(queries, catalog, sidecars);
   const assignments: z.infer<typeof Pass1SeedAssignmentSchema>[] = [];
   const packRows: Array<{ pack_id: string; grader_run_id: string; prompt_hash: string; query_ids: string[] }> = [];
   const packs: Array<z.infer<typeof BlindGradingPackSchema>> = [];
@@ -131,7 +177,7 @@ You are a fresh isolated grading context. Read only:
 Run id: \`${graderRunId}\`
 Pack id: \`${packId}\`
 Prompt/task-pack hash: \`${promptHash}\`
-Output: \`handwritten-evals/staging/query-pass1/imports/grader-${String(shard).padStart(2, "0")}.json\`
+Output: \`${resolve(sealedImportDirectory, `grader-${String(shard).padStart(2, "0")}.json`)}\`
 
 Return one \`Pass1SeedImportSchema\` JSON object covering every opaque candidate exactly once.
 Use role \`pass1_seed_grader\`, the exact pack/run/hash above, provider \`anthropic\`, and actual
@@ -147,7 +193,7 @@ Include a concise rationale for every judgment. Stop after the one import file a
   return { packs, prompts, manifest };
 }
 
-export function validatePass1SeedImport(raw: unknown, manifest: z.infer<typeof Pass1SeedManifestSchema>): void {
+export function validatePass1SeedImport(raw: unknown, manifest: z.infer<typeof Pass1SeedManifestSchema>) {
   const imported = Pass1SeedImportSchema.parse(raw);
   const pack = manifest.packs.find(item => item.pack_id === imported.pack_id);
   if (!pack) throw new Error(`unknown pass-1 pack ${imported.pack_id}`);
@@ -160,4 +206,76 @@ export function validatePass1SeedImport(raw: unknown, manifest: z.infer<typeof P
   if (new Set(actual).size !== actual.length || actual.join("\n") !== expected.join("\n")) {
     throw new Error(`${imported.pack_id}: judgments must cover every assigned candidate exactly once`);
   }
+  const assignmentByOpaque = new Map(manifest.assignments.map(item => [`${item.task_id}\0${item.candidate_id}`, item]));
+  for (const judgment of imported.judgments) {
+    const assignment = assignmentByOpaque.get(`${judgment.task_id}\0${judgment.candidate_id}`)!;
+    if (!judgment.rationale?.trim()) throw new Error(`${imported.pack_id}: every pass-1 judgment requires a rationale`);
+    if (imported.grader.run_id === assignment.query_author_run_id || imported.grader.run_id === assignment.resource_author_run_id) {
+      throw new Error(`${imported.pack_id}: grader authored an assigned query or resource`);
+    }
+  }
+  return imported;
+}
+
+export function finalizePass1Seed(
+  rawImports: readonly unknown[],
+  rawManifest: unknown,
+  generatedAt: string,
+): { qrels: QrelRecord[]; report: z.infer<typeof Pass1SeedReportSchema> } {
+  z.string().datetime().parse(generatedAt);
+  const manifest = Pass1SeedManifestSchema.parse(rawManifest);
+  const imports = rawImports.map(raw => validatePass1SeedImport(raw, manifest));
+  const expectedPackIds = manifest.packs.map(pack => pack.pack_id).sort();
+  const actualPackIds = imports.map(record => record.pack_id).sort();
+  if (imports.length !== manifest.packs.length || new Set(actualPackIds).size !== actualPackIds.length
+      || actualPackIds.join("\n") !== expectedPackIds.join("\n")) {
+    throw new Error(`pass-1 finalization requires exactly one valid import for each of ${manifest.packs.length} packs`);
+  }
+
+  const assignmentByOpaque = new Map(manifest.assignments.map(item => [`${item.task_id}\0${item.candidate_id}`, item]));
+  const qrels = imports.flatMap(imported => imported.judgments.map(judgment => {
+    const assignment = assignmentByOpaque.get(`${judgment.task_id}\0${judgment.candidate_id}`)!;
+    return QrelRecordSchema.parse({
+      query_id: assignment.query_id,
+      resource_id: assignment.resource_id,
+      grade: judgment.grade,
+      eligible: true,
+      judge: "agent",
+      rationale: judgment.rationale,
+      annotator: imported.grader.run_id,
+      judged_at: judgment.judged_at,
+      generation: imported.grader,
+      review_status: "pending",
+      reviewed_at: null,
+      reviewed_by: null,
+      owner_note: null,
+    });
+  })).sort((left, right) => `${left.query_id}\0${left.resource_id}`.localeCompare(`${right.query_id}\0${right.resource_id}`));
+  if (qrels.length !== manifest.pair_count || new Set(qrels.map(item => `${item.query_id}\0${item.resource_id}`)).size !== qrels.length) {
+    throw new Error("pass-1 resolved qrels do not cover every source pair exactly once");
+  }
+  const hash = (value: unknown) => `sha256:${sha256(JSON.stringify(value))}`;
+  const importHashes = Object.fromEntries(imports
+    .sort((left, right) => left.pack_id.localeCompare(right.pack_id))
+    .map(imported => [imported.pack_id, hash(imported)]));
+  const report = Pass1SeedReportSchema.parse({
+    version: 1,
+    artifact: "pass1-seed-report-v2",
+    status: "pass",
+    generated_at: generatedAt,
+    source_hash: manifest.source_hash,
+    manifest_hash: hash(manifest),
+    import_hashes: importHashes,
+    query_count: 100,
+    candidates_per_query: PASS1_CANDIDATES_PER_QUERY,
+    pair_count: qrels.length,
+    grader_run_ids: imports.map(record => record.grader.run_id).sort(),
+    checks: {
+      exact_pack_coverage: true,
+      exact_pair_coverage: true,
+      all_rationales_present: true,
+      graders_are_distinct_non_authors: true,
+    },
+  });
+  return { qrels, report };
 }

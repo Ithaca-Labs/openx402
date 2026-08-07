@@ -57,10 +57,10 @@ export interface ForbiddenScannableRecord {
   resource_id: string;
   wire: {
     resource: {
-      serviceName?: string;
-      description?: string;
-      mimeType?: string;
-      tags?: readonly string[];
+      serviceName?: string | undefined;
+      description?: string | undefined;
+      mimeType?: string | undefined;
+      tags?: readonly string[] | undefined;
     };
     extensions: { bazaar: unknown };
   };

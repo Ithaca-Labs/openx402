@@ -44,6 +44,7 @@ export const DISTRIBUTION_AUDIT_POLICY = {
 
 export const DISTRIBUTION_CHECK_IDS = [
   "corpus-counts",
+  "provider-count",
   "catalog-sidecar-wire",
   "distractor-scheme-budget",
   "distractor-resource-type-target",
@@ -157,6 +158,7 @@ export const DistributionAuditV2Schema = z.object({
     labeled: z.number().int().nonnegative(),
     distractors: z.number().int().nonnegative(),
     distractor_upto_bearing: z.number().int().nonnegative(),
+    distinct_providers: z.number().int().nonnegative(),
   }).strict(),
   wire_error_count: z.number().int().nonnegative(),
   statistics: z.object({
@@ -414,6 +416,9 @@ export function buildDistributionAuditV2(
   const checks: DistributionCheck[] = [
     check("corpus-counts", "Audit the complete shipped 1,000-record corpus and 100-record labeled core",
       countsPass, `catalog=${catalog.length}, sidecars=${sidecars.length}, labeled=${labeled.length}, distractors=${distractors.length}`),
+    check("provider-count", "The shipped corpus uses the pinned 120-provider budget",
+      new Set(sidecars.map(record => record.provider_id)).size === RELEASE_COUNTS.providers,
+      `${new Set(sidecars.map(record => record.provider_id)).size}/${RELEASE_COUNTS.providers}`),
     check("catalog-sidecar-wire", "Catalog and sidecar IDs are one-to-one and every sidecar agrees with its wire record",
       wireErrors.length === 0, `${wireErrors.length} error(s)`),
     check("distractor-scheme-budget", "At most 1% of the 900 distractors carry an upto option",
@@ -514,6 +519,7 @@ export function buildDistributionAuditV2(
       labeled: labeled.length,
       distractors: distractors.length,
       distractor_upto_bearing: distractorUpto.length,
+      distinct_providers: new Set(sidecars.map(record => record.provider_id)).size,
     },
     wire_error_count: wireErrors.length,
     statistics: {

@@ -33,12 +33,13 @@ describe("distribution audit v2", () => {
     expect(report.status).toBe("blocked");
     expect(report.counts).toEqual({
       catalog: 100, sidecars: 100, labeled: 100, distractors: 0, distractor_upto_bearing: 0,
+      distinct_providers: 99,
     });
     expect(report.checks.map(check => check.id)).toEqual(DISTRIBUTION_CHECK_IDS);
     expect(report.associations.map(value => value.id)).toEqual(ASSOCIATION_IDS);
     expect(report.checks.find(check => check.id === "corpus-counts")?.passed).toBe(false);
     // The exact-ID cross-check also blocks until res-0101..res-1000 exist.
-    expect(report.checks.filter(check => !["corpus-counts", "catalog-sidecar-wire"].includes(check.id))
+    expect(report.checks.filter(check => !["corpus-counts", "provider-count", "catalog-sidecar-wire"].includes(check.id))
       .every(check => check.passed)).toBe(true);
     expect(report.associations.every(value => value.passed)).toBe(true);
     expect(report.statistics.scheme_sets).toEqual({ exact_only: 70, exact_and_upto: 22, upto_only: 8 });

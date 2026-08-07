@@ -7,6 +7,7 @@ import {
   evaluationInputHashes,
   finalizeEvaluationReport,
   PilotReportEvidenceSchema,
+  REQUIRED_LIMITATIONS,
   reportArtifactHash,
   scoringRunsFromPoolRuns,
   type SystemRun,
@@ -89,12 +90,19 @@ const options = {
   datasetManifestSha256: "b".repeat(64),
   pilotJudgedAt10Threshold: 0.5,
   ownerRates: { reviewed: 50, corrected: 5, rejected: 0, correction_rate: 0.1, rejection_rate: 0 },
-  limitations: ["The corpus is synthetic and judgments are incomplete by construction."],
+  limitations: [...REQUIRED_LIMITATIONS],
   significanceIterations: 100,
   plantedNegativeResourceIds: new Set<string>(),
 };
 
 describe("v2 evaluation report", () => {
+  it("rejects a generic limitations placeholder that omits required disclosures", () => {
+    expect(() => buildEvaluationReport(releaseQueries(), releaseQrels(releaseQueries()), runs(releaseQueries()), {
+      ...options,
+      limitations: ["The benchmark has limitations."],
+    })).toThrow("missing required BUILD-PLAN limitation");
+  });
+
   it("requires measured pilot costs and a full-scale exclusion projection", () => {
     expect(PilotReportEvidenceSchema.safeParse({
       status: "approved",

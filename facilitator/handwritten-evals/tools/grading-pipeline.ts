@@ -210,6 +210,82 @@ export const AgreementArtifactSchema = z.object({
   confusion_matrix_text: z.string(),
 }).strict();
 
+const GradingArtifactHashSchema = z.string().regex(/^sha256:[a-f0-9]{64}$/);
+
+/**
+ * Immutable proof that the exact packs consumed by the graders were complete, blinded, and bound
+ * to the current catalog/query/pool snapshot. Release gates consume this instead of accepting a
+ * self-asserted `status: pass` document.
+ */
+export const GradingProcessAuditSchema = z.object({
+  version: z.literal(1),
+  artifact: z.literal("grading-process-audit-v2"),
+  status: z.literal("pass"),
+  pipeline_run_id: z.string().min(1),
+  generated_at: z.string().datetime(),
+  source_hash: GradingArtifactHashSchema,
+  input_hashes: z.object({
+    grading_manifest: GradingArtifactHashSchema,
+    grader_a_pack: GradingArtifactHashSchema,
+    grader_b_pack: GradingArtifactHashSchema,
+    grader_a_import: GradingArtifactHashSchema,
+    grader_b_import: GradingArtifactHashSchema,
+    adjudication_manifest: GradingArtifactHashSchema.nullable(),
+    adjudication_pack: GradingArtifactHashSchema.nullable(),
+    adjudicator_import: GradingArtifactHashSchema.nullable(),
+  }).strict(),
+  run_ids: z.object({
+    author: z.array(z.string().min(1)).min(1),
+    grader_a: z.string().min(1),
+    grader_b: z.string().min(1),
+    adjudicator: z.string().min(1).nullable(),
+  }).strict(),
+  agent_provenance: z.object({
+    grader_a: GraderRefSchema,
+    grader_b: GraderRefSchema,
+    adjudicator: GraderRefSchema.nullable(),
+  }).strict(),
+  counts: z.object({
+    pairs: z.number().int().positive(),
+    grader_a_judgments: z.number().int().positive(),
+    grader_b_judgments: z.number().int().positive(),
+    disagreements: z.number().int().nonnegative(),
+    adjudications: z.number().int().nonnegative(),
+  }).strict(),
+  checks: z.object({
+    source_current: z.literal(true),
+    packs_match_withheld_manifest: z.literal(true),
+    packs_contain_no_provenance_or_ranking_leakage: z.literal(true),
+    graders_are_distinct_fresh_contexts: z.literal(true),
+    double_grading_complete: z.literal(true),
+    adjudication_is_third_context_and_disagreement_only: z.literal(true),
+  }).strict(),
+}).strict().superRefine((value, context) => {
+  if (value.counts.grader_a_judgments !== value.counts.pairs || value.counts.grader_b_judgments !== value.counts.pairs) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["counts"], message: "both graders must cover every pair" });
+  }
+  if (value.counts.adjudications !== value.counts.disagreements) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["counts", "adjudications"], message: "every disagreement must be adjudicated" });
+  }
+  const adjudicationHashes = [
+    value.input_hashes.adjudication_manifest,
+    value.input_hashes.adjudication_pack,
+    value.input_hashes.adjudicator_import,
+  ];
+  const hasAdjudication = value.counts.disagreements > 0;
+  if (adjudicationHashes.some(hash => (hash === null) === hasAdjudication)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["input_hashes"], message: "adjudication hashes must be all present exactly when disagreements exist" });
+  }
+  if ((value.run_ids.adjudicator === null) === hasAdjudication) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["run_ids", "adjudicator"], message: "adjudicator run must be present exactly when disagreements exist" });
+  }
+  if (value.run_ids.grader_a !== value.agent_provenance.grader_a.run_id
+      || value.run_ids.grader_b !== value.agent_provenance.grader_b.run_id
+      || value.run_ids.adjudicator !== (value.agent_provenance.adjudicator?.run_id ?? null)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["agent_provenance"], message: "agent references must match recorded run ids" });
+  }
+});
+
 export const OWNER_DECISIONS = ["approved", "corrected", "rejected"] as const;
 export const OwnerPairDecisionSchema = z.object({
   query_id: QueryIdSchema,
@@ -262,6 +338,18 @@ const DecisionCountsSchema = z.object({
 export const OwnerReviewReportSchema = z.object({
   version: z.literal(1),
   generated_at: z.string().datetime(),
+  source_hashes: z.object({
+    queries: GradingArtifactHashSchema,
+    raw_qrels: GradingArtifactHashSchema,
+    raw_calibration: GradingArtifactHashSchema,
+    owner_decisions: GradingArtifactHashSchema,
+  }).strict(),
+  output_hashes: z.object({
+    development_qrels: GradingArtifactHashSchema,
+    release_qrels: GradingArtifactHashSchema,
+    reviewed_calibration: GradingArtifactHashSchema,
+  }).strict(),
+  reviewers: z.array(z.string().min(1)).min(1),
   pairs: DecisionCountsSchema,
   queries: DecisionCountsSchema,
   reviewed_qrels_emitted: z.object({
@@ -284,6 +372,47 @@ export const OwnerReviewReportSchema = z.object({
   rejected_queries: z.array(QueryIdSchema),
 }).strict();
 
+const PublicSplitReviewSchema = z.object({
+  query_count: z.number().int().nonnegative(),
+  qrel_count: z.number().int().nonnegative(),
+  qrels_hash: GradingArtifactHashSchema,
+  pair_set_hash: GradingArtifactHashSchema,
+  all_qrels_reviewed: z.literal(true),
+  all_release_rationales_present: z.boolean(),
+  pairs: DecisionCountsSchema,
+  queries: DecisionCountsSchema,
+}).strict().superRefine((value, context) => {
+  if (value.qrel_count !== value.pairs.total - value.pairs.rejected) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["qrel_count"], message: "must equal non-rejected pair decisions" });
+  }
+});
+
+/** Safe to expose to CI: proves review coverage with hashes/counts but contains no pair ids or grades. */
+export const OwnerReviewPublicSummarySchema = z.object({
+  version: z.literal(1),
+  artifact: z.literal("owner-review-public-summary-v2"),
+  generated_at: z.string().datetime(),
+  full_report_hash: GradingArtifactHashSchema,
+  source_hashes: z.object({
+    queries: GradingArtifactHashSchema,
+    raw_qrels: GradingArtifactHashSchema,
+    raw_calibration: GradingArtifactHashSchema,
+    owner_decisions: GradingArtifactHashSchema,
+  }).strict(),
+  reviewers: z.array(z.string().min(1)).min(1),
+  development: PublicSplitReviewSchema,
+  release: PublicSplitReviewSchema,
+  reviewed_calibration: z.object({
+    count: z.number().int().nonnegative(),
+    artifact_hash: GradingArtifactHashSchema,
+    all_rows_reviewed: z.literal(true),
+  }).strict(),
+}).strict().superRefine((value, context) => {
+  if (value.reviewed_calibration.count !== value.development.pairs.total + value.release.pairs.total) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["reviewed_calibration", "count"], message: "must cover every split pair decision" });
+  }
+});
+
 export type BlindGradingPack = z.infer<typeof BlindGradingPackSchema>;
 export type BlindAdjudicationPack = z.infer<typeof BlindAdjudicationPackSchema>;
 export type GraderImport = z.infer<typeof GraderImportSchema>;
@@ -291,8 +420,10 @@ export type AdjudicatorImport = z.infer<typeof AdjudicatorImportSchema>;
 export type GradingManifest = z.infer<typeof GradingManifestSchema>;
 export type AdjudicationManifest = z.infer<typeof AdjudicationManifestSchema>;
 export type AgreementArtifact = z.infer<typeof AgreementArtifactSchema>;
+export type GradingProcessAudit = z.infer<typeof GradingProcessAuditSchema>;
 export type OwnerDecisionBundle = z.infer<typeof OwnerDecisionBundleSchema>;
 export type OwnerReviewReport = z.infer<typeof OwnerReviewReportSchema>;
+export type OwnerReviewPublicSummary = z.infer<typeof OwnerReviewPublicSummarySchema>;
 
 export interface PipelinePrerequisites {
   queries: readonly QueryRecord[];
@@ -324,6 +455,23 @@ const DEFAULT_COUNTS: ExpectedCounts = {
 
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
+}
+
+export function gradingArtifactHash(value: unknown): string {
+  return `sha256:${sha256(JSON.stringify(value))}`;
+}
+
+export function gradingSourceHash(input: PipelinePrerequisites): string {
+  return gradingArtifactHash({
+    queries: input.queries,
+    catalog: input.catalog,
+    sidecars: input.sidecars,
+    pool: input.pool,
+  });
+}
+
+export function gradingPairSetHash(values: readonly { query_id: string; resource_id: string }[]): string {
+  return gradingArtifactHash(values.map(value => pairKey(value.query_id, value.resource_id)).sort());
 }
 
 function opaque(prefix: "task" | "candidate", seed: string, ...parts: string[]): string {
@@ -458,12 +606,7 @@ function assertIndependentGrader(
 }
 
 function assertManifestMatchesPrerequisites(manifest: GradingManifest, input: PipelinePrerequisites): void {
-  const actualSourceHash = `sha256:${sha256(JSON.stringify({
-    queries: input.queries,
-    catalog: input.catalog,
-    sidecars: input.sidecars,
-    pool: input.pool,
-  }))}`;
+  const actualSourceHash = gradingSourceHash(input);
   if (manifest.source_hash !== actualSourceHash) throw new Error("grading manifest source_hash does not match current inputs");
   const queryById = new Map(input.queries.map(record => [record.query_id, record]));
   const sidecarById = new Map(input.sidecars.map(record => [record.resource_id, record]));
@@ -510,12 +653,7 @@ export function prepareBlindGrading(
     bucket.push(record);
     poolsByQuery.set(record.query_id, bucket);
   }
-  const sourceHash = `sha256:${sha256(JSON.stringify({
-    queries: input.queries,
-    catalog: input.catalog,
-    sidecars: input.sidecars,
-    pool: input.pool,
-  }))}`;
+  const sourceHash = gradingSourceHash(input);
 
   const build = (slot: "a" | "b", grader: z.infer<typeof GraderRefSchema>) => {
     const seed = `${options.seed}\0${slot}\0${grader.run_id}`;
@@ -624,6 +762,184 @@ export function validateDoubleGrading(
   };
 }
 
+function assertGradingPackMatchesManifest(
+  rawPack: unknown,
+  slot: "a" | "b",
+  manifest: GradingManifest,
+  input: PipelinePrerequisites,
+): BlindGradingPack {
+  const pack = BlindGradingPackSchema.parse(rawPack);
+  if (pack.pack_id !== manifest.packs[slot]) throw new Error(`grader ${slot} pack_id does not match withheld manifest`);
+  assertNoBlindPackLeakage(pack);
+  assertUnique(pack.tasks.map(task => task.task_id), `grader ${slot} pack task_id`);
+
+  const assignments = manifest.assignments[slot];
+  const assignmentByOpaque = new Map(assignments.map(assignment => [pairKey(assignment.task_id, assignment.candidate_id), assignment]));
+  const queryById = new Map(input.queries.map(record => [record.query_id, record]));
+  const catalogById = new Map(input.catalog.map(record => [record.resource_id, record]));
+  const sidecarById = new Map(input.sidecars.map(record => [record.resource_id, record]));
+  const seen: string[] = [];
+
+  for (const task of pack.tasks) {
+    const taskAssignments = assignments.filter(assignment => assignment.task_id === task.task_id);
+    if (taskAssignments.length === 0) throw new Error(`grader ${slot} pack contains an unassigned task`);
+    const queryIds = new Set(taskAssignments.map(assignment => assignment.query_id));
+    if (queryIds.size !== 1) throw new Error(`grader ${slot} task maps to multiple source queries`);
+    const queryId = taskAssignments[0]!.query_id;
+    if (task.query !== queryById.get(queryId)!.query) throw new Error(`grader ${slot} pack query text does not match current source`);
+    if (task.candidates.length !== taskAssignments.length) throw new Error(`grader ${slot} pack task candidate count mismatch`);
+
+    for (const candidate of task.candidates) {
+      const opaqueKey = pairKey(task.task_id, candidate.candidate_id);
+      const assignment = assignmentByOpaque.get(opaqueKey);
+      if (!assignment) throw new Error(`grader ${slot} pack contains an unassigned candidate`);
+      const expectedListing = listing(catalogById.get(assignment.resource_id)!, sidecarById.get(assignment.resource_id)!);
+      if (JSON.stringify(candidate.listing) !== JSON.stringify(expectedListing)) {
+        throw new Error(`grader ${slot} pack listing does not match current source`);
+      }
+      seen.push(opaqueKey);
+    }
+  }
+
+  assertUnique(seen, `grader ${slot} pack assignment`);
+  const expected = [...assignmentByOpaque.keys()].sort();
+  if (seen.sort().join("\n") !== expected.join("\n")) throw new Error(`grader ${slot} pack does not cover the withheld manifest exactly`);
+  return pack;
+}
+
+function assertAdjudicationPackMatchesManifest(
+  rawPack: unknown,
+  manifest: z.infer<typeof AdjudicationManifestSchema>,
+  input: PipelinePrerequisites,
+): BlindAdjudicationPack {
+  const pack = BlindAdjudicationPackSchema.parse(rawPack);
+  if (pack.pack_id !== manifest.pack_id) throw new Error("adjudication pack_id does not match withheld manifest");
+  assertNoBlindPackLeakage(pack);
+  assertUnique(pack.tasks.map(task => pairKey(task.task_id, task.candidate.candidate_id)), "adjudication pack assignment");
+  const assignmentByOpaque = new Map(manifest.assignments.map(assignment => [pairKey(assignment.task_id, assignment.candidate_id), assignment]));
+  const queryById = new Map(input.queries.map(record => [record.query_id, record]));
+  const catalogById = new Map(input.catalog.map(record => [record.resource_id, record]));
+  const sidecarById = new Map(input.sidecars.map(record => [record.resource_id, record]));
+  const seen: string[] = [];
+
+  for (const task of pack.tasks) {
+    const opaqueKey = pairKey(task.task_id, task.candidate.candidate_id);
+    const assignment = assignmentByOpaque.get(opaqueKey);
+    if (!assignment) throw new Error("adjudication pack contains an unassigned candidate");
+    if (task.query !== queryById.get(assignment.query_id)!.query) throw new Error("adjudication pack query text does not match current source");
+    const expectedListing = listing(catalogById.get(assignment.resource_id)!, sidecarById.get(assignment.resource_id)!);
+    if (JSON.stringify(task.candidate.listing) !== JSON.stringify(expectedListing)) {
+      throw new Error("adjudication pack listing does not match current source");
+    }
+    seen.push(opaqueKey);
+  }
+
+  const expected = [...assignmentByOpaque.keys()].sort();
+  if (seen.sort().join("\n") !== expected.join("\n")) throw new Error("adjudication pack does not cover the withheld manifest exactly");
+  return pack;
+}
+
+export interface GradingProcessAuditInputs {
+  sources: { queries: readonly unknown[]; catalog: readonly unknown[]; sidecars: readonly unknown[]; pool: readonly unknown[] };
+  gradingManifest: unknown;
+  graderAPack: unknown;
+  graderBPack: unknown;
+  graderAImport: unknown;
+  graderBImport: unknown;
+  adjudicationManifest: unknown | null;
+  adjudicationPack: unknown | null;
+  adjudicatorImport: unknown | null;
+}
+
+export function buildGradingProcessAudit(
+  raw: GradingProcessAuditInputs,
+  generatedAt: string,
+  expectedCounts: ExpectedCounts = DEFAULT_COUNTS,
+): GradingProcessAudit {
+  z.string().datetime().parse(generatedAt);
+  const sources = parsePrerequisites(raw.sources, expectedCounts);
+  const manifest = GradingManifestSchema.parse(raw.gradingManifest);
+  assertManifestMatchesPrerequisites(manifest, sources);
+  assertGradingPackMatchesManifest(raw.graderAPack, "a", manifest, sources);
+  assertGradingPackMatchesManifest(raw.graderBPack, "b", manifest, sources);
+  const double = validateDoubleGrading(raw.graderAImport, raw.graderBImport, manifest);
+  const disagreements = double.pairs.filter(pair => pair.a.grade !== pair.b.grade);
+  const final = finalizeGrading(
+    sources,
+    manifest,
+    raw.graderAImport,
+    raw.graderBImport,
+    raw.adjudicationManifest,
+    raw.adjudicatorImport,
+    generatedAt,
+    expectedCounts,
+  );
+
+  let adjudicatorRunId: string | null = null;
+  if (disagreements.length > 0) {
+    if (raw.adjudicationManifest === null || raw.adjudicationPack === null || raw.adjudicatorImport === null) {
+      throw new Error("complete adjudication manifest, pack, and import are required for process audit");
+    }
+    const adjudicationManifest = AdjudicationManifestSchema.parse(raw.adjudicationManifest);
+    if (adjudicationManifest.pipeline_run_id !== manifest.pipeline_run_id) throw new Error("adjudication pipeline_run_id mismatch");
+    assertAdjudicationPackMatchesManifest(raw.adjudicationPack, adjudicationManifest, sources);
+    adjudicatorRunId = adjudicationManifest.adjudicator.run_id;
+  } else if (raw.adjudicationManifest !== null || raw.adjudicationPack !== null || raw.adjudicatorImport !== null) {
+    throw new Error("adjudication artifacts supplied when graders have no disagreements");
+  }
+
+  const authorRuns = [...new Set([
+    ...sources.queries.map(record => record.generation.run_id),
+    ...sources.sidecars.map(record => record.generation.run_id),
+  ])].sort();
+  return GradingProcessAuditSchema.parse({
+    version: 1,
+    artifact: "grading-process-audit-v2",
+    status: "pass",
+    pipeline_run_id: manifest.pipeline_run_id,
+    generated_at: generatedAt,
+    source_hash: gradingSourceHash(sources),
+    input_hashes: {
+      grading_manifest: gradingArtifactHash(manifest),
+      grader_a_pack: gradingArtifactHash(raw.graderAPack),
+      grader_b_pack: gradingArtifactHash(raw.graderBPack),
+      grader_a_import: gradingArtifactHash(raw.graderAImport),
+      grader_b_import: gradingArtifactHash(raw.graderBImport),
+      adjudication_manifest: raw.adjudicationManifest === null ? null : gradingArtifactHash(raw.adjudicationManifest),
+      adjudication_pack: raw.adjudicationPack === null ? null : gradingArtifactHash(raw.adjudicationPack),
+      adjudicator_import: raw.adjudicatorImport === null ? null : gradingArtifactHash(raw.adjudicatorImport),
+    },
+    run_ids: {
+      author: authorRuns,
+      grader_a: double.a.grader.run_id,
+      grader_b: double.b.grader.run_id,
+      adjudicator: adjudicatorRunId,
+    },
+    agent_provenance: {
+      grader_a: double.a.grader,
+      grader_b: double.b.grader,
+      adjudicator: disagreements.length === 0
+        ? null
+        : AdjudicationManifestSchema.parse(raw.adjudicationManifest).adjudicator,
+    },
+    counts: {
+      pairs: manifest.pair_count,
+      grader_a_judgments: double.a.judgments.length,
+      grader_b_judgments: double.b.judgments.length,
+      disagreements: final.agreementReport.disagreement_count,
+      adjudications: final.agreementReport.adjudicated_count,
+    },
+    checks: {
+      source_current: true,
+      packs_match_withheld_manifest: true,
+      packs_contain_no_provenance_or_ranking_leakage: true,
+      graders_are_distinct_fresh_contexts: true,
+      double_grading_complete: true,
+      adjudication_is_third_context_and_disagreement_only: true,
+    },
+  });
+}
+
 export function prepareBlindAdjudication(
   input: PipelinePrerequisites,
   rawManifest: unknown,
@@ -635,6 +951,7 @@ export function prepareBlindAdjudication(
   const sources = parsePrerequisites(input, options.expectedCounts ?? DEFAULT_COUNTS);
   const gradingManifest = GradingManifestSchema.parse(rawManifest);
   assertManifestMatchesPrerequisites(gradingManifest, sources);
+  if (options.pipelineRunId !== gradingManifest.pipeline_run_id) throw new Error("adjudication pipeline_run_id must match grading pipeline");
   const double = validateDoubleGrading(rawA, rawB, gradingManifest);
   const adjudicatorRef = GraderRefSchema.parse(adjudicator);
   z.string().datetime().parse(options.createdAt);
@@ -746,11 +1063,19 @@ export function finalizeGrading(
       throw new Error(`${disagreements.length} disagreements require a complete adjudicator import`);
     }
     const adjudicationManifest = AdjudicationManifestSchema.parse(rawAdjudicationManifest);
+    if (adjudicationManifest.pipeline_run_id !== manifest.pipeline_run_id) {
+      throw new Error("adjudication pipeline_run_id does not match grading pipeline");
+    }
+    const authorRuns = new Set([
+      ...sources.queries.map(record => record.generation.run_id),
+      ...sources.sidecars.map(record => record.generation.run_id),
+    ]);
     if (
       adjudicationManifest.adjudicator.run_id === double.a.grader.run_id ||
-      adjudicationManifest.adjudicator.run_id === double.b.grader.run_id
+      adjudicationManifest.adjudicator.run_id === double.b.grader.run_id ||
+      authorRuns.has(adjudicationManifest.adjudicator.run_id)
     ) {
-      throw new Error("adjudicator must use a third distinct run_id");
+      throw new Error("adjudicator must use a third fresh-context run_id distinct from all authors and graders");
     }
     const expected = disagreements.map(pair => pairKey(pair.a.query_id, pair.a.resource_id)).sort();
     const assigned = adjudicationManifest.assignments.map(item => pairKey(item.query_id, item.resource_id)).sort();
@@ -853,6 +1178,7 @@ export function applyOwnerReview(
   releaseQrels: QrelRecord[];
   reviewedCalibration: AgentCalibrationRecord[];
   report: OwnerReviewReport;
+  publicSummary: OwnerReviewPublicSummary;
 } {
   z.string().datetime().parse(generatedAt);
   const queries = parseAll(QueryRecordSchema, rawQueries, "queries");
@@ -965,6 +1291,21 @@ export function applyOwnerReview(
   const report = OwnerReviewReportSchema.parse({
     version: 1,
     generated_at: generatedAt,
+    source_hashes: {
+      queries: gradingArtifactHash(queries),
+      raw_qrels: gradingArtifactHash(qrels),
+      raw_calibration: gradingArtifactHash(calibration),
+      owner_decisions: gradingArtifactHash(decisions),
+    },
+    output_hashes: {
+      development_qrels: gradingArtifactHash(developmentQrels),
+      release_qrels: gradingArtifactHash(releaseQrels),
+      reviewed_calibration: gradingArtifactHash(reviewedCalibration),
+    },
+    reviewers: [...new Set([
+      ...decisions.query_decisions.map(decision => decision.reviewer),
+      ...decisions.pair_decisions.map(decision => decision.reviewer),
+    ])].sort(),
     pairs: decisionCounts(decisions.pair_decisions),
     queries: decisionCounts(decisions.query_decisions),
     reviewed_qrels_emitted: {
@@ -983,7 +1324,37 @@ export function applyOwnerReview(
       .map(decision => decision.query_id)
       .sort(),
   });
-  return { developmentQrels, releaseQrels, reviewedCalibration, report };
+  const splitSummary = (split: "development" | "release", splitQrels: QrelRecord[]) => {
+    const splitQueryIds = new Set(queries.filter(query => query.split === split).map(query => query.query_id));
+    const pairDecisions = decisions.pair_decisions.filter(decision => splitQueryIds.has(decision.query_id));
+    const queryDecisions = decisions.query_decisions.filter(decision => splitQueryIds.has(decision.query_id));
+    return {
+      query_count: splitQueryIds.size,
+      qrel_count: splitQrels.length,
+      qrels_hash: gradingArtifactHash(splitQrels),
+      pair_set_hash: gradingPairSetHash(splitQrels),
+      all_qrels_reviewed: true as const,
+      all_release_rationales_present: split === "development" || splitQrels.every(qrel => Boolean(qrel.rationale?.trim())),
+      pairs: decisionCounts(pairDecisions),
+      queries: decisionCounts(queryDecisions),
+    };
+  };
+  const publicSummary = OwnerReviewPublicSummarySchema.parse({
+    version: 1,
+    artifact: "owner-review-public-summary-v2",
+    generated_at: generatedAt,
+    full_report_hash: gradingArtifactHash(report),
+    source_hashes: report.source_hashes,
+    reviewers: report.reviewers,
+    development: splitSummary("development", developmentQrels),
+    release: splitSummary("release", releaseQrels),
+    reviewed_calibration: {
+      count: reviewedCalibration.length,
+      artifact_hash: gradingArtifactHash(reviewedCalibration),
+      all_rows_reviewed: true,
+    },
+  });
+  return { developmentQrels, releaseQrels, reviewedCalibration, report, publicSummary };
 }
 
 export async function readJsonl(path: string): Promise<unknown[]> {

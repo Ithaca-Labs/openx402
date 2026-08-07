@@ -14,7 +14,9 @@ const opaque = (kind: "task" | "candidate", ...parts: string[]) => `${kind}-${sh
 
 export const PilotRunEvidenceSchema = z.object({
   role: z.enum(["resource_author", "distractor_author", "query_author", "grader_a", "grader_b", "adjudicator", "forbidden_auditor", "repair"]),
-  run_id: z.string().min(1), model: z.string().min(1), prompt_hash: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+  provider: z.literal("anthropic"), model: z.string().min(1), prompt_hash: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+  run_id: z.string().min(1), shard_id: z.string().min(1), temperature: z.number().min(0).max(2).optional(),
+  generated_at: z.string().datetime(),
   started_at: z.string().datetime(), finished_at: z.string().datetime(),
   input_tokens: z.number().int().positive(), output_tokens: z.number().int().positive(),
   wall_clock_seconds: z.number().positive(), api_cost_usd: z.number().nonnegative(),

@@ -8,6 +8,8 @@ export interface CursorPayload {
   /** Hash of the filter set, so a cursor cannot be replayed against a different query. */
   filters: string;
   expiresAt: number;
+  /** Stable attribution id reused by every page of one ranked search. */
+  searchSessionId?: string;
 }
 
 const VERSION = "c1";
@@ -38,6 +40,10 @@ export function decodeCursor(key: Buffer, cursor: string): CursorPayload | undef
     const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as CursorPayload;
     if (typeof payload.snapshot !== "string" || typeof payload.offset !== "number") return undefined;
     if (typeof payload.filters !== "string" || typeof payload.expiresAt !== "number") return undefined;
+    if (payload.searchSessionId !== undefined
+        && !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(payload.searchSessionId)) {
+      return undefined;
+    }
     if (payload.offset < 0 || !Number.isSafeInteger(payload.offset)) return undefined;
     if (payload.expiresAt < Date.now()) return undefined;
     return payload;

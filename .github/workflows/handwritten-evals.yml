@@ -9,6 +9,34 @@ permissions:
   contents: read
 
 jobs:
+  development-benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: facilitator/package-lock.json
+
+      - name: Install facilitator dependencies
+        working-directory: facilitator
+        run: npm ci
+
+      - name: Run 50-query development benchmark
+        working-directory: facilitator
+        run: npm run benchmark:v2:development-ci
+
+      - name: Upload development report
+        if: ${{ hashFiles('facilitator/handwritten-evals/reports/development-ci-v2.json') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: stellar-bazaar-development-v2
+          path: facilitator/handwritten-evals/reports/development-ci-v2.json
+          if-no-files-found: error
+
   metamorphic:
     runs-on: ubuntu-latest
     services:

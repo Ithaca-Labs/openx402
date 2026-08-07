@@ -141,7 +141,7 @@ Full pipeline reference: [search, indexing and evaluation](SEARCH.md).
 | Key | Default | Meaning |
 | --- | --- | --- |
 | `enabled` | `true` | Record what was shown, for conversion and ranking attribution. |
-| `retain_query_text` | `true` | Store raw queries for benchmark maintenance and search-quality analysis. Disable when policy forbids query retention. |
+| `retain_query_text` | `true` | Store raw queries for benchmark maintenance and search-quality analysis. Disable when policy forbids query retention; session/result/fetch telemetry remains. |
 | `retention_days` | `90` | Pruned hourly. |
 
 ### `search.models`

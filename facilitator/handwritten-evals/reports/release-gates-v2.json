@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T00:27:01.895Z",
+  "generated_at": "2026-08-07T01:53:45.143Z",
   "status": "blocked",
   "counts": {
     "catalog": 100,
@@ -76,7 +76,9 @@
       "name": "100 queries and pass-1 grading",
       "status": "not_started",
       "evidence": [
-        "0/100 queries"
+        "0/100 queries",
+        "full critic missing/stale/failed",
+        "pass-1 missing/stale"
       ],
       "blockers": [
         "Step 4 and query authoring not complete"
@@ -99,10 +101,11 @@
       "status": "not_started",
       "evidence": [
         "0/5 systems",
-        "0 pool rows"
+        "0 pool rows",
+        "snapshot missing/stale"
       ],
       "blockers": [
-        "runs and pool builder output missing"
+        "runs, exact pool, or current pool snapshot missing"
       ]
     },
     {
@@ -110,7 +113,8 @@
       "name": "dual grading and unpooled audit",
       "status": "not_started",
       "evidence": [
-        "0 qrels"
+        "0 qrels",
+        "grading process missing/stale"
       ],
       "blockers": [
         "pool and grading absent"
@@ -121,7 +125,8 @@
       "name": "adjudication and owner review",
       "status": "not_started",
       "evidence": [
-        "0 calibration rows"
+        "0 calibration rows",
+        "agreement missing"
       ],
       "blockers": [
         "adjudication/calibration/owner review absent"
@@ -136,7 +141,7 @@
         "final holdout ledger incomplete"
       ],
       "blockers": [
-        "judgments, run outputs, owner review, or final ledger event absent"
+        "current approved report or final ledger event absent"
       ]
     }
   ],
@@ -165,6 +170,7 @@
       "requirement": "Final release-set access is hash-chained and recorded",
       "status": "blocked",
       "evidence": [
+        "release judgments are never opened by this status/release-gate process",
         "0 ledger events",
         "completed final holdout run missing"
       ]
@@ -182,7 +188,8 @@
       "requirement": "upto, mcp, and network show no prohibited correlation",
       "status": "blocked",
       "evidence": [
-        "distribution audit missing"
+        "distribution audit missing",
+        "current inputs stale/missing"
       ]
     },
     {
@@ -203,13 +210,24 @@
       ]
     },
     {
+      "id": "pass1-seed",
+      "requirement": "Pass-1 seed grading covers seven blind candidates for every query with fresh non-author graders",
+      "status": "blocked",
+      "evidence": [
+        "pass-1 report missing",
+        "current source stale/missing"
+      ]
+    },
+    {
       "id": "pool",
       "requirement": "Pool covers top-20 of all five systems and every pooled pair is judged",
       "status": "blocked",
       "evidence": [
         "0/5 systems",
         "exact coverage complete dataset and run artifacts are missing",
-        "0 unjudged pooled pairs"
+        "pool snapshot missing",
+        "development pair coverage complete",
+        "sealed release pair coverage incomplete"
       ]
     },
     {
@@ -217,7 +235,9 @@
       "requirement": "Unpooled audit performed and relevance rate reported",
       "status": "blocked",
       "evidence": [
-        "unpooled audit missing"
+        "unpooled audit missing",
+        "0 audit pool pair(s)",
+        "source unavailable"
       ]
     },
     {
@@ -225,7 +245,9 @@
       "requirement": "judged@10 meets the pilot-derived threshold",
       "status": "blocked",
       "evidence": [
-        "pilot missing/incomplete"
+        "pilot missing/incomplete",
+        "pilot threshold missing/stale",
+        "report inputs missing/stale"
       ]
     },
     {
@@ -236,6 +258,15 @@
         "0 current deterministic hit(s)",
         "forbidden audit missing",
         "corpus hash stale/missing"
+      ]
+    },
+    {
+      "id": "artifact-critics",
+      "requirement": "All six independent critic roles passed owner acceptance on current corpus and query inputs",
+      "status": "blocked",
+      "evidence": [
+        "corpus critic missing",
+        "full critic missing"
       ]
     },
     {
@@ -260,7 +291,7 @@
       "requirement": "No author graded own output; task-pack isolation is auditable",
       "status": "blocked",
       "evidence": [
-        "isolation audit missing"
+        "grading process audit missing"
       ]
     },
     {
@@ -268,7 +299,7 @@
       "requirement": "Grading was blind to system, score, rank, author, and other grader",
       "status": "blocked",
       "evidence": [
-        "blindness audit missing"
+        "grading process audit missing"
       ]
     },
     {
@@ -276,7 +307,9 @@
       "requirement": "Restricted weighted kappa is reported and at least 0.6",
       "status": "blocked",
       "evidence": [
-        "calibration missing"
+        "agreement missing",
+        "relevant-family quadratic kappa undefined",
+        "0 reviewed calibration rows"
       ]
     },
     {
@@ -295,8 +328,9 @@
       "evidence": [
         "resources reviewed 0/100",
         "queries reviewed 0/0",
-        "qrels reviewed 0/0",
-        "calibration reviewed 0/0",
+        "development qrels reviewed 0/0",
+        "sealed release qrels 0",
+        "calibration reviewed 0",
         "owner decision report missing"
       ]
     },
@@ -338,10 +372,12 @@
     "holdout-ledger",
     "anti-correlation",
     "mcp-queries",
+    "pass1-seed",
     "pool",
     "unpooled-audit",
     "judged-at-k",
     "no-result",
+    "artifact-critics",
     "metric-contract",
     "provenance",
     "isolation",

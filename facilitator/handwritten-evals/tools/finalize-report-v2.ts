@@ -6,7 +6,9 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { QrelRecordSchema, type QrelRecord } from "../schema/schema-v2.js";
 import { writeArtifactBundleExclusive } from "./grading-pipeline.js";
+import { RELEASE_QRELS_ENV_NAME, resolveSealedReleaseQrelsPath } from "./holdout-v2.js";
 import { loadSystemRuns, loadV2Dataset } from "./pool.js";
+import { verifyPoolSnapshot } from "./pool-snapshot-v2.js";
 import {
   EvaluationReportDraftV2Schema,
   evaluationInputHashes,
@@ -42,6 +44,7 @@ async function main(): Promise<void> {
   }
   const root = resolve(rootInput ?? resolve(import.meta.dirname, ".."));
   const frozen = await verifyFrozenDataset(root);
+  await verifyPoolSnapshot(root);
   const ledger = await readReleaseRunLedger(resolve(root, "manifests/release-runs-v2.jsonl"), root);
   const runEntries = ledger.filter(entry => entry.run_id === runId);
   const started = runEntries.filter(entry => entry.phase === "started");
@@ -55,7 +58,7 @@ async function main(): Promise<void> {
 
   // Release qrels remain inaccessible until the ledger authorization above succeeds.
   const draftPath = resolve(root, releaseReportDraftPath(runId, start.purpose));
-  const qrelPath = resolve(root, "qrels/release-v2.jsonl");
+  const qrelPath = await resolveSealedReleaseQrelsPath(root, process.env[RELEASE_QRELS_ENV_NAME]);
   const [draftRaw, signoff, dataset, qrels] = await Promise.all([
     json(draftPath),
     json(resolve(signoffInput)),

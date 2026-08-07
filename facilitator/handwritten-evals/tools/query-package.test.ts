@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FORBIDDEN_CAPABILITIES, QUERY_ASSIGNMENTS } from "../query-config.js";
 import { POOL_SYSTEMS, TESTNET_USDC, type CatalogRecord, type QueryRecord, type SidecarRecord } from "../schema/schema-v2.js";
-import { preparePass1Seed, validatePass1SeedImport } from "./query-pass1.js";
+import { finalizePass1Seed, Pass1SeedReportSchema, preparePass1Seed, validatePass1SeedImport } from "./query-pass1.js";
 
 const now = "2026-08-07T00:00:00.000Z";
 const payTo = "GAOH2NR3A3R2VS6TUE6L75A3OMJ4UKJWEHHNL5GIIEQTS5RVZEK5LAP4";
@@ -64,12 +64,15 @@ describe("Step 5 frozen assignments", () => {
 
 describe("pass-1 seed preparation", () => {
   it("creates ten blind seven-candidate packs and validates exact imports", () => {
-    const prepared = preparePass1Seed(...Object.values(fixtures()) as [QueryRecord[], CatalogRecord[], SidecarRecord[]], now);
+    const sealedImports = "/private/tmp/stellar-bazaar-pass1/imports";
+    const prepared = preparePass1Seed(
+      ...Object.values(fixtures()) as [QueryRecord[], CatalogRecord[], SidecarRecord[]], now, sealedImports,
+    );
     expect(prepared.packs).toHaveLength(10);
     expect(prepared.prompts).toHaveLength(10);
     expect(prepared.prompts.every((prompt, index) => prompt.includes(`run-query-pass1-grader-${String(index + 1).padStart(2, "0")}`)
       && prompt.includes(`query-pass1-seed-${String(index + 1).padStart(2, "0")}`)
-      && prompt.includes(`staging/query-pass1/imports/grader-${String(index + 1).padStart(2, "0")}.json`)
+      && prompt.includes(`${sealedImports}/grader-${String(index + 1).padStart(2, "0")}.json`)
       && !prompt.includes("<"))).toBe(true);
     expect(prepared.manifest.assignments).toHaveLength(700);
     expect(prepared.packs.every(pack => pack.tasks.length === 10 && pack.tasks.every(task => task.candidates.length === 7))).toBe(true);
@@ -90,9 +93,42 @@ describe("pass-1 seed preparation", () => {
         prompt_hash: pack.prompt_hash,
         generated_at: now,
       },
-      judgments: assignments.map(item => ({ task_id: item.task_id, candidate_id: item.candidate_id, grade: 0, judged_at: now })) };
+      judgments: assignments.map(item => ({ task_id: item.task_id, candidate_id: item.candidate_id, grade: 0,
+        rationale: "Different capability in the blind seed set.", judged_at: now })) };
     expect(() => validatePass1SeedImport(imported, prepared.manifest)).not.toThrow();
+    expect(() => validatePass1SeedImport({
+      ...imported,
+      judgments: imported.judgments.map(judgment => ({ ...judgment, rationale: undefined })),
+    }, prepared.manifest)).toThrow(/requires a rationale/);
     expect(() => validatePass1SeedImport({ ...imported, grader: { ...imported.grader, run_id: "query-author" } }, prepared.manifest))
       .toThrow(/provenance/);
+
+    const imports = prepared.manifest.packs.map(currentPack => {
+      const currentAssignments = prepared.manifest.assignments.filter(item => item.grader_run_id === currentPack.grader_run_id);
+      return {
+        version: 1 as const,
+        role: "pass1_seed_grader" as const,
+        pack_id: currentPack.pack_id,
+        grader: {
+          provider: "anthropic" as const,
+          run_id: currentPack.grader_run_id,
+          shard_id: currentPack.pack_id,
+          model: "grader-revision",
+          prompt_hash: currentPack.prompt_hash,
+          generated_at: now,
+        },
+        judgments: currentAssignments.map(item => ({
+          task_id: item.task_id,
+          candidate_id: item.candidate_id,
+          grade: 0,
+          rationale: "Different capability in the blind seed set.",
+          judged_at: now,
+        })),
+      };
+    });
+    const finalized = finalizePass1Seed(imports, prepared.manifest, now);
+    expect(finalized.qrels).toHaveLength(700);
+    expect(finalized.report.grader_run_ids).toHaveLength(10);
+    expect(Pass1SeedReportSchema.safeParse(finalized.report).success).toBe(true);
   });
 });

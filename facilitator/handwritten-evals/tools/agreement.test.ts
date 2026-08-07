@@ -255,6 +255,8 @@ describe("stratifiedAgreement — stratum overrides", () => {
     const report = stratifiedAgreement(pairs);
     expect(report.relevantFamily.n).toBe(2);
     expect(report.nonRelevantFamily.n).toBe(1);
+    expect(report.relevantFamily.description).toContain("frozen family label");
+    expect(report.relevantFamily.description).not.toContain("either annotator placed");
   });
 
   it("honours a custom predicate", () => {
@@ -263,6 +265,7 @@ describe("stratifiedAgreement — stratum overrides", () => {
       relevantFamilyPredicate: candidate => Math.max(candidate.a, candidate.b) >= 2,
     });
     expect(report.relevantFamily.n).toBe(2);
+    expect(report.relevantFamily.description).toContain("supplied relevant-family predicate");
   });
 
   it("handles an empty input without throwing", () => {

@@ -6,13 +6,15 @@ import { resolve } from "node:path";
 import { z } from "zod";
 import { QUERY_AGENTS, QUERY_ASSIGNMENTS, QUERIES_PER_AGENT, queryAssignment } from "../query-config.js";
 import { CatalogRecordSchema, QueryRecordSchema, SidecarRecordSchema, type QueryRecord } from "../schema/schema-v2.js";
-import { Pass1SeedManifestSchema, preparePass1Seed, validatePass1SeedImport } from "./query-pass1.js";
+import { finalizePass1Seed, preparePass1Seed, validatePass1SeedImport } from "./query-pass1.js";
+import { assertSealedHoldoutArtifactPath } from "./holdout-v2.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const STAGING = resolve(ROOT, "staging/queries");
 const PROMPT_MANIFEST = resolve(ROOT, "staging/query-prompts/manifest.jsonl");
 const OUTPUT = resolve(ROOT, "queries/queries-v2.jsonl");
 const PASS1 = resolve(ROOT, "staging/query-pass1");
+export const PASS1_EVIDENCE_ENV_NAME = "STELLAR_BAZAAR_PASS1_EVIDENCE_DIR";
 const mode = process.argv[2] ?? "--finalize";
 if (mode !== "--prepare" && mode !== "--finalize") {
   throw new Error("usage: tsx tools/merge-queries.ts [--prepare|--finalize]");
@@ -89,18 +91,24 @@ async function main(): Promise<void> {
   const catalog = z.array(CatalogRecordSchema).length(1_000).parse(catalogRaw);
   const sidecars = z.array(SidecarRecordSchema).length(1_000).parse(sidecarRaw);
   const createdAt = process.env.BENCHMARK_RUN_AT ?? new Date().toISOString();
-  const seed = preparePass1Seed(records, catalog, sidecars, createdAt);
+  const sealedRootInput = process.env[PASS1_EVIDENCE_ENV_NAME];
+  if (!sealedRootInput) throw new Error(`set ${PASS1_EVIDENCE_ENV_NAME} to an absolute directory outside handwritten-evals`);
+  const sealedRoot = assertSealedHoldoutArtifactPath(ROOT, sealedRootInput, "pass-1 source mappings and judgments");
+  const importDir = resolve(sealedRoot, "imports");
+  const seed = preparePass1Seed(records, catalog, sidecars, createdAt, importDir);
 
-  const importDir = resolve(PASS1, "imports");
   let importFiles: string[] = [];
   try { importFiles = (await readdir(importDir)).filter(name => name.endsWith(".json")).sort(); }
   catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
   const importedPackIds: string[] = [];
+  const rawImports: unknown[] = [];
   for (const name of importFiles) {
     const imported = JSON.parse(await readFile(resolve(importDir, name), "utf8")) as { pack_id?: string };
     validatePass1SeedImport(imported, seed.manifest);
+    rawImports.push(imported);
     if (typeof imported.pack_id === "string") importedPackIds.push(imported.pack_id);
   }
+  const pass1Final = mode === "--finalize" ? finalizePass1Seed(rawImports, seed.manifest, createdAt) : null;
   if (mode === "--finalize") {
     const expectedPackIds = seed.manifest.packs.map(pack => pack.pack_id).sort();
     const actualPackIds = [...importedPackIds].sort();
@@ -113,11 +121,16 @@ async function main(): Promise<void> {
 
   await mkdir(resolve(OUTPUT, ".."), { recursive: true });
   await mkdir(PASS1, { recursive: true });
+  await mkdir(importDir, { recursive: true });
   await Promise.all([
     writeFile(OUTPUT, `${records.map(record => JSON.stringify(record)).join("\n")}\n`),
-    writeFile(resolve(PASS1, "manifest.json"), `${JSON.stringify(seed.manifest, null, 2)}\n`),
+    writeFile(resolve(sealedRoot, "manifest.json"), `${JSON.stringify(seed.manifest, null, 2)}\n`),
     ...seed.packs.map((pack, index) => writeFile(resolve(PASS1, `grader-${String(index + 1).padStart(2, "0")}.json`), `${JSON.stringify(pack, null, 2)}\n`)),
     ...seed.prompts.map((prompt, index) => writeFile(resolve(PASS1, `grader-${String(index + 1).padStart(2, "0")}.md`), prompt)),
+    ...(pass1Final === null ? [] : [
+      writeFile(resolve(sealedRoot, "raw-qrels.jsonl"), `${pass1Final.qrels.map(record => JSON.stringify(record)).join("\n")}\n`),
+      writeFile(resolve(PASS1, "report-v2.json"), `${JSON.stringify(pass1Final.report, null, 2)}\n`),
+    ]),
   ]);
   console.log(`merged 100 queries; prepared ${seed.manifest.pair_count} anchor-aware blind pass-1 pairs in 10 packs; validated ${importFiles.length} imports (${mode.slice(2)})`);
 }

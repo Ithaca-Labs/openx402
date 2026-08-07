@@ -42,8 +42,9 @@ and activates it only after a confirmed settlement.
 
 `GET /discovery/resources` and `GET /discovery/search` serve the official browse
 and search shapes. Filters are the specification set (`type`, `network`,
-`scheme`, `payTo`, `extensions`) plus `asset`, and there is no price filter —
-both divergences are documented as upstream proposals. Cursors are opaque HMAC
+`scheme`, `payTo`, `extensions`) plus `asset` and an asset-bound `maxPrice`
+expressed in atomic units. These extensions are documented as upstream
+proposals. Cursors are opaque HMAC
 tokens pinning a catalog watermark;
 `catalog_next_version()` assigns versions under a row lock held to commit, so
 version order equals commit order and a page cannot shift, duplicate or skip a
@@ -75,6 +76,10 @@ Every optional stage degrades on its own and says so: an embedding timeout,
 a missing model, an unavailable reranker or a PostgreSQL server without pgvector
 all fall back to full-text results with `partialResults: true`. Lexical search
 works with zero API keys, zero accounts and no downloaded weights.
+
+Ranked responses carry `x-search-session-id`. Supplying that header on a later
+exact `GET /discovery/resource` records explicit fetch-after-search feedback;
+the same signed-cursor session spans every page and empty searches are retained.
 
 Embeddings are produced off the request path by a worker that claims durable
 jobs from the same PostgreSQL queue with `FOR UPDATE SKIP LOCKED` and fencing

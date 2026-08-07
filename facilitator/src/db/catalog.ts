@@ -41,6 +41,8 @@ export interface DiscoveryFilters {
   scheme?: string | undefined;
   payTo?: string | undefined;
   asset?: string | undefined;
+  /** Maximum atomic-unit amount for an option in the required asset. */
+  maxPrice?: string | undefined;
   extensions?: string | undefined;
 }
 
@@ -737,6 +739,10 @@ export class CatalogStore {
       if (!value) continue;
       values.push(value);
       optionConditions.push(`o.${column} = $${values.length}`);
+    }
+    if (filters.maxPrice) {
+      values.push(filters.maxPrice);
+      optionConditions.push(`o.amount <= $${values.length}::numeric`);
     }
     snapshotConditions.push(
       `EXISTS (SELECT 1 FROM catalog_payment_options o WHERE ${optionConditions.join(" AND ")})`,

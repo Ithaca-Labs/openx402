@@ -24,7 +24,7 @@ const concurrentCatalog = new CatalogStore(writer);
 const analytics = new AnalyticsStore(pool);
 const state = new StateStore(pool);
 
-const TABLES = `catalog_index_jobs, catalog_search_documents, catalog_observations,
+const TABLES = `search_resource_fetches, search_sessions, catalog_index_jobs, catalog_search_documents, catalog_observations,
   payment_events, payment_daily_totals, catalog_payment_options, catalog_resource_versions,
   catalog_resources`;
 
@@ -124,9 +124,11 @@ describe("GET /discovery/resources", () => {
     expect(clamped.body.items).toHaveLength(3);
   });
 
-  it("applies the specification filters plus asset", async () => {
+  it("applies the specification filters plus asset-bound maximum price", async () => {
     await catalogResource("https://api.example.com/weather");
-    await catalogResource("https://api.example.com/other", { scheme: "upto", payTo: RIVAL_SELLER });
+    await catalogResource("https://api.example.com/other", {
+      scheme: "upto", payTo: RIVAL_SELLER, amount: "20000",
+    });
     const browse = (query: string) => request(app()).get(`/discovery/resources?${query}`).expect(200);
 
     expect((await browse("type=http")).body.pagination.total).toBe(2);
@@ -135,8 +137,11 @@ describe("GET /discovery/resources", () => {
     expect((await browse(`payTo=${SELLER}`)).body.pagination.total).toBe(1);
     expect((await browse("network=stellar:testnet")).body.pagination.total).toBe(2);
     expect((await browse(`asset=${ASSET}`)).body.pagination.total).toBe(2);
+    expect((await browse(`asset=${ASSET}&maxPrice=10000`)).body.pagination.total).toBe(1);
     expect((await browse("extensions=bazaar")).body.pagination.total).toBe(2);
     expect((await browse("extensions=nothing")).body.pagination.total).toBe(0);
+    await request(app()).get("/discovery/resources?maxPrice=10000").expect(400);
+    await request(app()).get(`/discovery/resources?asset=${ASSET}&maxPrice=1.5`).expect(400);
   });
 
   it("rejects an unknown resource type filter rather than ignoring it", async () => {

@@ -14,7 +14,16 @@ const filterSchema = z.object({
   scheme: z.string().min(1).max(64).optional(),
   payTo: z.string().min(1).max(128).optional(),
   asset: z.string().min(1).max(128).optional(),
+  maxPrice: z.string().regex(/^(0|[1-9][0-9]{0,38})$/, "must be an atomic-unit integer").optional(),
   extensions: z.string().min(1).max(64).optional(),
+}).superRefine((value, context) => {
+  if (value.maxPrice !== undefined && value.asset === undefined) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["maxPrice"],
+      message: "requires asset so atomic units are unambiguous",
+    });
+  }
 });
 
 /** The exact Bazaar `DiscoveryResource` shape. No operator field is added. */
@@ -37,7 +46,8 @@ function toResource(row: DiscoveryRow): Record<string, unknown> {
 function parseFilters(query: Request["query"]): DiscoveryFilters {
   const parsed = filterSchema.parse({
     type: single(query.type), network: single(query.network), scheme: single(query.scheme),
-    payTo: single(query.payTo), asset: single(query.asset), extensions: single(query.extensions),
+    payTo: single(query.payTo), asset: single(query.asset), maxPrice: single(query.maxPrice),
+    extensions: single(query.extensions),
   });
   return parsed;
 }
@@ -46,6 +56,13 @@ function single(value: unknown): string | undefined {
   if (typeof value === "string" && value.length > 0) return value;
   if (Array.isArray(value) && typeof value[0] === "string") return value[0];
   return undefined;
+}
+
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function attributedSearchSession(req: Request): string | undefined {
+  const value = req.headers["x-search-session-id"];
+  return typeof value === "string" && UUID_V4.test(value) ? value : undefined;
 }
 
 function paging(query: Request["query"], config: AppConfig): { limit: number; offset: number } {
@@ -213,6 +230,10 @@ export function createDiscoveryRouter(
         res.status(404).json({ error: "not_found" });
         return;
       }
+      const searchSessionId = attributedSearchSession(req);
+      if (searchSessionId) {
+        await impressions?.recordFetch(searchSessionId, row).catch(() => false);
+      }
       res.json({ x402Version: 2, resource: toResource(row) });
     } catch (error) {
       fail(error, res, next);
@@ -253,6 +274,7 @@ export function createDiscoveryRouter(
 
       let snapshot: bigint;
       let offset = requested.offset;
+      let searchSessionId: string | undefined;
       if (rawCursor) {
         const decoded = decodeCursor(config.discovery.cursorHmacKey, rawCursor);
         if (!decoded || decoded.filters !== fingerprint) {
@@ -261,6 +283,7 @@ export function createDiscoveryRouter(
         }
         snapshot = BigInt(decoded.snapshot);
         offset = decoded.offset;
+        searchSessionId = decoded.searchSessionId;
       } else {
         snapshot = await catalog.watermark();
       }
@@ -274,6 +297,7 @@ export function createDiscoveryRouter(
         includeUnverified: config.discovery.includeUnverified,
         staleAfterHours: config.catalog.staleAfterHours,
         query: trimmed,
+        ...(searchSessionId ? { sessionId: searchSessionId } : {}),
         ...(rawMode ? { mode: rawMode as SearchMode } : {}),
       });
 
@@ -288,9 +312,11 @@ export function createDiscoveryRouter(
             offset: nextOffset,
             filters: fingerprint,
             expiresAt: Date.now() + config.discovery.cursorTtlMinutes * 60_000,
+            searchSessionId: result.sessionId,
           })
         : null;
 
+      res.setHeader("x-search-session-id", result.sessionId);
       res.json({
         x402Version: 2,
         resources: result.rows.map(toResource),

@@ -12,7 +12,6 @@ import { pathToFileURL } from "node:url";
 import type { z } from "zod";
 import {
   ADVERSARIAL_KINDS,
-  AgentCalibrationSchema,
   axisDifferences,
   CatalogRecordSchema,
   checkSidecarAgainstWire,
@@ -28,7 +27,6 @@ import {
   RELEVANCE_THRESHOLDS,
   RESOURCES_PER_FAMILY,
   SidecarRecordSchema,
-  unjudgedPooledPairs,
   type CatalogRecord,
   type PoolRecord,
   type QrelRecord,
@@ -37,7 +35,14 @@ import {
 } from "../schema/schema-v2.js";
 import { DatasetManifestV2Schema } from "./manifest-v2.js";
 import { readReleaseRunLedger, verifyFrozenDataset } from "./release-run-ledger-v2.js";
-import { AgreementArtifactSchema, OwnerReviewReportSchema } from "./grading-pipeline.js";
+import {
+  AgreementArtifactSchema,
+  gradingArtifactHash,
+  gradingPairSetHash,
+  GradingProcessAuditSchema,
+  gradingSourceHash,
+  OwnerReviewPublicSummarySchema,
+} from "./grading-pipeline.js";
 import {
   EvaluationReportV2Schema,
   evaluationInputHashes,
@@ -55,8 +60,13 @@ import { buildDistributionAuditV2, DistributionAuditV2Schema } from "./distribut
 import {
   currentUnpooledAuditSourceHash,
   UnpooledAuditFinalReportSchema,
-  unpooledArtifactHash,
 } from "./unpooled-audit.js";
+import {
+  CriticOwnerAcceptanceReportSchema,
+  criticSourceHash,
+} from "./critic-workflow.js";
+import { verifyPoolSnapshot } from "./pool-snapshot-v2.js";
+import { pass1SourceHash, Pass1SeedReportSchema } from "./query-pass1.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const REPORTS = resolve(ROOT, "reports");
@@ -142,10 +152,6 @@ function gate(id: string, requirement: string, passes: boolean, ...evidence: str
   return { id, requirement, status: passes ? "pass" : "blocked", evidence };
 }
 
-function evidenceApproved(value: Record<string, unknown> | null): boolean {
-  return value?.status === "approved" || value?.status === "pass" || value?.owner_review === "approved";
-}
-
 function exactPromptHash(value: string): boolean {
   return /^sha256:[a-f0-9]{64}$/.test(value);
 }
@@ -199,30 +205,63 @@ export function validateAgreementGate(raw: unknown, expectedPairCount: number): 
   };
 }
 
+export function validateGradingProcessGate(
+  raw: unknown,
+  expected: { sourceHash: string | null; pairCount: number },
+): { passes: boolean; error: string | null } {
+  const parsed = GradingProcessAuditSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { passes: false, error: parsed.error.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`).join("; ") };
+  }
+  const errors: string[] = [];
+  if (expected.sourceHash === null || parsed.data.source_hash !== expected.sourceHash) errors.push("grading source hash is stale or unavailable");
+  if (parsed.data.counts.pairs !== expected.pairCount) errors.push(`pair count ${parsed.data.counts.pairs} does not match system pool ${expected.pairCount}`);
+  return { passes: errors.length === 0, error: errors.length === 0 ? null : errors.join("; ") };
+}
+
+export function validateCriticAcceptanceGate(
+  raw: unknown,
+  expected: { scope: "corpus" | "full"; sourceHash: string | null; artifactCount: number },
+): { passes: boolean; error: string | null } {
+  const parsed = CriticOwnerAcceptanceReportSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { passes: false, error: parsed.error.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`).join("; ") };
+  }
+  const report = parsed.data;
+  const artifactKeys = report.artifact_decisions.map(value => `${value.artifact_kind}\0${value.source_id}`);
+  const errors = [
+    ...(report.scope === expected.scope ? [] : [`scope ${report.scope} does not match ${expected.scope}`]),
+    ...(expected.sourceHash !== null && report.source_hash === expected.sourceHash ? [] : ["source hash is stale or unavailable"]),
+    ...(report.artifacts_reviewed === expected.artifactCount ? [] : [`artifacts_reviewed ${report.artifacts_reviewed} does not match ${expected.artifactCount}`]),
+    ...(report.artifact_decisions.length === expected.artifactCount ? [] : [`artifact decision count ${report.artifact_decisions.length} does not match ${expected.artifactCount}`]),
+    ...(new Set(artifactKeys).size === artifactKeys.length ? [] : ["artifact decisions contain duplicates"]),
+    ...(report.approved_artifacts === expected.artifactCount ? [] : [`approved_artifacts ${report.approved_artifacts} does not match ${expected.artifactCount}`]),
+    ...(report.repair_required_artifacts === 0 ? [] : [`${report.repair_required_artifacts} artifact(s) still require repair`]),
+    ...(report.confirmed_findings === 0 ? [] : [`${report.confirmed_findings} confirmed finding(s) remain`]),
+    ...(report.overall_passed ? [] : ["owner acceptance did not pass"]),
+  ];
+  return { passes: errors.length === 0, error: errors.length === 0 ? null : errors.join("; ") };
+}
+
 async function main(): Promise<void> {
-  const [catalogResult, sidecarResult, queryResult, poolResult, developmentQrelResult,
-    releaseQrelResult, calibrationResult] = await Promise.all([
+  const [catalogResult, sidecarResult, queryResult, poolResult, developmentQrelResult] = await Promise.all([
     validateJsonl(resolve(ROOT, "catalog/catalog-v2.jsonl"), CatalogRecordSchema),
     validateJsonl(resolve(ROOT, "catalog/sidecar-v2.jsonl"), SidecarRecordSchema),
     validateJsonl(resolve(ROOT, "queries/queries-v2.jsonl"), QueryRecordSchema),
     validateJsonl(resolve(ROOT, "pool/pool-v2.jsonl"), PoolRecordSchema),
     validateJsonl(resolve(ROOT, "qrels/development-v2.jsonl"), QrelRecordSchema),
-    validateJsonl(resolve(ROOT, "qrels/release-v2.jsonl"), QrelRecordSchema),
-    validateJsonl(resolve(ROOT, "reports/calibration-v2.jsonl"), AgentCalibrationSchema),
   ]);
   const catalog = catalogResult.records as CatalogRecord[];
   const sidecars = sidecarResult.records as SidecarRecord[];
   const queries = queryResult.records as QueryRecord[];
   const pool = poolResult.records as PoolRecord[];
-  const qrels = [...developmentQrelResult.records, ...releaseQrelResult.records] as QrelRecord[];
+  const qrels = developmentQrelResult.records as QrelRecord[];
   const schemaErrors = [
     ...catalogResult.errors,
     ...sidecarResult.errors,
     ...queryResult.errors,
     ...poolResult.errors,
     ...developmentQrelResult.errors,
-    ...releaseQrelResult.errors,
-    ...calibrationResult.errors,
   ];
 
   const catalogById = new Map(catalog.map(record => [record.resource_id, record]));
@@ -238,19 +277,14 @@ async function main(): Promise<void> {
     if (!sidecarById.has(record.resource_id)) crossErrors.push(`${record.resource_id}: catalog has no sidecar`);
   }
   const qrelPairs = new Set<string>();
-  for (const [split, records] of [
-    ["development", developmentQrelResult.records],
-    ["release", releaseQrelResult.records],
-  ] as const) {
-    for (const qrel of records) {
+  for (const qrel of developmentQrelResult.records) {
       const query = queryById.get(qrel.query_id);
       if (!query) crossErrors.push(`${qrel.query_id}/${qrel.resource_id}: qrel references unknown query`);
-      else if (query.split !== split) crossErrors.push(`${qrel.query_id}/${qrel.resource_id}: qrel is in the wrong split file`);
+      else if (query.split !== "development") crossErrors.push(`${qrel.query_id}/${qrel.resource_id}: qrel is in the wrong split file`);
       if (!catalogById.has(qrel.resource_id)) crossErrors.push(`${qrel.query_id}/${qrel.resource_id}: qrel references unknown resource`);
       const pair = `${qrel.query_id}\0${qrel.resource_id}`;
       if (qrelPairs.has(pair)) crossErrors.push(`${qrel.query_id}/${qrel.resource_id}: duplicate qrel pair`);
       qrelPairs.add(pair);
-    }
   }
 
   const labeled = sidecars.filter(record => !record.is_distractor);
@@ -306,7 +340,6 @@ async function main(): Promise<void> {
     }
   }
   const fiveSystemPool = poolCoverageError === null;
-  const unjudgedPool = unjudgedPooledPairs(pool, qrels);
 
   const archiveFiles = [
     "archive/v1/README.md",
@@ -322,19 +355,21 @@ async function main(): Promise<void> {
     && await fileExists(resolve(ROOT, "../tests/fixtures/search/golden-v1.json"));
 
   const [pilot, distributionAudit, unpooledAudit, forbiddenAudit, agreementRaw, finalReport,
-    isolationAudit, blindnessAudit, manifest, ownerReviewRaw] = await Promise.all([
+    gradingProcessRaw, pass1Raw, manifest, ownerReviewRaw, corpusCriticRaw, fullCriticRaw] = await Promise.all([
     loadJson(resolve(REPORTS, "pilot-v2.json")),
     loadJson(resolve(REPORTS, "distribution-audit-v2.json")),
     loadJson(resolve(REPORTS, "unpooled-audit-v2.json")),
     loadJson(resolve(REPORTS, "forbidden-capability-audit-v2.json")),
     loadJson(resolve(REPORTS, "agreement-v2.json")),
     loadJson(resolve(REPORTS, "final-v2.json")),
-    loadJson(resolve(REPORTS, "isolation-audit-v2.json")),
-    loadJson(resolve(REPORTS, "grading-blindness-v2.json")),
+    loadJson(resolve(REPORTS, "grading-process-audit-v2.json")),
+    loadJson(resolve(ROOT, "staging/query-pass1/report-v2.json")),
     loadJson(resolve(ROOT, "manifests/dataset-v2.json")),
     loadJson(resolve(REPORTS, "owner-review-v2.json")),
+    loadJson(resolve(REPORTS, "critic-owner-corpus-v2.json")),
+    loadJson(resolve(REPORTS, "critic-owner-full-v2.json")),
   ]);
-  const ownerReview = ownerReviewRaw === null ? null : OwnerReviewReportSchema.safeParse(ownerReviewRaw);
+  const ownerReview = ownerReviewRaw === null ? null : OwnerReviewPublicSummarySchema.safeParse(ownerReviewRaw);
   const parsedForbiddenAudit = forbiddenAudit === null
     ? null
     : ForbiddenCapabilityAuditReportSchema.safeParse(forbiddenAudit);
@@ -347,10 +382,45 @@ async function main(): Promise<void> {
   const parsedPilot = pilot === null ? null : PilotReportEvidenceSchema.safeParse(pilot);
   const parsedFinalReport = finalReport === null ? null : EvaluationReportV2Schema.safeParse(finalReport);
   const parsedManifest = manifest === null ? null : DatasetManifestV2Schema.safeParse(manifest);
-  const forbiddenMarkdown = await readFile(resolve(ROOT, "forbidden-capabilities.md"), "utf8");
+  const [forbiddenMarkdown, familiesMarkdown] = await Promise.all([
+    readFile(resolve(ROOT, "forbidden-capabilities.md"), "utf8"),
+    readFile(resolve(ROOT, "spec/families.md"), "utf8"),
+  ]);
   const forbiddenDefinitions = parseForbiddenCapabilities(forbiddenMarkdown);
   const deterministicForbiddenHits = scanForbiddenRecords(catalog, forbiddenDefinitions);
   const currentForbiddenCorpusHash = forbiddenCorpusHash(catalog, sidecars);
+  const criticSourceInputsComplete = catalog.length === RELEASE_COUNTS.resources.total
+    && sidecars.length === RELEASE_COUNTS.resources.total;
+  const currentCorpusCriticSourceHash = criticSourceInputsComplete
+    ? criticSourceHash({ scope: "corpus", catalog, sidecars, queries: [], familiesMarkdown, forbiddenMarkdown })
+    : null;
+  const currentFullCriticSourceHash = criticSourceInputsComplete && queries.length === RELEASE_COUNTS.queries.total
+    ? criticSourceHash({ scope: "full", catalog, sidecars, queries, familiesMarkdown, forbiddenMarkdown })
+    : null;
+  const corpusCriticGate = validateCriticAcceptanceGate(corpusCriticRaw, {
+    scope: "corpus", sourceHash: currentCorpusCriticSourceHash, artifactCount: RELEASE_COUNTS.resources.total,
+  });
+  const fullCriticGate = validateCriticAcceptanceGate(fullCriticRaw, {
+    scope: "full", sourceHash: currentFullCriticSourceHash,
+    artifactCount: RELEASE_COUNTS.resources.total + RELEASE_COUNTS.queries.total,
+  });
+  const parsedPass1 = pass1Raw === null ? null : Pass1SeedReportSchema.safeParse(pass1Raw);
+  const pass1Current = parsedPass1?.success === true
+    && catalog.length === RELEASE_COUNTS.resources.total
+    && sidecars.length === RELEASE_COUNTS.resources.total
+    && queries.length === RELEASE_COUNTS.queries.total
+    && parsedPass1.data.source_hash === pass1SourceHash(queries, catalog, sidecars);
+  const systemPool = pool.filter(record => record.origin === "system_pool");
+  const currentGradingSourceHash = catalog.length === RELEASE_COUNTS.resources.total
+      && sidecars.length === RELEASE_COUNTS.resources.total
+      && queries.length === RELEASE_COUNTS.queries.total
+      && systemPool.length > 0
+    ? gradingSourceHash({ catalog, sidecars, queries, pool: systemPool })
+    : null;
+  const gradingProcessGate = validateGradingProcessGate(gradingProcessRaw, {
+    sourceHash: currentGradingSourceHash,
+    pairCount: systemPool.length,
+  });
   let distributionAuditCurrent = false;
   if (parsedDistributionAudit?.success) {
     const recomputed = buildDistributionAuditV2(catalog, sidecars, parsedDistributionAudit.data.generated_at);
@@ -358,8 +428,6 @@ async function main(): Promise<void> {
   }
   const unpooledPairs = new Set(pool.filter(record => record.origin === "unpooled_audit")
     .map(record => `${record.query_id}\0${record.resource_id}`));
-  const currentUnpooledQrels = qrels.filter(record => unpooledPairs.has(`${record.query_id}\0${record.resource_id}`))
-    .sort((left, right) => `${left.query_id}\0${left.resource_id}`.localeCompare(`${right.query_id}\0${right.resource_id}`));
   let currentUnpooledSourceHash: string | null = null;
   let unpooledSourceError: string | null = null;
   try {
@@ -374,13 +442,14 @@ async function main(): Promise<void> {
   const unpooledAuditApproved = parsedUnpooledAudit?.success === true
     && parsedUnpooledAudit.data.status === "approved"
     && parsedUnpooledAudit.data.source_hash === currentUnpooledSourceHash
-    && unpooledPairs.size === parsedUnpooledAudit.data.audited_pair_count
-    && currentUnpooledQrels.length === parsedUnpooledAudit.data.audited_pair_count
-    && parsedUnpooledAudit.data.reviewed_qrels_hash === unpooledArtifactHash(currentUnpooledQrels);
+    && unpooledPairs.size === parsedUnpooledAudit.data.audited_pair_count;
   const releaseQueryIdsForReport = new Set(queries.filter(query => query.split === "release").map(query => query.query_id));
-  const currentReportInputHashes = currentSystemRuns === null || releaseQueryIdsForReport.size !== RELEASE_COUNTS.queries.release
+  const computedReportInputHashes = currentSystemRuns === null || releaseQueryIdsForReport.size !== RELEASE_COUNTS.queries.release
     ? null
-    : evaluationInputHashes(queries, qrels, scoringRunsFromPoolRuns(currentSystemRuns, releaseQueryIdsForReport), "release");
+    : evaluationInputHashes(queries, [], scoringRunsFromPoolRuns(currentSystemRuns, releaseQueryIdsForReport), "release");
+  const currentReportInputHashes = computedReportInputHashes === null || ownerReview?.success !== true
+    ? null
+    : { ...computedReportInputHashes, qrels: ownerReview.data.release.qrels_hash };
   const finalReportInputsCurrent = parsedFinalReport?.success === true
     && currentReportInputHashes !== null
     && JSON.stringify(parsedFinalReport.data.input_hashes) === JSON.stringify(currentReportInputHashes);
@@ -389,12 +458,16 @@ async function main(): Promise<void> {
     && parsedFinalReport.data.judged_at_10.pilot_derived_threshold === parsedPilot.data.judged_at_10_threshold;
   let frozenDatasetVerified = false;
   let frozenDatasetError: string | null = null;
+  let frozenManifestSha256: string | null = null;
+  let poolSnapshotVerified = false;
+  let poolSnapshotError: string | null = null;
   let releaseLedgerEntries = 0;
   let completedFinalHoldoutRun = false;
   if (parsedManifest?.success) {
     try {
-      await verifyFrozenDataset(ROOT);
+      const frozen = await verifyFrozenDataset(ROOT);
       frozenDatasetVerified = true;
+      frozenManifestSha256 = frozen.manifestSha256;
       const ledger = await readReleaseRunLedger(resolve(ROOT, parsedManifest.data.release_holdout.release_run_ledger_path));
       releaseLedgerEntries = ledger.length;
       completedFinalHoldoutRun = ledger.some(entry =>
@@ -407,6 +480,18 @@ async function main(): Promise<void> {
   } else if (parsedManifest && !parsedManifest.success) {
     frozenDatasetError = parsedManifest.error.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`).join("; ");
   }
+  if (frozenDatasetVerified) {
+    try {
+      await verifyPoolSnapshot(ROOT);
+      poolSnapshotVerified = true;
+    } catch (error) {
+      poolSnapshotError = (error as Error).message;
+    }
+  }
+  const finalReportCurrent = parsedFinalReport?.success === true
+    && finalReportInputsCurrent
+    && frozenManifestSha256 !== null
+    && parsedFinalReport.data.dataset_manifest_sha256 === frozenManifestSha256;
 
   const pilotComplete = parsedPilot?.success === true;
   const allResourcesPresent = catalog.length === RELEASE_COUNTS.resources.total
@@ -419,36 +504,64 @@ async function main(): Promise<void> {
     && [...sidecars, ...queries].every(record => generationComplete(record.generation));
   const qrelProvenanceComplete = qrels.length > 0 && qrels.every(record =>
     record.judge === "deterministic" ? record.generation === null : Boolean(record.generation && generationComplete(record.generation)));
-  const calibrationProvenanceComplete = calibrationResult.records.length > 0
-    && calibrationResult.records.every(record =>
-      generationComplete(record.grader_a)
-      && Boolean(record.grader_b && generationComplete(record.grader_b))
-      && (record.adjudicator === null || generationComplete(record.adjudicator)));
+  const parsedGradingProcess = GradingProcessAuditSchema.safeParse(gradingProcessRaw);
+  const calibrationProvenanceComplete = parsedGradingProcess.success
+    && generationComplete(parsedGradingProcess.data.agent_provenance.grader_a)
+    && generationComplete(parsedGradingProcess.data.agent_provenance.grader_b)
+    && (parsedGradingProcess.data.agent_provenance.adjudicator === null
+      || generationComplete(parsedGradingProcess.data.agent_provenance.adjudicator));
   const provenanceComplete = authoredProvenanceComplete && qrelProvenanceComplete && calibrationProvenanceComplete;
   const ownerReviewedResources = sidecars.length === RELEASE_COUNTS.resources.total
     && sidecars.every(record => record.review_status === "approved" || record.review_status === "corrected");
   const ownerReviewedQueries = queries.length === RELEASE_COUNTS.queries.total
     && queries.every(record => record.review_status === "approved" || record.review_status === "corrected");
-  const ownerReviewedQrels = qrels.length > 0 && qrels.every(record =>
+  const ownerReviewedDevelopmentQrels = qrels.length > 0 && qrels.every(record =>
     record.judge === "reviewed_agent"
     && (record.review_status === "approved" || record.review_status === "corrected")
     && record.reviewed_at !== null && record.reviewed_by !== null);
-  const ownerReviewedCalibration = calibrationResult.records.length > 0
-    && calibrationResult.records.every(record =>
-      record.owner_review === "approved" || record.owner_review === "corrected");
+  const ownerReviewedCalibration = ownerReview?.success === true
+    && ownerReview.data.reviewed_calibration.count > 0
+    && ownerReview.data.reviewed_calibration.all_rows_reviewed;
+  const developmentPool = pool.filter(record => queryById.get(record.query_id)?.split === "development");
+  const releasePool = pool.filter(record => queryById.get(record.query_id)?.split === "release");
+  const developmentPairCoverage = gradingPairSetHash(developmentQrelResult.records) === gradingPairSetHash(developmentPool)
+    && developmentQrelResult.records.length === developmentPool.length;
+  const releasePairCoverage = ownerReview?.success === true
+    && ownerReview.data.release.pair_set_hash === gradingPairSetHash(releasePool)
+    && ownerReview.data.release.qrel_count === releasePool.length;
+  const ownerReviewCurrent = ownerReview?.success === true
+    && ownerReview.data.source_hashes.queries === gradingArtifactHash(queries)
+    && ownerReview.data.development.qrels_hash === gradingArtifactHash(developmentQrelResult.records)
+    && ownerReview.data.development.query_count === RELEASE_COUNTS.queries.development
+    && ownerReview.data.release.query_count === RELEASE_COUNTS.queries.release
+    && ownerReview.data.reviewed_calibration.count === pool.length
+    && developmentPairCoverage && releasePairCoverage;
+  const ownerReviewedQrels = ownerReviewedDevelopmentQrels && ownerReview?.success === true
+    && ownerReview.data.development.all_qrels_reviewed && ownerReview.data.release.all_qrels_reviewed;
   const releaseIds = new Set(queries.filter(query => query.split === "release").map(query => query.query_id));
-  const releaseQrels = qrels.filter(qrel => releaseIds.has(qrel.query_id));
-  const releaseRationales = releaseIds.size === 50
-    && releaseQrels.length > 0
-    && releaseQrels.every(qrel => Boolean(qrel.rationale));
+  const releaseRationales = releaseIds.size === 50 && ownerReview?.success === true
+    && ownerReview.data.release.qrel_count > 0 && ownerReview.data.release.all_release_rationales_present;
 
-  const thresholdsReported = parsedFinalReport?.success === true;
-  const agreementGate = validateAgreementGate(agreementRaw, calibrationResult.records.length);
-  const calibrationPassed = agreementGate.passes;
-  const significanceReported = parsedFinalReport?.success === true && parsedFinalReport.data.significance_reported;
-  const bm25Reported = parsedFinalReport?.success === true
+  const thresholdsReported = finalReportCurrent;
+  const agreementGate = validateAgreementGate(agreementRaw, ownerReview?.success === true
+    ? ownerReview.data.reviewed_calibration.count : 0);
+  const parsedAgreement = AgreementArtifactSchema.safeParse(agreementRaw);
+  const agreementMatchesProcess = parsedAgreement.success
+    && GradingProcessAuditSchema.safeParse(gradingProcessRaw).success
+    && parsedAgreement.data.pipeline_run_id === GradingProcessAuditSchema.parse(gradingProcessRaw).pipeline_run_id;
+  const calibrationPassed = agreementGate.passes && gradingProcessGate.passes && agreementMatchesProcess;
+  const significanceReported = parsedFinalReport?.success === true && finalReportCurrent && parsedFinalReport.data.significance_reported;
+  const bm25Reported = parsedFinalReport?.success === true && finalReportCurrent
     && parsedFinalReport.data.bm25_baseline && systemsInPool.has("bm25");
-  const limitationsReported = parsedFinalReport?.success === true && parsedFinalReport.data.limitations.length > 0;
+  const limitationsReported = parsedFinalReport?.success === true && finalReportCurrent && parsedFinalReport.data.limitations.length > 0;
+  const ownerRatesCurrent = parsedFinalReport?.success === true && ownerReview?.success === true
+    && JSON.stringify(parsedFinalReport.data.owner_rates) === JSON.stringify({
+      reviewed: ownerReview.data.release.pairs.total,
+      corrected: ownerReview.data.release.pairs.corrected,
+      rejected: ownerReview.data.release.pairs.rejected,
+      correction_rate: ownerReview.data.release.pairs.correction_rate,
+      rejection_rate: ownerReview.data.release.pairs.rejection_rate,
+    });
 
   const gates: Gate[] = [
     gate("schema", "All records schema-valid; zero wire validation errors",
@@ -460,6 +573,7 @@ async function main(): Promise<void> {
       `frozen manifest ${frozenDatasetVerified ? "verified" : frozenDatasetError ?? "missing"}`),
     gate("holdout-ledger", "Final release-set access is hash-chained and recorded",
       completedFinalHoldoutRun,
+      "release judgments are never opened by this status/release-gate process",
       `${releaseLedgerEntries} ledger events`, `completed final holdout run ${completedFinalHoldoutRun ? "present" : "missing"}`),
     gate("axis-differences", "Every labeled sibling pair differs on at least two axes",
       labeled.length === 100 && axisErrors.length === 0, `${axisErrors.length} failures`),
@@ -475,20 +589,27 @@ async function main(): Promise<void> {
     gate("mcp-queries", "All four MCP query subtypes are covered",
       queries.filter(query => query.query_class === "mcp").length === QUERY_CLASS_TARGETS.mcp && allMcpSubtypes,
       `${queries.filter(query => query.query_class === "mcp").length}/9 MCP queries`, `${mcpSubtypes.size}/4 subtypes`),
+    gate("pass1-seed", "Pass-1 seed grading covers seven blind candidates for every query with fresh non-author graders",
+      pass1Current,
+      `pass-1 report ${parsedPass1?.success ? "strictly valid" : pass1Raw ? "invalid" : "missing"}`,
+      `current source ${pass1Current ? "verified" : "stale/missing"}`),
     gate("pool", "Pool covers top-20 of all five systems and every pooled pair is judged",
-      fiveSystemPool && unjudgedPool.length === 0, `${systemsInPool.size}/5 systems`,
-      `exact coverage ${poolCoverageError ?? "verified"}`, `${unjudgedPool.length} unjudged pooled pairs`),
+      fiveSystemPool && poolSnapshotVerified && developmentPairCoverage && releasePairCoverage, `${systemsInPool.size}/5 systems`,
+      `exact coverage ${poolCoverageError ?? "verified"}`,
+      `pool snapshot ${poolSnapshotVerified ? "current" : poolSnapshotError ?? "missing"}`,
+      `development pair coverage ${developmentPairCoverage ? "complete" : "incomplete"}`,
+      `sealed release pair coverage ${releasePairCoverage ? "complete" : "incomplete"}`),
     gate("unpooled-audit", "Unpooled audit performed and relevance rate reported",
       unpooledAuditApproved,
       `unpooled audit ${parsedUnpooledAudit?.success ? parsedUnpooledAudit.data.status : unpooledAudit ? "invalid" : "missing"}`,
-      `${unpooledPairs.size} audit pool pair(s), ${currentUnpooledQrels.length} reviewed qrel(s)`,
+      `${unpooledPairs.size} audit pool pair(s)`,
       `source ${unpooledSourceError ?? (currentUnpooledSourceHash === null ? "unavailable" : "hash checked")}`),
     gate("judged-at-k", "judged@10 meets the pilot-derived threshold",
-      pilotComplete && finalReportPilotThresholdCurrent && finalReportInputsCurrent
+      pilotComplete && finalReportPilotThresholdCurrent && finalReportCurrent
         && parsedFinalReport?.success === true && parsedFinalReport.data.judged_at_10_gate_passed,
       `pilot ${pilotComplete ? "complete" : "missing/incomplete"}`,
       `pilot threshold ${finalReportPilotThresholdCurrent ? "matches" : "missing/stale"}`,
-      `report inputs ${finalReportInputsCurrent ? "current" : "missing/stale"}`),
+      `report inputs ${finalReportCurrent ? "current" : "missing/stale"}`),
     gate("no-result", "Forbidden capabilities scanned, independently audited, owner-approved",
       deterministicForbiddenHits.length === 0
         && parsedForbiddenAudit?.success === true
@@ -497,34 +618,42 @@ async function main(): Promise<void> {
       `${deterministicForbiddenHits.length} current deterministic hit(s)`,
       `forbidden audit ${parsedForbiddenAudit?.success ? "strictly valid" : forbiddenAudit ? "invalid" : "missing"}`,
       `corpus hash ${parsedForbiddenAudit?.success && parsedForbiddenAudit.data.corpus_hash === currentForbiddenCorpusHash ? "current" : "stale/missing"}`),
+    gate("artifact-critics", "All six independent critic roles passed owner acceptance on current corpus and query inputs",
+      corpusCriticGate.passes && fullCriticGate.passes,
+      `corpus critic ${corpusCriticRaw ? corpusCriticGate.error ?? "passed" : "missing"}`,
+      `full critic ${fullCriticRaw ? fullCriticGate.error ?? "passed" : "missing"}`),
     gate("metric-contract", "Relevance thresholds and nDCG gains are stated",
       thresholdsReported,
       `expected thresholds ${JSON.stringify(RELEVANCE_THRESHOLDS)}`, `expected gains ${JSON.stringify(NDCG_GAINS)}`),
     gate("provenance", "Every generated artifact has exact revision, hash, run/shard, temperature, and review status",
       provenanceComplete, `${provenanceComplete ? "complete" : "missing or placeholder provenance"}`),
     gate("isolation", "No author graded own output; task-pack isolation is auditable",
-      evidenceApproved(isolationAudit), `isolation audit ${isolationAudit ? "present" : "missing"}`),
+      gradingProcessGate.passes,
+      `grading process audit ${gradingProcessRaw ? gradingProcessGate.error ?? "strictly valid and current" : "missing"}`),
     gate("blindness", "Grading was blind to system, score, rank, author, and other grader",
-      evidenceApproved(blindnessAudit), `blindness audit ${blindnessAudit ? "present" : "missing"}`),
+      gradingProcessGate.passes,
+      `grading process audit ${gradingProcessRaw ? gradingProcessGate.error ?? "strictly valid and current" : "missing"}`),
     gate("agreement", "Restricted weighted kappa is reported and at least 0.6",
       calibrationPassed,
       `agreement ${agreementRaw ? agreementGate.error ?? "strictly valid" : "missing"}`,
       `relevant-family quadratic kappa ${agreementGate.kappa ?? "undefined"}`,
-      `${calibrationResult.records.length} reviewed calibration rows`),
+      `${ownerReview?.success === true ? ownerReview.data.reviewed_calibration.count : 0} reviewed calibration rows`),
     gate("rationales", "All release judgments carry rationales", releaseRationales,
       `${releaseIds.size}/50 release queries`, `${qrels.length} total qrels`),
     gate("owner-review", "Owner reviewed every resource, query, qrel, adjudication, and correction",
       ownerReviewedResources && ownerReviewedQueries && ownerReviewedQrels && ownerReviewedCalibration
-        && ownerReview?.success === true
-        && ownerReview.data.pairs.rejected === 0 && ownerReview.data.queries.rejected === 0,
+        && ownerReview?.success === true && ownerReviewCurrent
+        && ownerReview.data.development.pairs.rejected === 0 && ownerReview.data.release.pairs.rejected === 0
+        && ownerReview.data.development.queries.rejected === 0 && ownerReview.data.release.queries.rejected === 0,
       `resources reviewed ${sidecars.filter(record => record.review_status !== "pending").length}/${sidecars.length}`,
       `queries reviewed ${queries.filter(record => record.review_status !== "pending").length}/${queries.length}`,
-      `qrels reviewed ${qrels.filter(record => record.review_status !== "pending").length}/${qrels.length}`,
-      `calibration reviewed ${calibrationResult.records.filter(record => record.owner_review !== "pending").length}/${calibrationResult.records.length}`,
-      `owner decision report ${ownerReview?.success ? "valid" : ownerReviewRaw ? "invalid" : "missing"}`),
+      `development qrels reviewed ${qrels.filter(record => record.review_status !== "pending").length}/${qrels.length}`,
+      `sealed release qrels ${ownerReview?.success === true ? ownerReview.data.release.qrel_count : 0}`,
+      `calibration reviewed ${ownerReview?.success === true ? ownerReview.data.reviewed_calibration.count : 0}`,
+      `owner decision report ${ownerReviewCurrent ? "valid and current" : ownerReviewRaw ? "invalid/stale" : "missing"}`),
     gate("correction-rates", "Owner correction and rejection rates are reported; originals preserved",
-      parsedFinalReport?.success === true && parsedFinalReport.data.owner_rates_reported
-        && ownerReview?.success === true && evidenceApproved(isolationAudit),
+      parsedFinalReport?.success === true && finalReportCurrent && parsedFinalReport.data.owner_rates_reported
+        && ownerRatesCurrent && ownerReviewCurrent && gradingProcessGate.passes,
       `final report ${finalReport ? "present" : "missing"}`),
     gate("significance", "Significance tests accompany point estimates", significanceReported,
       `significance ${significanceReported ? "reported" : "missing"}`),
@@ -535,11 +664,18 @@ async function main(): Promise<void> {
   ];
 
   const step3Done = labeled.length === 100 && ownerReviewedResources && provenanceComplete;
-  const step4Done = allResourcesPresent && evidenceApproved(forbiddenAudit);
-  const step9Done = calibrationPassed && ownerReviewedCalibration
+  const step4Done = allResourcesPresent && ownerReviewedResources
+    && parsedForbiddenAudit?.success === true
+    && parsedForbiddenAudit.data.overall_passed
+    && corpusCriticGate.passes;
+  const step5Done = allQueriesPresent && ownerReviewedQueries && fullCriticGate.passes && pass1Current;
+  const step8Done = gradingProcessGate.passes && unpooledAuditApproved && ownerReviewedQrels;
+  const step9Done = calibrationPassed && ownerReviewedCalibration && ownerReviewCurrent
     && ownerReview?.success === true
-    && ownerReview.data.pairs.rejected === 0
-    && ownerReview.data.queries.rejected === 0;
+    && ownerReview.data.development.pairs.rejected === 0
+    && ownerReview.data.release.pairs.rejected === 0
+    && ownerReview.data.development.queries.rejected === 0
+    && ownerReview.data.release.queries.rejected === 0;
   const steps: Step[] = [
     { step: 0, name: "v2 schema and v1 archive", status: archiveComplete && schemaErrors.length === 0 ? "done" : "partial",
       evidence: [`archive ${archiveComplete ? "complete" : "incomplete"}`, `${schemaErrors.length} current schema errors`], blockers: [] },
@@ -552,22 +688,26 @@ async function main(): Promise<void> {
       blockers: step3Done ? [] : ["owner acceptance and release-grade provenance missing"] },
     { step: 4, name: "900 distractors and exclusion audit", status: step4Done ? "done" : distractors.length > 0 ? "partial" : "not_started",
       evidence: [`${distractors.length}/900 distractors`], blockers: step4Done ? [] : ["authoring waves, critics, audits, and owner review missing"] },
-    { step: 5, name: "100 queries and pass-1 grading", status: allQueriesPresent ? "partial" : "not_started",
-      evidence: [`${queries.length}/100 queries`], blockers: allQueriesPresent ? ["pass-1 grading/owner review incomplete"] : ["Step 4 and query authoring not complete"] },
+    { step: 5, name: "100 queries and pass-1 grading", status: step5Done ? "done" : allQueriesPresent ? "partial" : "not_started",
+      evidence: [`${queries.length}/100 queries`, `full critic ${fullCriticGate.passes ? "passed" : "missing/stale/failed"}`,
+        `pass-1 ${pass1Current ? "complete/current" : "missing/stale"}`],
+      blockers: step5Done ? [] : allQueriesPresent ? ["critic acceptance, pass-1 grading, or owner query review incomplete"] : ["Step 4 and query authoring not complete"] },
     { step: 6, name: "freeze split and manifest", status: frozenDatasetVerified ? "done" : "not_started",
       evidence: [`manifest ${frozenDatasetVerified ? "verified" : frozenDatasetError ?? "missing"}`],
       blockers: frozenDatasetVerified ? [] : ["dataset incomplete or frozen hashes do not verify"] },
-    { step: 7, name: "five-system pool", status: fiveSystemPool ? "done" : "not_started",
-      evidence: [`${systemsInPool.size}/5 systems`, `${pool.length} pool rows`], blockers: fiveSystemPool ? [] : ["runs and pool builder output missing"] },
-    { step: 8, name: "dual grading and unpooled audit", status: qrels.length > 0 ? "partial" : "not_started",
-      evidence: [`${qrels.length} qrels`], blockers: qrels.length > 0 ? ["pool completeness/unpooled audit incomplete"] : ["pool and grading absent"] },
+    { step: 7, name: "five-system pool", status: fiveSystemPool && poolSnapshotVerified ? "done" : "not_started",
+      evidence: [`${systemsInPool.size}/5 systems`, `${pool.length} pool rows`, `snapshot ${poolSnapshotVerified ? "current" : "missing/stale"}`],
+      blockers: fiveSystemPool && poolSnapshotVerified ? [] : ["runs, exact pool, or current pool snapshot missing"] },
+    { step: 8, name: "dual grading and unpooled audit", status: step8Done ? "done" : qrels.length > 0 ? "partial" : "not_started",
+      evidence: [`${qrels.length} qrels`, `grading process ${gradingProcessGate.passes ? "verified" : "missing/stale"}`],
+      blockers: step8Done ? [] : qrels.length > 0 ? ["strict blind grading or owner-approved unpooled audit incomplete"] : ["pool and grading absent"] },
     { step: 9, name: "adjudication and owner review", status: step9Done ? "done" : "not_started",
-      evidence: [`${calibrationResult.records.length} calibration rows`,
+      evidence: [`${ownerReview?.success === true ? ownerReview.data.reviewed_calibration.count : 0} calibration rows`,
         `agreement ${agreementRaw ? agreementGate.error ?? "strictly valid" : "missing"}`],
       blockers: step9Done ? [] : ["adjudication/calibration/owner review absent"] },
-    { step: 10, name: "score, significance, and report", status: completedFinalHoldoutRun ? "done" : "not_started",
+    { step: 10, name: "score, significance, and report", status: completedFinalHoldoutRun && finalReportCurrent ? "done" : "not_started",
       evidence: [`final report ${finalReport ? "present" : "missing"}`, `final holdout ledger ${completedFinalHoldoutRun ? "complete" : "incomplete"}`],
-      blockers: completedFinalHoldoutRun ? [] : ["judgments, run outputs, owner review, or final ledger event absent"] },
+      blockers: completedFinalHoldoutRun && finalReportCurrent ? [] : ["current approved report or final ledger event absent"] },
   ];
 
   const blockers = gates.filter(item => item.status === "blocked").map(item => item.id);
@@ -582,7 +722,7 @@ async function main(): Promise<void> {
       queries: queries.length,
       pool: pool.length,
       qrels: qrels.length,
-      calibration: calibrationResult.records.length,
+      calibration: ownerReview?.success === true ? ownerReview.data.reviewed_calibration.count : 0,
     },
     validation_errors: { schema: schemaErrors, cross_record: crossErrors, axes: axisErrors },
     steps,

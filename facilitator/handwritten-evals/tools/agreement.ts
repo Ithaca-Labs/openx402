@@ -255,6 +255,17 @@ export function stratifiedAgreement(
   const total = pairs.length;
   const relevantFamilyPairs = pairs.filter(inFamily);
   const otherPairs = pairs.filter(pair => !inFamily(pair));
+  const usesFrozenFamilyLabels = pairs.length > 0 && pairs.every(pair => pair.relevantFamily !== undefined);
+  const relevantFamilyDescription = usesFrozenFamilyLabels
+    ? "Candidates whose query and resource share the frozen family label in the withheld grading manifest."
+    : options.relevantFamilyPredicate
+      ? "Candidates selected by the supplied relevant-family predicate."
+      : "Candidates either annotator placed at grade >= 1 (same capability family per the §7 rubric).";
+  const nonRelevantFamilyDescription = usesFrozenFamilyLabels
+    ? "Candidates whose query and resource have different frozen family labels (including distractors)."
+    : options.relevantFamilyPredicate
+      ? "Candidates excluded by the supplied relevant-family predicate."
+      : "Candidates both annotators placed at grade 0. The easy stratum that inflates the pooled figure.";
 
   const overall = stratumReport(
     "all-pooled",
@@ -264,13 +275,13 @@ export function stratifiedAgreement(
   );
   const relevantFamily = stratumReport(
     "relevant-family",
-    "Candidates either annotator placed at grade >= 1 (same capability family per the §7 rubric).",
+    relevantFamilyDescription,
     relevantFamilyPairs,
     total,
   );
   const nonRelevantFamily = stratumReport(
     "non-relevant-family",
-    "Candidates both annotators placed at grade 0. The easy stratum that inflates the pooled figure.",
+    nonRelevantFamilyDescription,
     otherPairs,
     total,
   );

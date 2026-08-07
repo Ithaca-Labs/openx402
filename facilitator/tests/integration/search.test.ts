@@ -32,7 +32,7 @@ const searchStoreB = new SearchStore(replicaB);
 const analytics = new AnalyticsStore(pool);
 const state = new StateStore(pool);
 
-const TABLES = `catalog_index_jobs, catalog_search_documents,
+const TABLES = `search_resource_fetches, search_sessions, catalog_index_jobs, catalog_search_documents,
   search_impressions, catalog_observations, payment_events, payment_daily_totals,
   catalog_payment_options, catalog_resource_versions, catalog_resources`;
 
@@ -791,6 +791,61 @@ describe("GET /discovery/search", () => {
     expect(impressions.rows[0].ranking_config).toMatchObject({ rrfK: 20, lexicalWeight: 0.7, semanticWeight: 0.3 });
     expect(impressions.rows[0].degraded).toMatchObject({ effectiveMode: "hybrid", semantic: "used" });
     expect(impressions.rows[0].generation_id).toBe(1);
+  });
+
+  it("logs query, returned ids, stable pagination session, and exact later fetch", async () => {
+    await seedGolden();
+    const server = app();
+    const first = await request(server).get("/discovery/search?query=weather&limit=2").expect(200);
+    const sessionId = first.headers["x-search-session-id"] as string;
+    expect(sessionId).toMatch(/^[0-9a-f-]{36}$/i);
+
+    const second = await request(server)
+      .get(`/discovery/search?query=weather&limit=2&cursor=${encodeURIComponent(first.body.pagination.cursor)}`)
+      .expect(200);
+    expect(second.headers["x-search-session-id"]).toBe(sessionId);
+
+    const session = await pool.query<{
+      query_text: string; returned_resource_ids: string[]; returned_version_ids: string[];
+    }>(
+      `SELECT query_text, returned_resource_ids, returned_version_ids
+       FROM search_sessions WHERE id = $1`,
+      [sessionId],
+    );
+    expect(session.rows[0]?.query_text).toBe("weather");
+    expect(session.rows[0]?.returned_resource_ids).toHaveLength(4);
+    expect(session.rows[0]?.returned_version_ids).toHaveLength(4);
+
+    const selected = first.body.resources[0] as { resource: string; type: string };
+    await request(server)
+      .get(`/discovery/resource?type=${selected.type}&url=${encodeURIComponent(selected.resource)}`)
+      .set("x-search-session-id", sessionId)
+      .expect(200);
+    const fetched = await pool.query(
+      `SELECT session_id, resource_id, version_id, returned_position
+       FROM search_resource_fetches WHERE session_id = $1`,
+      [sessionId],
+    );
+    expect(fetched.rowCount).toBe(1);
+    expect(fetched.rows[0]).toMatchObject({ session_id: sessionId, returned_position: 1 });
+  });
+
+  it("logs zero-result searches as sessions", async () => {
+    await seedGolden();
+    const response = await request(app())
+      .get("/discovery/search?query=quantum+entanglement+brokerage+settlement")
+      .expect(200);
+    expect(response.body.resources).toHaveLength(0);
+    const logged = await pool.query(
+      `SELECT query_text, returned_resource_ids, returned_version_ids
+       FROM search_sessions WHERE id = $1`,
+      [response.headers["x-search-session-id"]],
+    );
+    expect(logged.rows[0]).toMatchObject({
+      query_text: "quantum entanglement brokerage settlement",
+      returned_resource_ids: [],
+      returned_version_ids: [],
+    });
   });
 
   it("reports indexing health and conversion on the operator API", async () => {

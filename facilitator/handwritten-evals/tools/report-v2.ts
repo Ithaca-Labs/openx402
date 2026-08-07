@@ -14,6 +14,7 @@ import {
   metricSelectors,
   pairedVectors,
   scoreRun,
+  type Judgment,
   type QueryScore,
   type RunMetrics,
   type RunResult,
@@ -64,9 +65,33 @@ export const PilotReportEvidenceSchema = z.object({
   }).strict(),
 }).strict();
 
+export const REQUIRED_LIMITATIONS = [
+  "Synthetic corpus: resources and queries are agent-authored and human-reviewed, not live listings.",
+  "Shared-model limitation: most authors, graders, critics, and adjudicators may share one model family; fresh contexts do not eliminate correlated model bias or create independent human ground truth.",
+  "Single-ecosystem limitation: the benchmark covers Stellar, while real x402 traffic is predominantly EVM and Solana.",
+  "The `upto` payment scheme is deliberately oversampled by roughly 50× relative to the sampled live ecosystem.",
+  "MCP resources are deliberately overrepresented: 15 benchmark resources versus zero in the 14,669-listing live sample.",
+  "Judgments are incomplete; recall is understated, judged@k is reported, and bpref is preferred.",
+  "The release set has 50 queries, so small effects may not reach statistical significance.",
+  "There is no click or conversion validation until production traffic accrues.",
+] as const;
+
+const LimitationsListSchema = z.array(z.string().trim().min(1)).min(REQUIRED_LIMITATIONS.length)
+  .superRefine((value, context) => {
+    const duplicates = value.filter((item, index) => value.indexOf(item) !== index);
+    if (duplicates.length > 0) {
+      context.addIssue({ code: z.ZodIssueCode.custom, message: `duplicate limitation: ${duplicates[0]}` });
+    }
+    for (const required of REQUIRED_LIMITATIONS) {
+      if (!value.includes(required)) {
+        context.addIssue({ code: z.ZodIssueCode.custom, message: `missing required BUILD-PLAN limitation: ${required}` });
+      }
+    }
+  });
+
 export const LimitationsEvidenceSchema = z.object({
-  status: z.enum(["approved", "pass"]),
-  limitations: z.array(z.string().trim().min(1)).min(1),
+  status: z.literal("approved"),
+  limitations: LimitationsListSchema,
 }).strict();
 
 export const OwnerRatesSchema = z.object({
@@ -218,7 +243,7 @@ const EvaluationReportCoreV2Schema = z.object({
   judged_at_10_gate_passed: z.boolean(),
   owner_rates: OwnerRatesSchema.nullable(),
   owner_rates_reported: z.boolean(),
-  limitations: z.array(z.string().trim().min(1)).min(1),
+  limitations: LimitationsListSchema,
 }).strict();
 
 function validateReportContract(value: {
@@ -553,7 +578,7 @@ export function buildEvaluationReport(
   const selected = validateInputs(queries, qrels, runs, options);
   const selectedIds = new Set(selected.map(query => query.query_id));
   const selectedQrels = qrels.filter(qrel => selectedIds.has(qrel.query_id));
-  const judgments = new Map<string, Array<{ resourceId: string; grade: number }>>();
+  const judgments = new Map<string, Judgment[]>();
   for (const qrel of selectedQrels) {
     const bucket = judgments.get(qrel.query_id) ?? [];
     bucket.push({

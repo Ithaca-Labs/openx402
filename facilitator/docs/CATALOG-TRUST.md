@@ -183,20 +183,20 @@ cursor was already issued against.
 
 ## Non-standard surface, declared
 
-Two things this facilitator exposes are **not** in the Bazaar specification and
+Three things this facilitator exposes are **not** in the Bazaar specification and
 must not be depended on by clients:
 
 - the `asset` browse/search filter — `asset` is a structured column here, and
   the specification's filter list stops at `type`, `payTo`, `scheme`, `network`
   and `extensions`;
+- the `maxPrice` browse/search filter — it is an atomic-unit integer and requires
+  `asset`, so comparisons never mix currencies or decimal scales;
 - `pagination.cursor` on the browse response, which mirrors the shape the
   specification already defines for search.
 
-There is deliberately **no price filter**. Asset-aware price filtering needs an
-upstream proposal defining minimum/maximum semantics, decimal versus atomic
-units, behaviour across multiple `accepts` entries, and backwards-compatible
-discovery. Until that exists, a private `maxPrice` parameter would fragment the
-ecosystem. Both items above belong in the same upstream conversation.
+The two structured filters belong in an upstream discovery proposal. Requiring
+an exact asset and using its atomic units gives `maxPrice` deterministic
+minimum-option semantics when a listing has multiple `accepts` entries.
 
 ## What is not implemented
 

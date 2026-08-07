@@ -8,10 +8,13 @@ import {
   assertNoBlindPackLeakage,
   BlindAdjudicationPackSchema,
   BlindGradingPackSchema,
+  buildGradingProcessAudit,
   finalizeGrading,
+  GradingProcessAuditSchema,
   prepareBlindAdjudication,
   prepareBlindGrading,
   OwnerReviewReportSchema,
+  OwnerReviewPublicSummarySchema,
   validateDoubleGrading,
   writeArtifactBundleExclusive,
   writeArtifactExclusive,
@@ -262,6 +265,85 @@ describe("adjudication and finalization", () => {
   });
 });
 
+describe("grading process audit", () => {
+  function adjudicatedRun() {
+    const result = prepared();
+    const { a, b } = imports(result.manifest);
+    const adjudication = prepareBlindAdjudication(sources(), result.manifest, a, b, generation("adjudicator-run"), {
+      pipelineRunId: "grading-run-1", createdAt: NOW, seed: "fedcba9876543210", expectedCounts: COUNTS,
+    });
+    const adjudicatorImport = {
+      version: 1 as const,
+      role: "adjudicator" as const,
+      pack_id: adjudication.manifest.pack_id,
+      adjudicator: adjudication.manifest.adjudicator,
+      judgments: adjudication.manifest.assignments.map(assignment => ({
+        task_id: assignment.task_id,
+        candidate_id: assignment.candidate_id,
+        grade: 2,
+        rationale: "Independent release adjudication rationale.",
+        judged_at: NOW,
+      })),
+    };
+    return { result, a, b, adjudication, adjudicatorImport };
+  }
+
+  it("binds the exact blind packs, imports, source snapshot, and fresh run identities", () => {
+    const { result, a, b, adjudication, adjudicatorImport } = adjudicatedRun();
+    const audit = buildGradingProcessAudit({
+      sources: sources(),
+      gradingManifest: result.manifest,
+      graderAPack: result.graderA,
+      graderBPack: result.graderB,
+      graderAImport: a,
+      graderBImport: b,
+      adjudicationManifest: adjudication.manifest,
+      adjudicationPack: adjudication.pack,
+      adjudicatorImport,
+    }, NOW, COUNTS);
+    expect(GradingProcessAuditSchema.safeParse(audit).success).toBe(true);
+    expect(audit).toMatchObject({
+      status: "pass",
+      pipeline_run_id: "grading-run-1",
+      counts: { pairs: 3, grader_a_judgments: 3, grader_b_judgments: 3, disagreements: 1, adjudications: 1 },
+      run_ids: { grader_a: "grader-a-run", grader_b: "grader-b-run", adjudicator: "adjudicator-run" },
+    });
+    expect(audit.input_hashes.grader_a_pack).toMatch(/^sha256:[a-f0-9]{64}$/);
+  });
+
+  it("rejects a pack whose visible listing was altered after preparation", () => {
+    const { result, a, b, adjudication, adjudicatorImport } = adjudicatedRun();
+    const altered = structuredClone(result.graderA);
+    altered.tasks[0]!.candidates[0]!.listing.description = "Tampered blind listing.";
+    expect(() => buildGradingProcessAudit({
+      sources: sources(),
+      gradingManifest: result.manifest,
+      graderAPack: altered,
+      graderBPack: result.graderB,
+      graderAImport: a,
+      graderBImport: b,
+      adjudicationManifest: adjudication.manifest,
+      adjudicationPack: adjudication.pack,
+      adjudicatorImport,
+    }, NOW, COUNTS)).toThrow("listing does not match current source");
+  });
+
+  it("rejects a manifest from a different adjudication pipeline run", () => {
+    const { result, a, b, adjudication, adjudicatorImport } = adjudicatedRun();
+    expect(() => buildGradingProcessAudit({
+      sources: sources(),
+      gradingManifest: result.manifest,
+      graderAPack: result.graderA,
+      graderBPack: result.graderB,
+      graderAImport: a,
+      graderBImport: b,
+      adjudicationManifest: { ...adjudication.manifest, pipeline_run_id: "other-run" },
+      adjudicationPack: adjudication.pack,
+      adjudicatorImport,
+    }, NOW, COUNTS)).toThrow("pipeline_run_id");
+  });
+});
+
 describe("append-only writes", () => {
   it("never overwrites an existing artifact", async () => {
     const directory = await mkdtemp(join(tmpdir(), "grading-pipeline-"));
@@ -340,6 +422,9 @@ describe("owner review", () => {
     expect(reviewed.releaseQrels[0]!.rationale).toContain("Exact capability");
     expect(reviewed.reviewedCalibration.map(record => record.owner_review)).toEqual(["approved", "corrected", "rejected"]);
     expect(reviewed.report.pairs).toMatchObject({ total: 3, corrected: 1, rejected: 1 });
+    expect(reviewed.report.reviewers).toEqual(["owner"]);
+    expect(reviewed.report.source_hashes.raw_qrels).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(reviewed.report.output_hashes.release_qrels).toMatch(/^sha256:[a-f0-9]{64}$/);
     expect(reviewed.report.reviewed_qrels_emitted).toEqual({ development: 1, release: 1, total: 2 });
     expect(reviewed.report.excluded_pairs).toEqual([
       { query_id: "qry-002", resource_id: "res-0003", reason: "pair_rejected" },
@@ -350,6 +435,11 @@ describe("owner review", () => {
     expect(reviewed.report.corrected_queries).toEqual(["qry-002"]);
     expect(reviewed.report.rejected_queries).toEqual([]);
     expect(OwnerReviewReportSchema.safeParse(reviewed.report).success).toBe(true);
+    expect(OwnerReviewPublicSummarySchema.safeParse(reviewed.publicSummary).success).toBe(true);
+    expect(reviewed.publicSummary.development).toMatchObject({ query_count: 1, qrel_count: 1 });
+    expect(reviewed.publicSummary.release).toMatchObject({ query_count: 1, qrel_count: 1, all_release_rationales_present: true });
+    expect(JSON.stringify(reviewed.publicSummary)).not.toContain("res-0002");
+    expect(JSON.stringify(reviewed.publicSummary)).not.toContain("final_grade");
     expect(JSON.stringify(raw)).toBe(rawSnapshot);
   });
 

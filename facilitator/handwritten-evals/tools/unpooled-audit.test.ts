@@ -26,6 +26,7 @@ import {
   writeUnpooledAuditPreparationExclusive,
   type UnpooledAuditImport,
   type UnpooledAuditManifest,
+  type UnpooledAuditOwnerDecision,
 } from "./unpooled-audit.js";
 
 const NOW = "2026-08-07T00:00:00.000Z";
@@ -213,7 +214,7 @@ function ownerDecision(
   report: ReturnType<typeof finalizeUnpooledAudit>["report"],
   qrels: ReturnType<typeof finalizeUnpooledAudit>["qrels"],
   threshold = 0.6,
-) {
+): UnpooledAuditOwnerDecision {
   return {
     version: 1 as const,
     pipeline_run_id: report.pipeline_run_id,

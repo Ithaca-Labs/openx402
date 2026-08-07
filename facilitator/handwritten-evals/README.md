@@ -62,7 +62,7 @@ they are `WHERE` clauses, not relevance opinions (§7).
 | `spec/axes.md` | the §3 axis reference with concrete allowed values; the authoring checklist | maintainer |
 | `catalog/` | `catalog-v2.jsonl` (wire) and `sidecar-v2.jsonl` (axes, tags, provenance) | isolated author agents + owner review |
 | `queries/` | `queries-v2.jsonl` — 100 queries, 50 dev / 50 release | isolated query agents + owner review |
-| `qrels/` | `qrels-v2.jsonl` — **only judged pairs**; absence means unjudged | isolated graders/adjudicator + owner review |
+| `qrels/` | development qrels only; pair-level release judgments remain sealed outside this tree | isolated graders/adjudicator + owner review |
 | `pool/` | `pool-v2.jsonl` — which pairs entered the pool and from which systems | script |
 | `manifests/` | dataset manifest, frozen release split, content hashes | script |
 | `reports/` | release gates, stratified κ, metric reports | script |
@@ -83,6 +83,9 @@ Empty directories are placeholders for build-order steps that have not run yet (
 | `merge-distractors.ts` | validates and merges Step 4 shards; scans the complete catalog for forbidden capabilities (§6) |
 | `metamorphic.test.ts` | the six label-free CI invariants (§12.4) |
 | `release-gates-v2.ts` | validates present artifacts, reports §9 build status, and blocks absent §11 release evidence |
+| `critic-workflow.ts` | creates six opaque critic packs, validates findings, and prepares fresh-context repairs (§1.1) |
+| `pool-snapshot-v2.ts` | binds catalog/query/profile/implementation/run/pool bytes and fails stale pools (§12.3) |
+| `development-ci-v2.ts` | scores exactly the 50 development queries in CI without opening release judgments (§12.1) |
 
 ```sh
 npx tsc --noEmit -p tsconfig.json      # the v2 schema module
@@ -121,6 +124,12 @@ frozen. Summary of the differences (BUILD-PLAN §0):
   qrels file, which is exactly the conflation v2 removes.
 - **`pool-v2.jsonl` exists.** Everything pooled must be judged; the pool file is the completeness
   audit trail, and `unjudgedPooledPairs()` turns that into a gate.
+- **`pool-snapshot-v2.json` proves freshness.** It binds the frozen catalog/query hashes, committed
+  retrieval profiles and implementation sources, all five system runs, and exact pool bytes. Any
+  change fails scoring until the systems are rerun, new candidates are pooled, and grading updates.
+- **Development runs in CI; release stays sealed.** `npm run benchmark:v2:development-ci` scores
+  exactly 50 development queries on every commit once the dataset freeze exists. Release qrels
+  live outside this tree and are reachable only through an explicitly recorded holdout run.
 - **Calibration is isolated-grader vs isolated-grader.** v2 records two independent agent grades,
   a separate adjudication, owner review status, and `boundary_case` — the 2-vs-3 region where the
   benchmark actually lives. Agreement measures consistency, not human ground-truth validity.

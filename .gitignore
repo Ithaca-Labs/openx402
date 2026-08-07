@@ -18,6 +18,16 @@
 /tasks/
 /reference/
 
+# Release judgments are a sealed holdout and must never enter normal tuning paths.
+/facilitator/handwritten-evals/qrels/release-v2.jsonl
+/facilitator/handwritten-evals/qrels/raw-agent-v2.jsonl
+/facilitator/handwritten-evals/reports/calibration-raw-v2.jsonl
+/facilitator/handwritten-evals/reports/calibration-v2.jsonl
+/facilitator/handwritten-evals/reports/owner-review-full-v2.json
+/facilitator/handwritten-evals/staging/query-pass1/imports/
+/facilitator/handwritten-evals/staging/query-pass1/manifest.json
+/facilitator/handwritten-evals/staging/query-pass1/raw-qrels.jsonl
+
 # OS / editor
 .DS_Store
 *.swp

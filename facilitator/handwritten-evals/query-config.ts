@@ -189,36 +189,36 @@ function buildAssignments(): QueryAssignment[] {
     if (queryClass === "mcp") {
       const target = MCP_TARGETS[mcpIndex++]!;
       const subtype = mcpSubtypeBySplit[split][mcpSplitIndex[split]++]!;
-      return { ...base, family: target[0], familyName: FAMILY_NAMES[target[0] - 1],
+      return { ...base, family: target[0], familyName: FAMILY_NAMES[target[0] - 1]!,
         capability: FAMILY_CAPABILITIES[target[0] - 1]![target[1] - 1]!, anchorResourceId: resourceId(target[0], target[1]),
         mcpSubtype: subtype,
         mcpBrief: `server=${target[2]}; tool=${target[3]}; transport=${target[4]}; input_schema_shape=${target[5]}` };
     }
     if (queryClass === "adversarial") {
       const target = ADVERSARIAL_TARGETS[adversarialIndex++]!;
-      return { ...base, family: target[0], familyName: FAMILY_NAMES[target[0] - 1],
+      return { ...base, family: target[0], familyName: FAMILY_NAMES[target[0] - 1]!,
         capability: FAMILY_CAPABILITIES[target[0] - 1]![target[1] - 1]!, anchorResourceId: resourceId(target[0], target[1]), trap: target[2] };
     }
     if (queryClass === "cold_start") {
       const target = COLD_START_TARGETS[coldIndex++]!;
-      return { ...base, family: target[0], familyName: FAMILY_NAMES[target[0] - 1],
+      return { ...base, family: target[0], familyName: FAMILY_NAMES[target[0] - 1]!,
         capability: FAMILY_CAPABILITIES[target[0] - 1]![target[1] - 1]!, anchorResourceId: resourceId(target[0], target[1]) };
     }
     if (queryClass === "structured") {
       const target = STRUCTURED_TARGETS[structuredIndex++]!;
-      return { ...base, filters: target[2], family: target[0], familyName: FAMILY_NAMES[target[0] - 1],
+      return { ...base, filters: target[2], family: target[0], familyName: FAMILY_NAMES[target[0] - 1]!,
         capability: FAMILY_CAPABILITIES[target[0] - 1]![target[1] - 1]!, anchorResourceId: resourceId(target[0], target[1]) };
     }
     if (queryClass === "price_category") {
       const target = PRICE_TARGETS[priceIndex++]!;
       return { ...base, evaluationConstraints: { max_price_usd: target[2] },
-        family: target[0], familyName: FAMILY_NAMES[target[0] - 1],
+        family: target[0], familyName: FAMILY_NAMES[target[0] - 1]!,
         capability: FAMILY_CAPABILITIES[target[0] - 1]![target[1] - 1]!, anchorResourceId: resourceId(target[0], target[1]) };
     }
     const family = (generalIndex % 20) + 1;
     const slot = (Math.floor(generalIndex / 20) % 5) + 1;
     generalIndex += 1;
-    return { ...base, family, familyName: FAMILY_NAMES[family - 1], capability: FAMILY_CAPABILITIES[family - 1]![slot - 1]!,
+    return { ...base, family, familyName: FAMILY_NAMES[family - 1]!, capability: FAMILY_CAPABILITIES[family - 1]![slot - 1]!,
       anchorResourceId: resourceId(family, slot) };
   });
 }

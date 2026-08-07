@@ -5,8 +5,10 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { QrelRecordSchema, type QrelRecord } from "../schema/schema-v2.js";
-import { OwnerReviewReportSchema, writeArtifactBundleExclusive } from "./grading-pipeline.js";
+import { OwnerReviewPublicSummarySchema, writeArtifactBundleExclusive } from "./grading-pipeline.js";
+import { RELEASE_QRELS_ENV_NAME, resolveSealedReleaseQrelsPath } from "./holdout-v2.js";
 import { loadSystemRuns, loadV2Dataset } from "./pool.js";
+import { verifyPoolSnapshot } from "./pool-snapshot-v2.js";
 import {
   buildEvaluationReport,
   LimitationsEvidenceSchema,
@@ -77,16 +79,19 @@ async function main(): Promise<void> {
   }
   const root = resolve(rootInput ?? resolve(import.meta.dirname, ".."));
   const frozen = await verifyFrozenDataset(root);
+  await verifyPoolSnapshot(root);
   const releaseStart = split === "release"
     ? await assertStartedReleaseRun(root, releaseRunId!, frozen.manifestSha256)
     : undefined;
 
-  // Release qrels are not touched until the explicit ledger check above succeeds.
-  const qrelPath = resolve(root, split === "release" ? "qrels/release-v2.jsonl" : "qrels/development-v2.jsonl");
+  // Release qrels are not resolved or touched until the explicit ledger check above succeeds.
+  const qrelPath = split === "release"
+    ? await resolveSealedReleaseQrelsPath(root, process.env[RELEASE_QRELS_ENV_NAME])
+    : resolve(root, "qrels/development-v2.jsonl");
   const [dataset, qrels, ownerReview, limitations] = await Promise.all([
     loadV2Dataset(root),
     readQrels(qrelPath),
-    readJson(resolve(root, "reports/owner-review-v2.json")).then(value => OwnerReviewReportSchema.parse(value)),
+    readJson(resolve(root, "reports/owner-review-v2.json")).then(value => OwnerReviewPublicSummarySchema.parse(value)),
     readJson(resolve(root, "reports/limitations-v2.json")).then(value => LimitationsEvidenceSchema.parse(value)),
   ]);
   const selectedIds = new Set(dataset.queries.filter(query => query.split === split).map(query => query.query_id));
@@ -102,7 +107,7 @@ async function main(): Promise<void> {
     const pilot = PilotReportEvidenceSchema.parse(await readJson(resolve(root, "reports/pilot-v2.json")));
     pilotThreshold = pilot.judged_at_10_threshold;
   }
-  const pairRates = ownerReview.pairs;
+  const pairRates = ownerReview[split].pairs;
   const plantedNegativeResourceIds = new Set(dataset.sidecars
     .filter(record => record.adversarial_kind !== null)
     .map(record => record.resource_id));

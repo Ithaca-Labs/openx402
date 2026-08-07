@@ -71,7 +71,7 @@ const searchStore = new SearchStore(pool);
 const analytics = new AnalyticsStore(pool);
 const state = new StateStore(pool);
 
-const TABLES = `catalog_index_jobs, catalog_search_documents,
+const TABLES = `search_resource_fetches, search_sessions, catalog_index_jobs, catalog_search_documents,
   search_impressions, catalog_observations, payment_events, payment_daily_totals,
   catalog_payment_options, catalog_resource_versions, catalog_resources`;
 
@@ -169,7 +169,7 @@ async function lexicalMatchSet(query: string, language = "simple"): Promise<Set<
 
 /** Every version whose payment options satisfy the given hard filters. */
 async function filterMatchSet(filters: {
-  type?: string; network?: string; scheme?: string; asset?: string; payTo?: string;
+  type?: string; network?: string; scheme?: string; asset?: string; payTo?: string; maxPrice?: string;
 }): Promise<Set<number>> {
   const rows = await pool.query<{ version_id: string }>(
     `SELECT v.id AS version_id
@@ -182,9 +182,10 @@ async function filterMatchSet(filters: {
            AND ($2::text IS NULL OR o.network = $2)
            AND ($3::text IS NULL OR o.scheme = $3)
            AND ($4::text IS NULL OR o.asset = $4)
-           AND ($5::text IS NULL OR o.pay_to = $5))`,
+           AND ($5::text IS NULL OR o.pay_to = $5)
+           AND ($6::numeric IS NULL OR o.amount <= $6))`,
     [filters.type ?? null, filters.network ?? null, filters.scheme ?? null,
-      filters.asset ?? null, filters.payTo ?? null],
+      filters.asset ?? null, filters.payTo ?? null, filters.maxPrice ?? null],
   );
   return new Set(rows.rows.map(row => Number(row.version_id)));
 }
@@ -224,26 +225,6 @@ function ids(result: SearchResult): number[] {
 // ---------------------------------------------------------------------------
 
 describe("invariant 1 — filter soundness", () => {
-  /**
-   * BUILD-PLAN §12.4 lists "max price" among the hard filters. The discovery
-   * surface exposes no price filter today (`DiscoveryFilters` is exactly the set
-   * asserted below), so the price clause of the invariant is vacuous rather than
-   * violated. This assertion is here so the gap becomes a visible test failure
-   * the moment a price filter is added without being covered here.
-   */
-  it("enumerates the hard filters the discovery surface actually accepts", async () => {
-    await seedGolden();
-    const svc = service(searchConfig({ semantic: { ...searchConfig().semantic, enabled: false } }));
-    const snapshot = await catalog.watermark();
-    // Unknown filter keys are stripped by the router's schema, so a price
-    // constraint sent today silently does nothing. Documented, not asserted as
-    // correct behaviour.
-    const supported = ["type", "network", "scheme", "payTo", "asset", "extensions"];
-    const response = await runSearch(svc, "weather", { snapshot });
-    expect(response.rows.length).toBeGreaterThan(0);
-    expect(supported).not.toContain("maxPrice");
-  });
-
   it("returns only resources satisfying every hard filter, in lexical and hybrid modes", async () => {
     await seedGolden();
     await seedExtra([
@@ -266,7 +247,7 @@ describe("invariant 1 — filter soundness", () => {
 
     const snapshot = await catalog.watermark();
     const filterCases: Array<{
-      type?: string; network?: string; scheme?: string; asset?: string; payTo?: string;
+      type?: string; network?: string; scheme?: string; asset?: string; payTo?: string; maxPrice?: string;
     }> = [
       { type: "mcp" },
       { type: "http" },
@@ -276,6 +257,8 @@ describe("invariant 1 — filter soundness", () => {
       { network: "stellar:testnet" },
       { asset: OTHER_ASSET },
       { asset: ASSET },
+      { asset: OTHER_ASSET, maxPrice: "750" },
+      { asset: OTHER_ASSET, maxPrice: "650" },
       { payTo: RIVAL_SELLER },
       { type: "http", scheme: "upto", asset: OTHER_ASSET },
     ];
@@ -298,18 +281,13 @@ describe("invariant 1 — filter soundness", () => {
         for (const row of result.rows) {
           if (filters.type) expect(row.type, label).toBe(filters.type);
           const options = accepts(row);
-          if (filters.network) {
-            expect(options.some(option => option.network === filters.network), label).toBe(true);
-          }
-          if (filters.scheme) {
-            expect(options.some(option => option.scheme === filters.scheme), label).toBe(true);
-          }
-          if (filters.asset) {
-            expect(options.some(option => option.asset === filters.asset), label).toBe(true);
-          }
-          if (filters.payTo) {
-            expect(options.some(option => option.payTo === filters.payTo), label).toBe(true);
-          }
+          expect(options.some(option =>
+            (!filters.network || option.network === filters.network)
+            && (!filters.scheme || option.scheme === filters.scheme)
+            && (!filters.asset || option.asset === filters.asset)
+            && (!filters.payTo || option.payTo === filters.payTo)
+            && (!filters.maxPrice || BigInt(String(option.amount)) <= BigInt(filters.maxPrice))), label)
+            .toBe(true);
         }
         expect(result.rows.length, label).toBeLessThanOrEqual(allowed.size);
       }
