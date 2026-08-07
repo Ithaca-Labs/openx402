@@ -13,7 +13,7 @@ buyer-use-case task pack; there are no placeholders to resolve elsewhere.
 
 - run_id: `run-queries-05`
 - shard_id: `shard-queries-05`
-- prompt_hash: `sha256:2c2dbe416eb2efd428378e832e8ef9b75bb8daf7bd03b830c58b241d7c2db329`
+- prompt_hash: `sha256:d97fbfa9c2d0aa76cd5dc2035e440c00a386c90d3fdd7c2a0ddc809a738841f9`
 - output: `handwritten-evals/staging/queries/run-queries-05/queries.jsonl`
 
 Use every table value exactly. `—` means omit that optional field. The capability cell is an

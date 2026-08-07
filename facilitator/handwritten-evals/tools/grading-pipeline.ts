@@ -770,6 +770,7 @@ export function finalizeGrading(
     const adjudicated = disagrees ? adjudication.get(key) : undefined;
     if (disagrees && !adjudicated) throw new Error(`${pair.a.query_id}/${pair.a.resource_id}: missing adjudication`);
     const selected = adjudicated ?? pair.a;
+    const selectedGeneration = disagrees ? adjudicatorRef! : double.a.grader;
     const qrel = QrelRecordSchema.parse({
       query_id: pair.a.query_id,
       resource_id: pair.a.resource_id,
@@ -777,8 +778,13 @@ export function finalizeGrading(
       eligible: true,
       judge: "agent",
       ...(selected.rationale === undefined ? {} : { rationale: selected.rationale }),
-      annotator: disagrees ? adjudicatorRef!.run_id : double.a.grader.run_id,
+      annotator: selectedGeneration.run_id,
       judged_at: selected.judged_at,
+      generation: selectedGeneration,
+      review_status: "pending",
+      reviewed_at: null,
+      reviewed_by: null,
+      owner_note: null,
     });
     const calibrationRecord = AgentCalibrationSchema.parse({
       query_id: pair.a.query_id,
@@ -935,8 +941,10 @@ export function applyOwnerReview(
         grade: pairDecision.grade,
         judge: "reviewed_agent",
         ...(query.split === "release" ? { rationale } : {}),
-        annotator: pairDecision.reviewer,
-        judged_at: pairDecision.reviewed_at,
+        review_status: pairDecision.decision,
+        reviewed_at: pairDecision.reviewed_at,
+        reviewed_by: pairDecision.reviewer,
+        owner_note: pairDecision.notes,
       });
       if (query.split === "release") releaseQrels.push(reviewed);
       else developmentQrels.push(reviewed);

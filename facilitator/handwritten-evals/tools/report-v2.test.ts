@@ -46,8 +46,21 @@ function releaseQrels(queries: readonly QueryRecord[]): QrelRecord[] {
     eligible: true,
     judge: "reviewed_agent",
     rationale: "Exact capability match reviewed by the owner.",
-    annotator: "owner",
+    annotator: `grader-${query.query_id}`,
     judged_at: generatedAt,
+    generation: {
+      provider: "anthropic",
+      model: "claude-grader-2026-08-07",
+      prompt_hash: `sha256:${"c".repeat(64)}`,
+      run_id: `grader-${query.query_id}`,
+      shard_id: `grader-shard-${query.query_id}`,
+      temperature: 0,
+      generated_at: generatedAt,
+    },
+    review_status: "approved",
+    reviewed_at: generatedAt,
+    reviewed_by: "owner",
+    owner_note: null,
   }));
 }
 

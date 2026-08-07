@@ -84,6 +84,7 @@ const generation = {
   prompt_hash: "sha256:deadbeef",
   run_id: "run-f01-s01",
   shard_id: "shard-resources-01",
+  temperature: 0,
   generated_at: "2026-01-01T00:00:00.000Z",
 };
 
@@ -311,11 +312,22 @@ const agentQrel = {
   eligible: true,
   judge: "agent" as const,
   annotator: "run-grader-01",
+  generation: { ...generation, run_id: "run-grader-01", shard_id: "shard-grader-01" },
+  review_status: "pending" as const,
+  reviewed_at: null,
+  reviewed_by: null,
+  owner_note: null,
 };
 ok("agent eligible qrel accepted", QrelRecordSchema.safeParse(agentQrel).success);
 ok(
   "reviewed_agent eligible qrel accepted",
-  QrelRecordSchema.safeParse({ ...agentQrel, judge: "reviewed_agent", annotator: "owner" }).success,
+  QrelRecordSchema.safeParse({
+    ...agentQrel,
+    judge: "reviewed_agent",
+    review_status: "approved",
+    reviewed_at: "2026-01-02T00:00:00.000Z",
+    reviewed_by: "owner",
+  }).success,
 );
 ok(
   "deterministic eligible qrel rejected",
@@ -336,6 +348,11 @@ ok(
     eligible: false,
     judge: "deterministic",
     hard_constraint_reason: "network filter: stellar:pubnet",
+    generation: null,
+    review_status: "pending",
+    reviewed_at: null,
+    reviewed_by: null,
+    owner_note: null,
   }).success &&
   !QrelRecordSchema.safeParse({
     query_id: "qry-001",
@@ -344,6 +361,11 @@ ok(
     eligible: false,
     judge: "deterministic",
     hard_constraint_reason: "network filter: stellar:pubnet",
+    generation: null,
+    review_status: "pending",
+    reviewed_at: null,
+    reviewed_by: null,
+    owner_note: null,
   }).success,
 );
 
@@ -375,7 +397,11 @@ ok(
 );
 
 // --- calibration (§0.5) -------------------------------------------------------------------------
-const graderRef = (runId: string) => ({ run_id: runId, model: generation.model, prompt_hash: generation.prompt_hash });
+const graderRef = (runId: string) => ({
+  ...generation,
+  run_id: runId,
+  shard_id: `shard-${runId}`,
+});
 const calibration = {
   query_id: "qry-001",
   resource_id: "res-0001",

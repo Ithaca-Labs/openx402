@@ -80,10 +80,10 @@ function corpus() {
   return { catalog, sidecars };
 }
 
-const auditors = Array.from({ length: 10 }, (_, index) => ({
-  run_id: `auditor-${index + 1}`,
-  model: "claude-audit-revision",
-}));
+const auditors = Array.from({ length: 10 }, (_, index) => {
+  const { prompt_hash: _promptHash, ...auditor } = generation(`auditor-${index + 1}`);
+  return auditor;
+});
 
 function prepared() {
   const source = corpus();

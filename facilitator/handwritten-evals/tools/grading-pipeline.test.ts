@@ -128,8 +128,8 @@ function sources() {
   };
 }
 
-const graderA = { run_id: "grader-a-run", model: "claude-a", prompt_hash: "sha256:grader-a" };
-const graderB = { run_id: "grader-b-run", model: "claude-b", prompt_hash: "sha256:grader-b" };
+const graderA = generation("grader-a-run");
+const graderB = generation("grader-b-run");
 
 function prepared() {
   return prepareBlindGrading(sources(), {
@@ -206,9 +206,7 @@ describe("adjudication and finalization", () => {
   it("packs disagreements only without revealing either prior grade", () => {
     const result = prepared();
     const { a, b } = imports(result.manifest);
-    const adjudication = prepareBlindAdjudication(sources(), result.manifest, a, b, {
-      run_id: "adjudicator-run", model: "claude-c", prompt_hash: "sha256:adjudicator",
-    }, {
+    const adjudication = prepareBlindAdjudication(sources(), result.manifest, a, b, generation("adjudicator-run"), {
       pipelineRunId: "grading-run-1", createdAt: NOW, seed: "fedcba9876543210", expectedCounts: COUNTS,
     });
     expect(BlindAdjudicationPackSchema.safeParse(adjudication.pack).success).toBe(true);
@@ -221,9 +219,7 @@ describe("adjudication and finalization", () => {
     const result = prepared();
     const { a, b } = imports(result.manifest);
     expect(() => finalizeGrading(sources(), result.manifest, a, b, null, null, NOW, COUNTS)).toThrow("require a complete adjudicator import");
-    const adjudication = prepareBlindAdjudication(sources(), result.manifest, a, b, {
-      run_id: "adjudicator-run", model: "claude-c", prompt_hash: "sha256:adjudicator",
-    }, {
+    const adjudication = prepareBlindAdjudication(sources(), result.manifest, a, b, generation("adjudicator-run"), {
       pipelineRunId: "grading-run-1", createdAt: NOW, seed: "fedcba9876543210", expectedCounts: COUNTS,
     });
     const adjudicatorImport = {
@@ -334,7 +330,13 @@ describe("owner review", () => {
     expect(reviewed.developmentQrels).toHaveLength(1);
     expect(reviewed.releaseQrels).toHaveLength(1);
     expect(reviewed.developmentQrels[0]).not.toHaveProperty("rationale");
-    expect(reviewed.releaseQrels[0]).toMatchObject({ grade: 3, judge: "reviewed_agent", annotator: "owner" });
+    expect(reviewed.releaseQrels[0]).toMatchObject({
+      grade: 3,
+      judge: "reviewed_agent",
+      annotator: "grader-a-run",
+      reviewed_by: "owner",
+      review_status: "corrected",
+    });
     expect(reviewed.releaseQrels[0]!.rationale).toContain("Exact capability");
     expect(reviewed.reviewedCalibration.map(record => record.owner_review)).toEqual(["approved", "corrected", "rejected"]);
     expect(reviewed.report.pairs).toMatchObject({ total: 3, corrected: 1, rejected: 1 });

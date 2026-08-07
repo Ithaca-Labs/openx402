@@ -58,7 +58,14 @@ describe("pass-1 seed preparation", () => {
     const pack = prepared.manifest.packs[0]!;
     const assignments = prepared.manifest.assignments.filter(item => item.grader_run_id === pack.grader_run_id);
     const imported = { version: 1, role: "pass1_seed_grader", pack_id: pack.pack_id,
-      grader: { run_id: pack.grader_run_id, model: "grader-revision", prompt_hash: pack.prompt_hash },
+      grader: {
+        provider: "anthropic",
+        run_id: pack.grader_run_id,
+        shard_id: pack.pack_id,
+        model: "grader-revision",
+        prompt_hash: pack.prompt_hash,
+        generated_at: now,
+      },
       judgments: assignments.map(item => ({ task_id: item.task_id, candidate_id: item.candidate_id, grade: 0, judged_at: now })) };
     expect(() => validatePass1SeedImport(imported, prepared.manifest)).not.toThrow();
     expect(() => validatePass1SeedImport({ ...imported, grader: { ...imported.grader, run_id: "query-author" } }, prepared.manifest))

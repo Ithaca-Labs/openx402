@@ -596,6 +596,11 @@ export function finalizeUnpooledAudit(
     ...(judgment.rationale === undefined ? {} : { rationale: judgment.rationale }),
     annotator: judgment.auditor.run_id,
     judged_at: judgment.judged_at,
+    generation: judgment.auditor,
+    review_status: "pending",
+    reviewed_at: null,
+    reviewed_by: null,
+    owner_note: null,
   })).sort((left, right) => pairKey(left.query_id, left.resource_id).localeCompare(pairKey(right.query_id, right.resource_id)));
   const poolRecords = judgments.map(judgment => PoolRecordSchema.parse({
     query_id: judgment.query_id,

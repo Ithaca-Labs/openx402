@@ -25,7 +25,7 @@ template for any later wave.
 
 - Run id: `run-distractors-w09-a01`
 - Shard id: `shard-distractors-w09-a01`
-- Prompt/task-pack hash: `sha256:be303d3d28acd8ab8ec495c64ba7c7cd9b0536149c6de499a0a782d603ddfde9`
+- Prompt/task-pack hash: `sha256:bbd931ca5156548a3bbf742235b36a52bc9de60bbba16fe5a0e649610d6fbf04`
 - Output directory: `handwritten-evals/staging/distractors/run-distractors-w09-a01/`
 - Wire output: `wire.jsonl`, exactly 10 lines in id order
 - Sidecar output: `sidecar.jsonl`, exactly 10 lines in id order

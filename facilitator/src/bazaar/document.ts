@@ -2,7 +2,7 @@ import type { CatalogCandidate } from "./extract.js";
 import { canonicalJson } from "./sanitize.js";
 
 /** The formatter version is part of the embedding source hash. */
-export const SEARCH_DOCUMENT_COMPILER_VERSION = 2;
+export const SEARCH_DOCUMENT_COMPILER_VERSION = 3;
 
 export interface SearchDocumentPaymentOption {
   scheme: string;
@@ -172,8 +172,21 @@ function formatParameter(parameter: ParameterEntry): string {
  */
 function lexicalField(values: string[]): string {
   const present = values.filter(value => value.length > 0);
+  // Keep the first occurrence of a token inside each declared value and drop
+  // repeats. This preserves readable identifiers and phrases while preventing
+  // a seller from increasing lexical rank by appending the same query terms
+  // dozens of times. Aliases remain unique and aid punctuation-heavy IDs.
+  const bounded = present.map(value => {
+    const seen = new Set<string>();
+    return value.replace(/[\p{L}\p{N}]+/gu, token => {
+      const normalized = token.normalize("NFKC").toLowerCase();
+      if (seen.has(normalized)) return "";
+      seen.add(normalized);
+      return token;
+    });
+  });
   const aliases = present.flatMap(value => value.normalize("NFKC").match(/[\p{L}\p{N}]+/gu) ?? []);
-  return [...present, ...new Set(aliases)].join(" ");
+  return [...bounded, ...new Set(aliases.map(alias => alias.toLowerCase()))].join(" ");
 }
 
 function exampleLines(label: string, value: unknown): string[] {

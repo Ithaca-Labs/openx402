@@ -59,6 +59,20 @@ describe("weighted search document compilation", () => {
     expect(compiled.lexicalLow).toContain("stellar:testnet");
     expect(compiled.lexicalLow).toContain("Mumbai");
   });
+
+  it("bounds repeated seller keywords without changing the semantic document", () => {
+    const stuffed = {
+      ...candidate,
+      description: `${candidate.description} weather weather weather current current`,
+    };
+    const compiled = compileSearchDocumentParts(stuffed, []);
+    const weatherTokens = compiled.lexicalMedium.toLowerCase().match(/\bweather\b/g) ?? [];
+    const currentTokens = compiled.lexicalMedium.toLowerCase().match(/\bcurrent\b/g) ?? [];
+
+    expect(compiled.document).toContain("weather weather weather");
+    expect(weatherTokens).toHaveLength(2); // first declaration + one unique alias
+    expect(currentTokens).toHaveLength(2);
+  });
 });
 
 describe("safe search query parsing", () => {

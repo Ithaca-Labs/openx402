@@ -273,6 +273,9 @@ export const GenerationSchema = z.object({
   generated_at: z.string().datetime(),
 }).strict();
 
+/** Full provenance for a grading/adjudication context (§1.1, §11). */
+export const GraderRefSchema = GenerationSchema;
+
 /** §0.2b / §11 — owner acceptance state. No artifact ships without owner review. */
 export const REVIEW_STATUSES = ["pending", "approved", "corrected", "rejected"] as const;
 export const ReviewStatusSchema = z.enum(REVIEW_STATUSES);
@@ -659,9 +662,16 @@ export const QrelRecordSchema = z.object({
   judge: z.enum(["deterministic", "agent", "reviewed_agent"]), // human/openrouter/curated/pending retired (§0.2)
   /** §8: required on release judgments. Enforced by the release gate, which knows the split. */
   rationale: z.string().max(1_000).optional(),
-  /** Identifies who judged: an agent run_id when `judge: "agent"`, or the owner when `reviewed_agent`. */
+  /** Isolated grader/adjudicator run_id; owner identity is recorded separately in `reviewed_by`. */
   annotator: z.string().min(1).optional(),
   judged_at: z.string().datetime().optional(),
+  /** Original isolated grader/adjudicator provenance. Null only for deterministic exclusions. */
+  generation: GraderRefSchema.nullable(),
+  /** Explicit owner acceptance; never infer this from `judge`. */
+  review_status: ReviewStatusSchema,
+  reviewed_at: z.string().datetime().nullable(),
+  reviewed_by: z.string().min(1).nullable(),
+  owner_note: z.string().min(1).max(2_000).nullable(),
 }).strict().superRefine((value, context) => {
   // §0.3: `eligible: false` still means a deterministic hard-filter exclusion at grade 0.
   if (!value.eligible && (value.grade !== 0 || value.judge !== "deterministic")) {
@@ -690,6 +700,63 @@ export const QrelRecordSchema = z.object({
       code: z.ZodIssueCode.custom,
       path: ["annotator"],
       message: "agent/reviewed_agent judgments must record who made them",
+    });
+  }
+  if (value.judge !== "deterministic" && value.generation === null) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["generation"],
+      message: "agent/reviewed_agent judgments require full isolated-run provenance",
+    });
+  }
+  if (value.judge === "deterministic" && value.generation !== null) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["generation"],
+      message: "deterministic exclusions do not carry agent generation provenance",
+    });
+  }
+  if (value.generation && value.annotator !== value.generation.run_id) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["annotator"],
+      message: "annotator must equal generation.run_id",
+    });
+  }
+  if (value.judge === "agent" && value.review_status !== "pending") {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["review_status"],
+      message: "raw agent qrels remain pending until the owner-review phase",
+    });
+  }
+  if (value.judge === "reviewed_agent"
+      && value.review_status !== "approved" && value.review_status !== "corrected") {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["review_status"],
+      message: "reviewed_agent qrels must be owner-approved or corrected",
+    });
+  }
+  if (value.review_status !== "pending" && (!value.reviewed_at || !value.reviewed_by)) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["reviewed_at"],
+      message: "owner-reviewed qrels require reviewed_at and reviewed_by",
+    });
+  }
+  if (value.review_status === "pending" && (value.reviewed_at !== null || value.reviewed_by !== null)) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["reviewed_at"],
+      message: "pending qrels cannot claim owner review",
+    });
+  }
+  if ((value.review_status === "corrected" || value.review_status === "rejected") && !value.owner_note) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["owner_note"],
+      message: "corrected/rejected qrels require an append-only owner note",
     });
   }
 });
@@ -775,23 +842,16 @@ export function unjudgedPooledPairs(
   pool: readonly z.infer<typeof PoolRecordSchema>[],
   qrels: readonly z.infer<typeof QrelRecordSchema>[],
 ): string[] {
-  const judged = new Set(qrels.map(q => `${q.query_id} ${q.resource_id}`));
+  const judged = new Set(qrels.map(q => `${q.query_id}\u0000${q.resource_id}`));
   return pool
-    .map(p => `${p.query_id} ${p.resource_id}`)
+    .map(p => `${p.query_id}\u0000${p.resource_id}`)
     .filter(key => !judged.has(key))
-    .map(key => key.replace(" ", "/"));
+    .map(key => key.replace("\u0000", "/"));
 }
 
 /* ------------------------------------------------------------------------------------------------
  * §0.5 — calibration
  * ---------------------------------------------------------------------------------------------- */
-
-/** §0.5 — which isolated grading agent produced one grade. Same shape as `GenerationSchema`'s core. */
-export const GraderRefSchema = z.object({
-  run_id: z.string().min(1),
-  model: z.string().min(1),
-  prompt_hash: z.string().min(1),
-}).strict();
 
 /**
  * §0.5 — calibration is isolated-grader vs isolated-grader, never human ground truth.
@@ -833,6 +893,20 @@ export const AgentCalibrationSchema = z.object({
       message: "grader_b_grade requires a named grader_b",
     });
   }
+  if (value.grader_b !== null && value.grader_b_grade === null) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["grader_b_grade"],
+      message: "a named grader_b requires grader_b_grade",
+    });
+  }
+  if (value.grader_b && value.grader_b.run_id === value.grader_a.run_id) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["grader_b", "run_id"],
+      message: "grader_a and grader_b must be distinct isolated runs",
+    });
+  }
   const disagreement = value.grader_b_grade !== null && value.grader_b_grade !== value.grader_a_grade;
   if (disagreement && value.adjudicated_grade === null) {
     context.addIssue({
@@ -848,11 +922,32 @@ export const AgentCalibrationSchema = z.object({
       message: "§8 pass 3: a disagreement resolved without a recorded adjudicator is not traceable",
     });
   }
+  if (value.adjudicator && [value.grader_a.run_id, value.grader_b?.run_id].includes(value.adjudicator.run_id)) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["adjudicator", "run_id"],
+      message: "adjudicator must be a third distinct isolated run",
+    });
+  }
+  if (!disagreement && (value.adjudicated_grade !== null || value.adjudicator !== null)) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["adjudicated_grade"],
+      message: "agreement rows must not invent an adjudication",
+    });
+  }
   if (value.owner_review !== "pending" && value.reviewed_at === null) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["reviewed_at"],
       message: "approved/corrected/rejected calibration rows must record when the owner reviewed them",
+    });
+  }
+  if ((value.owner_review === "corrected" || value.owner_review === "rejected") && value.notes === null) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["notes"],
+      message: "corrected/rejected calibration rows require owner notes",
     });
   }
 });

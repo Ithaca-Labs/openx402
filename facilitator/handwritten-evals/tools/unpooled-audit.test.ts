@@ -175,11 +175,8 @@ function sources() {
 }
 
 function auditors() {
-  return Array.from({ length: AUDIT_BATCH_COUNT }, (_, index) => ({
-    run_id: `audit-agent-${String(index + 1).padStart(2, "0")}`,
-    model: "claude-audit-revision-20260807",
-    prompt_hash: `sha256:${String(index + 1).padStart(64, "0")}`,
-  }));
+  return Array.from({ length: AUDIT_BATCH_COUNT }, (_, index) =>
+    generation(`audit-agent-${String(index + 1).padStart(2, "0")}`));
 }
 
 function prepare(raw = sources()) {
