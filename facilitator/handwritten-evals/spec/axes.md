@@ -60,7 +60,8 @@ labeled resources:
 
 The real corpus is 0.57% `upto`. The ~50× oversample is a **deliberate design choice** because
 `upto` is the product differentiator — state it that way, never as a distribution claim. Keep the
-900 distractors ~99% `exact`-only so the full 1,000-record corpus lands near 3%.
+400 distractors (MVP scope cut from 900) ~99% `exact`-only so the full 500-record corpus stays
+mostly `exact`.
 
 ---
 

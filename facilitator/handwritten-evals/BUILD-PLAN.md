@@ -47,6 +47,19 @@ the authoring context.
 > data once that step runs. This is a deliberate reversal of the plan's original central
 > safeguard against repeating v1's failure — see the note logged when this was decided for the
 > tradeoff being accepted.
+>
+> **Sixth revision — MVP corpus scope cut: 400 distractors, not 900.** `RELEASE_COUNTS.resources`
+> is now `{ labeled: 100, distractor: 400, total: 500 }` — every mention of 900/1,000 elsewhere in
+> this document (§1, §2–§12 prose, the worked example in §0.4) describes the original full-scale
+> design and is superseded by this note; the executable schema, `distractor-config.ts`, and every
+> tool/test that reads `RELEASE_COUNTS` are the current source of truth, not the prose. Query count
+> is unchanged at 100 (50 dev / 50 release). Distractors are authored 4 agents × 100 records each
+> (not 9 waves × 10 × 10) — a larger per-agent shard than §1.1 originally specified, accepted as an
+> MVP cost/speed tradeoff with human review of the merged output compensating for the higher
+> single-context templating risk that a 100-record shard carries versus the original 10-record one.
+> `DISTRACTOR_UPTO_NUMBERS` is trimmed to 4 ids (still ~1%, matching
+> `DISTRIBUTION_TARGETS.distractor_upto_max_fraction`). Scale back toward 900/9-waves-of-10 later if
+> the reduced corpus proves too easy to retrieve against.
 
 ---
 

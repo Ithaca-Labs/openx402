@@ -5,7 +5,7 @@ import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { z } from "zod";
 import { QUERY_AGENTS, QUERY_ASSIGNMENTS, QUERIES_PER_AGENT, queryAssignment } from "../query-config.js";
-import { CatalogRecordSchema, QueryRecordSchema, SidecarRecordSchema, type QueryRecord } from "../schema/schema-v2.js";
+import { CatalogRecordSchema, QueryRecordSchema, RELEASE_COUNTS, SidecarRecordSchema, type QueryRecord } from "../schema/schema-v2.js";
 import { finalizePass1Seed, preparePass1Seed, validatePass1SeedImport } from "./query-pass1.js";
 import { assertSealedHoldoutArtifactPath } from "./holdout-v2.js";
 
@@ -88,8 +88,8 @@ async function main(): Promise<void> {
   const [catalogRaw, sidecarRaw] = await Promise.all([
     jsonl(resolve(ROOT, "catalog/catalog-v2.jsonl")), jsonl(resolve(ROOT, "catalog/sidecar-v2.jsonl")),
   ]);
-  const catalog = z.array(CatalogRecordSchema).length(1_000).parse(catalogRaw);
-  const sidecars = z.array(SidecarRecordSchema).length(1_000).parse(sidecarRaw);
+  const catalog = z.array(CatalogRecordSchema).length(RELEASE_COUNTS.resources.total).parse(catalogRaw);
+  const sidecars = z.array(SidecarRecordSchema).length(RELEASE_COUNTS.resources.total).parse(sidecarRaw);
   const createdAt = process.env.BENCHMARK_RUN_AT ?? new Date().toISOString();
   const sealedRootInput = process.env[PASS1_EVIDENCE_ENV_NAME];
   if (!sealedRootInput) throw new Error(`set ${PASS1_EVIDENCE_ENV_NAME} to an absolute directory outside handwritten-evals`);

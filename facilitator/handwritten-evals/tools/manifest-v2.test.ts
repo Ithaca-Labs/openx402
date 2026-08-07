@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   PUBNET_USDC,
   QUERY_CLASS_TARGETS,
+  RELEASE_COUNTS,
   type CatalogRecord,
   type QueryRecord,
   type SidecarRecord,
@@ -188,7 +189,7 @@ async function datasetFixture(options: {
 } = {}): Promise<string> {
   const root = await mkdtemp(resolve(tmpdir(), "stellar-v2-freeze-"));
   roots.push(root);
-  const resources = options.resources ?? 1_000;
+  const resources = options.resources ?? RELEASE_COUNTS.resources.total;
   await Promise.all(FROZEN_INPUT_PATHS
     .filter(path => !path.endsWith(".jsonl"))
     .map(async path => {
@@ -207,12 +208,12 @@ async function datasetFixture(options: {
 }
 
 describe("Step 6 dataset freeze", () => {
-  it("freezes exactly 1000 resources and 100 correctly distributed queries", async () => {
+  it("freezes exactly the release-count resources and 100 correctly distributed queries", async () => {
     const root = await datasetFixture();
     const result = await freezeDatasetV2({ root, frozenAt: REVIEWED_AT });
     expect(DatasetManifestV2Schema.parse(result.manifest)).toEqual(result.manifest);
     expect(ReleaseQueryIndexV2Schema.parse(result.releaseQueryIndex)).toEqual(result.releaseQueryIndex);
-    expect(result.manifest.counts.resources).toEqual({ labeled: 100, distractor: 900, total: 1_000 });
+    expect(result.manifest.counts.resources).toEqual(RELEASE_COUNTS.resources);
     expect(result.manifest.counts.queries).toEqual({ development: 50, release: 50, total: 100 });
     expect(result.manifest.counts.query_classes).toEqual(QUERY_CLASS_TARGETS);
     expect(Object.keys(result.manifest.hashes).sort()).toEqual([...FROZEN_INPUT_PATHS, RELEASE_QUERY_INDEX_PATH].sort());
@@ -228,8 +229,8 @@ describe("Step 6 dataset freeze", () => {
   });
 
   it("refuses partial data and publishes no freeze artifacts", async () => {
-    const root = await datasetFixture({ resources: 999 });
-    await expect(freezeDatasetV2({ root })).rejects.toThrow(/exactly 1000/);
+    const root = await datasetFixture({ resources: RELEASE_COUNTS.resources.total - 1 });
+    await expect(freezeDatasetV2({ root })).rejects.toThrow(new RegExp(`exactly ${RELEASE_COUNTS.resources.total}`));
     await expect(readFile(resolve(root, DATASET_MANIFEST_PATH))).rejects.toMatchObject({ code: "ENOENT" });
     await expect(readFile(resolve(root, RELEASE_QUERY_INDEX_PATH))).rejects.toMatchObject({ code: "ENOENT" });
   });

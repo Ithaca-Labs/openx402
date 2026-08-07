@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { RELEASE_COUNTS } from "../schema/schema-v2.js";
 import {
   finalizeForbiddenCapabilityAudit,
   ForbiddenAuditPackSchema,
@@ -26,7 +27,7 @@ function generation(run: string) {
 }
 
 function corpus() {
-  const catalog = Array.from({ length: 1_000 }, (_, index) => {
+  const catalog = Array.from({ length: RELEASE_COUNTS.resources.total }, (_, index) => {
     const number = index + 1;
     const id = `res-${String(number).padStart(4, "0")}`;
     return {
@@ -134,13 +135,13 @@ function owner(manifest: ForbiddenAuditManifest, confirmed = false) {
 }
 
 describe("prepareForbiddenCapabilityAudit", () => {
-  it("creates ten separate opaque, shuffled 1,000-listing packs and concrete prompts", () => {
+  it("creates ten separate opaque, shuffled full-corpus-listing packs and concrete prompts", () => {
     const { result } = prepared();
     expect(result.packs).toHaveLength(10);
     expect(result.prompts).toHaveLength(10);
     expect(result.manifest.audits).toHaveLength(10);
     expect(result.packs.every(pack => ForbiddenAuditPackSchema.safeParse(pack).success)).toBe(true);
-    expect(result.packs.every(pack => pack.listings.length === 1_000)).toBe(true);
+    expect(result.packs.every(pack => pack.listings.length === RELEASE_COUNTS.resources.total)).toBe(true);
     expect(JSON.stringify(result.packs[0])).not.toContain("resource_id");
     expect(JSON.stringify(result.packs[0])).not.toContain("provider-");
     expect(JSON.stringify(result.packs[0])).not.toContain("author-");
@@ -153,7 +154,7 @@ describe("prepareForbiddenCapabilityAudit", () => {
     const source = corpus();
     expect(() => prepareForbiddenCapabilityAudit(source.catalog.slice(1), source.sidecars, FORBIDDEN, {
       auditRunId: "x", createdAt: NOW, seed: "0123456789abcdef", auditors,
-    })).toThrow("exactly 1000");
+    })).toThrow(`exactly ${RELEASE_COUNTS.resources.total}`);
     const hit = corpus();
     hit.catalog[0]!.wire.resource.description = "Managed wallet signing for buyers.";
     expect(() => prepareForbiddenCapabilityAudit(hit.catalog, hit.sidecars, FORBIDDEN, {

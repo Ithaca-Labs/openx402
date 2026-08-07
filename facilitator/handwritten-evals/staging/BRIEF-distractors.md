@@ -53,12 +53,12 @@ No comments, blank records, arrays around the records, trailing commas, or prett
 
 ## Chosen distractor distributions
 
-- **Resource type: HTTP only.** This package deliberately chooses all 900 distractors as
+- **Resource type: HTTP only.** This package deliberately chooses all distractors as
   `resource_type: "http"`, because all 14,669 sampled live listings were HTTP. Do not create MCP
   distractors and never include an `mcp` key.
-- **Scheme: 891 exact-only, 9 exact+upto.** Every distractor is exact-only except these fixed,
-  irregularly spread ids: `res-0147`, `res-0189`, `res-0358`, `res-0416`, `res-0493`, `res-0642`,
-  `res-0788`, `res-0917`, `res-0994`. Those nine must carry both one `exact` and one `upto` option.
+- **Scheme: 396 exact-only, 4 exact+upto (MVP scope cut from 891/9 at the original 900-distractor
+  scale).** Every distractor is exact-only except these fixed, irregularly spread ids: `res-0147`,
+  `res-0189`, `res-0358`, `res-0416`. Those four must carry both one `exact` and one `upto` option.
   No other distractor may carry `upto`. This is 99% exact-only and avoids an author-selected
   pattern.
 - **Sparse/adversarial: none.** Set `is_sparse: false`, include substantive original copy, and set
@@ -69,7 +69,8 @@ No comments, blank records, arrays around the records, trailing commas, or prett
 Provider assignment is deterministic and requires no cross-wave coordination. For numeric resource
 id `N`, use provider number `((N - 1) mod 120) + 1`, zero-padded to three digits. Thus `res-0101`
 uses `provider-101`, `res-0120` uses `provider-120`, `res-0121` uses `provider-001`, and
-`res-1000` uses `provider-040`. The prompt enumerates all 10 mappings; copy them exactly.
+`res-0500` uses `provider-020`. The prompt enumerates every mapping for your shard; copy them
+exactly.
 
 The wire hostname must use that same provider id:
 `https://provider-XXX.stellar-bazaar.example/<original-path>`. Reuse of a provider across unrelated
@@ -188,7 +189,8 @@ substitutes even when they would evade the deterministic signatures.
 # Forbidden capabilities for Step 4 distractors
 
 These ten capabilities are reserved for the ten Step 5 `no_result` cases. They must be absent from
-all distractor metadata and must remain absent from the complete 1,000-record corpus. Authors must
+all distractor metadata and must remain absent from the complete 500-record corpus (MVP scope cut
+from 1,000 — see BUILD-PLAN sixth revision). Authors must
 avoid the capability itself, close substitutes, hints, and scanner signatures. Deterministic
 matching is a necessary syntax gate; the later independent full-catalog audit remains mandatory.
 

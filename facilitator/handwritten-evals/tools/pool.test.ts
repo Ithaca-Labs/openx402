@@ -6,6 +6,7 @@ import {
   POOL_SYSTEMS,
   PUBNET_USDC,
   QUERY_CLASS_TARGETS,
+  RELEASE_COUNTS,
   TESTNET_USDC,
   type CatalogRecord,
   type PoolSystem,
@@ -52,7 +53,7 @@ function generation(runId: string) {
 function makeDataset(): V2Dataset {
   const catalog: CatalogRecord[] = [];
   const sidecars: SidecarRecord[] = [];
-  for (let index = 1; index <= 1_000; index += 1) {
+  for (let index = 1; index <= RELEASE_COUNTS.resources.total; index += 1) {
     const resourceId = `res-${String(index).padStart(4, "0")}`;
     const labeled = index <= 100;
     const mcp = labeled && index > 85;
@@ -265,7 +266,7 @@ describe("dataset completeness", () => {
     const dataset = makeDataset();
     expect(() => validateDatasetCompleteness(dataset)).not.toThrow();
     expect(() => validateDatasetCompleteness({ ...dataset, catalog: dataset.catalog.slice(1) }))
-      .toThrow("expected 1000 catalog records");
+      .toThrow(`expected ${RELEASE_COUNTS.resources.total} catalog records`);
     expect(() => validateDatasetCompleteness({ ...dataset, queries: dataset.queries.slice(1) }))
       .toThrow("expected 100 queries");
   });

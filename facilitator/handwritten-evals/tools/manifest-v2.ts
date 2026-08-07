@@ -227,13 +227,13 @@ function validateDatasetRecords(
 ): string[] {
   const issues: string[] = [];
   if (catalog.length !== RELEASE_COUNTS.resources.total) {
-    issues.push(`catalog must contain exactly 1000 records, found ${catalog.length}`);
+    issues.push(`catalog must contain exactly ${RELEASE_COUNTS.resources.total} records, found ${catalog.length}`);
   }
   if (sidecars.length !== RELEASE_COUNTS.resources.total) {
-    issues.push(`sidecar must contain exactly 1000 records, found ${sidecars.length}`);
+    issues.push(`sidecar must contain exactly ${RELEASE_COUNTS.resources.total} records, found ${sidecars.length}`);
   }
   if (queries.length !== RELEASE_COUNTS.queries.total) {
-    issues.push(`queries must contain exactly 100 records, found ${queries.length}`);
+    issues.push(`queries must contain exactly ${RELEASE_COUNTS.queries.total} records, found ${queries.length}`);
   }
 
   const resourceIds = exactIdSet("res", 4, RELEASE_COUNTS.resources.total);
@@ -258,7 +258,7 @@ function validateDatasetRecords(
     issues.push(`sidecar must contain exactly 100 labeled resources, found ${labeled.length}`);
   }
   if (distractors.length !== RELEASE_COUNTS.resources.distractor) {
-    issues.push(`sidecar must contain exactly 900 distractors, found ${distractors.length}`);
+    issues.push(`sidecar must contain exactly ${RELEASE_COUNTS.resources.distractor} distractors, found ${distractors.length}`);
   }
   for (const resourceType of ["http", "mcp"] as const) {
     const actual = labeled.filter(record => record.resource_type === resourceType).length;

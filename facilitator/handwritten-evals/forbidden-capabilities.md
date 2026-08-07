@@ -1,7 +1,8 @@
 # Forbidden capabilities for Step 4 distractors
 
 These ten capabilities are reserved for the ten Step 5 `no_result` cases. They must be absent from
-all distractor metadata and must remain absent from the complete 1,000-record corpus. Authors must
+all distractor metadata and must remain absent from the complete 500-record corpus (MVP scope cut
+from 1,000 — see BUILD-PLAN sixth revision). Authors must
 avoid the capability itself, close substitutes, hints, and scanner signatures. Deterministic
 matching is a necessary syntax gate; the later independent full-catalog audit remains mandatory.
 

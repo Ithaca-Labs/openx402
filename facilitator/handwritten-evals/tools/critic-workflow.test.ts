@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { TESTNET_USDC } from "../schema/schema-v2.js";
+import { RELEASE_COUNTS, TESTNET_USDC } from "../schema/schema-v2.js";
 import {
   CRITIC_ROLES,
   finalizeCriticOwnerReview,
@@ -20,7 +20,7 @@ function resourceId(index: number): string {
 }
 
 function sourceRecords() {
-  const catalog = Array.from({ length: 1_000 }, (_, offset) => {
+  const catalog = Array.from({ length: RELEASE_COUNTS.resources.total }, (_, offset) => {
     const index = offset + 1;
     const id = resourceId(index);
     return {
@@ -47,7 +47,7 @@ function sourceRecords() {
       },
     };
   });
-  const sidecars = Array.from({ length: 1_000 }, (_, offset) => {
+  const sidecars = Array.from({ length: RELEASE_COUNTS.resources.total }, (_, offset) => {
     const index = offset + 1;
     const id = resourceId(index);
     const runId = `run-author-${id}`;
@@ -179,7 +179,7 @@ describe("critic workflow", () => {
     expect(prepared.packs.map(pack => pack.role)).toEqual(CRITIC_ROLES);
     expect(new Set(prepared.manifest.critics.map(critic => critic.assignment.run_id)).size).toBe(6);
     for (const pack of prepared.packs) {
-      expect(pack.artifacts).toHaveLength(1_000);
+      expect(pack.artifacts).toHaveLength(RELEASE_COUNTS.resources.total);
       expect(pack.artifacts.every(artifact => /^artifact-[a-f0-9]{16}$/.test(artifact.artifact_id))).toBe(true);
       expect(JSON.stringify(pack)).not.toContain("run-author-");
       expect(JSON.stringify(pack)).not.toContain("provider_id");
@@ -239,10 +239,10 @@ describe("critic workflow", () => {
       { generatedAt: GENERATED_AT, repairRound: 1 },
     );
     expect(result.report).toMatchObject({
-      artifacts_reviewed: 1_000,
+      artifacts_reviewed: RELEASE_COUNTS.resources.total,
       findings_reviewed: 1,
       confirmed_findings: 0,
-      approved_artifacts: 1_000,
+      approved_artifacts: RELEASE_COUNTS.resources.total,
       repair_required_artifacts: 0,
       overall_passed: true,
     });

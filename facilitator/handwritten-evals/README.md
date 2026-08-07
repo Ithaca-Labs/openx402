@@ -108,8 +108,9 @@ implementation can never ship in production. Both resolve dependencies from
 `../src/search/release/schema.ts`, which stays authoritative until the v2 dataset is authored and
 frozen. Summary of the differences (BUILD-PLAN §0):
 
-- **Identifier widths.** `res-\d{4}` and `provider-\d{3}` — v1 caps at res-999 and 100 providers,
-  and the v2 corpus is 1,000 records over 120 providers.
+- **Identifier widths.** `res-\d{4}` and `provider-\d{3}` — v1 caps at res-999 and 100 providers;
+  the v2 corpus is currently scoped to 500 records (MVP cut from 900 distractors to 400, see
+  BUILD-PLAN sixth revision) over up to 120 providers.
 - **`scheme` is an enum.** `exact | upto`, on both `accepts` and the query filter. v1 pinned it to
   the `exact` literal, which made the product's differentiating scheme unrepresentable.
 - **`source_class` is gone.** Its categories were never mutually exclusive — a resource can be MCP
@@ -155,7 +156,7 @@ Known conflicts between §3's axis values and the v1 field enums are listed at t
 | 1 — pilot | removed from the build order (optional, non-blocking); see BUILD-PLAN fifth revision note |
 | 2 — 20 families + axis assignments | done: `spec/families.md`, `spec/axes.md` |
 | 3 — author 100 resources | partial: all 100 labeled records are merged and schema-valid; all 100 sidecars remain `review_status: "pending"`, and release-grade provenance/owner acceptance is absent |
-| 4 — author ~900 distractors, validate no-result exclusion | package ready, authoring blocked: shared brief, scanner, assignment policy, and 90 isolated prompts exist; 0/900 distractors authored; the current 100-record catalog has zero deterministic forbidden-signature hits |
+| 4 — author 400 distractors (MVP scope cut from 900, see BUILD-PLAN sixth revision), validate no-result exclusion | package ready, authoring blocked: shared brief, scanner, assignment policy, and 4 isolated prompts (4 agents x 100 records) exist; 0/400 distractors authored; the current 100-record catalog has zero deterministic forbidden-signature hits |
 | 5 — author 100 queries + pass-1 labels | package ready, authoring not started: 10 isolated query prompts and 10 concrete anchor-aware blind pass-1 grader prompts are generated; 0/100 queries |
 | 6–10 — freeze, pool, grade, review, score | not started |
 

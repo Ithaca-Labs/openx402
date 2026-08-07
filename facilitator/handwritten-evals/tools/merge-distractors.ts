@@ -3,7 +3,7 @@
  *
  * Reads isolated distractor shards, validates the real v2 schemas, enforces the frozen assignment
  * policy, scans all searchable metadata in the complete corpus for forbidden capabilities, and
- * appends the 900 records to the existing 100-record catalog only after every gate passes.
+ * appends the distractor records to the existing 100-record labeled catalog only after every gate passes.
  * With no distractor shards it performs a clean zero-record dry run and writes nothing.
  */
 
@@ -244,10 +244,10 @@ async function main(): Promise<void> {
       loadJsonl(resolve(STAGING, run, "sidecar.jsonl")),
     ]);
     if (wireRaw.length !== DISTRACTOR_RECORDS_PER_SHARD) {
-      fail(`${run}: expected 10 wire records, got ${wireRaw.length}`);
+      fail(`${run}: expected ${DISTRACTOR_RECORDS_PER_SHARD} wire records, got ${wireRaw.length}`);
     }
     if (sidecarRaw.length !== DISTRACTOR_RECORDS_PER_SHARD) {
-      fail(`${run}: expected 10 sidecar records, got ${sidecarRaw.length}`);
+      fail(`${run}: expected ${DISTRACTOR_RECORDS_PER_SHARD} sidecar records, got ${sidecarRaw.length}`);
     }
     distractorCatalog.push(...parseCatalog(wireRaw, run));
     distractorSidecars.push(...parseSidecars(sidecarRaw, run, true));
@@ -256,7 +256,7 @@ async function main(): Promise<void> {
   console.log(`distractor records: ${distractorCatalog.length} wire, ${distractorSidecars.length} sidecar`);
   const httpCount = distractorSidecars.filter(record => record.resource_type === "http").length;
   const mcpCount = distractorSidecars.filter(record => record.resource_type === "mcp").length;
-  console.log(`resource_type distribution: http=${httpCount} mcp=${mcpCount} (chosen target 900/0)`);
+  console.log(`resource_type distribution: http=${httpCount} mcp=${mcpCount} (chosen target ${RELEASE_COUNTS.resources.distractor}/0)`);
 
   const completeCorpus = [...labeledCatalog, ...distractorCatalog];
   const forbiddenHits = scanForbidden(completeCorpus, capabilities);
@@ -273,10 +273,10 @@ async function main(): Promise<void> {
     fail(`expected ${expectedRunDirectories} run directories, got ${runDirectories.length}`);
   }
   if (distractorCatalog.length !== RELEASE_COUNTS.resources.distractor) {
-    fail(`expected 900 distractor wire records, got ${distractorCatalog.length}`);
+    fail(`expected ${RELEASE_COUNTS.resources.distractor} distractor wire records, got ${distractorCatalog.length}`);
   }
   if (distractorSidecars.length !== RELEASE_COUNTS.resources.distractor) {
-    fail(`expected 900 distractor sidecars, got ${distractorSidecars.length}`);
+    fail(`expected ${RELEASE_COUNTS.resources.distractor} distractor sidecars, got ${distractorSidecars.length}`);
   }
 
   const catalogIds = distractorCatalog.map(record => record.resource_id);
@@ -305,7 +305,7 @@ async function main(): Promise<void> {
   for (const sidecar of distractorSidecars) {
     const number = resourceNumber(sidecar.resource_id);
     if (number < FIRST_DISTRACTOR_NUMBER || number > LAST_DISTRACTOR_NUMBER) {
-      fail(`${sidecar.resource_id}: distractor id outside res-0101..res-1000`);
+      fail(`${sidecar.resource_id}: distractor id outside ${distractorResourceId(FIRST_DISTRACTOR_NUMBER)}..${distractorResourceId(LAST_DISTRACTOR_NUMBER)}`);
       continue;
     }
     const expected = distractorAssignment(number);

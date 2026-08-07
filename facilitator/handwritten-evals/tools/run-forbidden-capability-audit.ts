@@ -10,6 +10,7 @@ import {
   prepareForbiddenCapabilityAudit,
 } from "./forbidden-capability-audit.js";
 import { readJsonl, writeArtifactBundleExclusive } from "./grading-pipeline.js";
+import { RELEASE_COUNTS } from "../schema/schema-v2.js";
 
 const PrepareConfigSchema = z.object({
   audit_run_id: z.string().min(1),
@@ -66,7 +67,7 @@ async function prepare(configPath: string): Promise<void> {
     ...artifacts,
     { path: resolve(output, "withheld-manifest.json"), value: result.manifest },
   ]);
-  console.log("prepared 10 isolated forbidden-capability audit packs covering 1,000 listings each");
+  console.log(`prepared ${result.packs.length} isolated forbidden-capability audit packs covering ${RELEASE_COUNTS.resources.total} listings each`);
 }
 
 async function finalize(configPath: string): Promise<void> {

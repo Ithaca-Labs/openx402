@@ -8,6 +8,7 @@ import {
   PUBNET_USDC,
   QrelRecordSchema,
   QUERY_CLASS_TARGETS,
+  RELEASE_COUNTS,
 } from "../schema/schema-v2.js";
 import { deterministicEligibility } from "./pool.js";
 import {
@@ -172,8 +173,8 @@ function pooled(queryIndex: number) {
 
 function sources() {
   return {
-    catalog: Array.from({ length: 1_000 }, (_, index) => catalog(index + 1)),
-    sidecars: Array.from({ length: 1_000 }, (_, index) => sidecar(index + 1)),
+    catalog: Array.from({ length: RELEASE_COUNTS.resources.total }, (_, index) => catalog(index + 1)),
+    sidecars: Array.from({ length: RELEASE_COUNTS.resources.total }, (_, index) => sidecar(index + 1)),
     queries: Array.from({ length: 100 }, (_, index) => query(index + 1)),
     pool: Array.from({ length: 100 }, (_, index) => pooled(index + 1)),
   };
@@ -269,7 +270,9 @@ describe("Pass 2b preparation", () => {
   it("refuses incomplete corpora and five-system pools", () => {
     const partial = sources();
     partial.catalog.pop();
-    expect(() => prepare(partial)).toThrow(/expected 1000 catalog records, got 999/);
+    expect(() => prepare(partial)).toThrow(new RegExp(
+      `expected ${RELEASE_COUNTS.resources.total} catalog records, got ${RELEASE_COUNTS.resources.total - 1}`,
+    ));
     const incompletePool = sources();
     incompletePool.pool[0] = PoolRecordSchema.parse({
       ...incompletePool.pool[0],

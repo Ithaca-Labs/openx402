@@ -277,12 +277,12 @@ function validateSources(raw: {
   const catalog = parseAll(CatalogRecordSchema, raw.catalog, "catalog");
   const sidecars = parseAll(SidecarRecordSchema, raw.sidecars, "sidecars");
   const queries = parseAll(QueryRecordSchema, raw.queries, "queries");
-  if (catalog.length !== 1_000 || sidecars.length !== 1_000) {
-    throw new Error(`critic workflow requires 1,000 resources; got ${catalog.length}/${sidecars.length}`);
+  if (catalog.length !== RELEASE_COUNTS.resources.total || sidecars.length !== RELEASE_COUNTS.resources.total) {
+    throw new Error(`critic workflow requires ${RELEASE_COUNTS.resources.total} resources; got ${catalog.length}/${sidecars.length}`);
   }
-  const expectedQueryCount = scope === "full" ? 100 : 0;
+  const expectedQueryCount = scope === "full" ? RELEASE_COUNTS.queries.total : 0;
   if (queries.length !== expectedQueryCount) throw new Error(`${scope} critic scope requires ${expectedQueryCount} queries`);
-  const resourceIds = Array.from({ length: 1_000 }, (_, index) => `res-${String(index + 1).padStart(4, "0")}`);
+  const resourceIds = Array.from({ length: RELEASE_COUNTS.resources.total }, (_, index) => `res-${String(index + 1).padStart(4, "0")}`);
   const queryIds = Array.from({ length: expectedQueryCount }, (_, index) => `qry-${String(index + 1).padStart(3, "0")}`);
   exactSet(catalog.map(value => value.resource_id), resourceIds, "catalog resource_id");
   exactSet(sidecars.map(value => value.resource_id), resourceIds, "sidecar resource_id");
@@ -507,7 +507,7 @@ export function prepareCriticReview(
       review_run_id: options.reviewRunId,
       created_at: options.createdAt,
       source_hash: sourceHash,
-      source_counts: { resources: 1_000, queries: sources.queries.length },
+      source_counts: { resources: RELEASE_COUNTS.resources.total, queries: sources.queries.length },
       critics: manifestCritics,
       slot_briefs: slotBriefs,
     }),

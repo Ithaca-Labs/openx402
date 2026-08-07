@@ -187,15 +187,16 @@ function validateCorpus(rawCatalog: readonly unknown[], rawSidecars: readonly un
   const catalog = parseRecords(CatalogRecordSchema, rawCatalog, "catalog");
   const sidecars = parseRecords(SidecarRecordSchema, rawSidecars, "sidecars");
   if (catalog.length !== RELEASE_COUNTS.resources.total || sidecars.length !== RELEASE_COUNTS.resources.total) {
-    throw new Error(`forbidden audit requires exactly 1000 catalog and sidecar records; got ${catalog.length}/${sidecars.length}`);
+    throw new Error(`forbidden audit requires exactly ${RELEASE_COUNTS.resources.total} catalog and sidecar records; got ${catalog.length}/${sidecars.length}`);
   }
-  const expected = Array.from({ length: 1_000 }, (_, index) => `res-${String(index + 1).padStart(4, "0")}`);
+  const lastId = `res-${String(RELEASE_COUNTS.resources.total).padStart(4, "0")}`;
+  const expected = Array.from({ length: RELEASE_COUNTS.resources.total }, (_, index) => `res-${String(index + 1).padStart(4, "0")}`);
   const catalogIds = catalog.map(record => record.resource_id);
   const sidecarIds = sidecars.map(record => record.resource_id);
   unique(catalogIds, "catalog resource_id");
   unique(sidecarIds, "sidecar resource_id");
-  if ([...catalogIds].sort().join("\n") !== expected.join("\n")) throw new Error("catalog ids must be exactly res-0001..res-1000");
-  if ([...sidecarIds].sort().join("\n") !== expected.join("\n")) throw new Error("sidecar ids must be exactly res-0001..res-1000");
+  if ([...catalogIds].sort().join("\n") !== expected.join("\n")) throw new Error(`catalog ids must be exactly res-0001..${lastId}`);
+  if ([...sidecarIds].sort().join("\n") !== expected.join("\n")) throw new Error(`sidecar ids must be exactly res-0001..${lastId}`);
   return { catalog, sidecars };
 }
 
@@ -268,7 +269,7 @@ export function prepareForbiddenCapabilityAudit(
       instructions: "Inspect every listing independently. Mark possible_match true only when the listing may actually provide or plausibly claim this capability; otherwise false. Return exactly one decision per opaque listing id. Do not infer identities.",
       listings,
     });
-    const promptBasis = `# Forbidden-capability audit — ${capability.id}\n\nYou are a fresh isolated audit context assigned only ${capability.id}: ${capability.name}.\nRead the attached pack ${packId}. Inspect all 1,000 listings. Do not access catalog files, sidecars, author manifests, retrieval output, another capability pack, or another auditor's decisions. Return one decision for every listing using ForbiddenAuditImportSchema with pack_id ${packId}, capability_id ${capability.id}, run_id ${auditorBase.run_id}, and model ${auditorBase.model}. Set possible_match=true only for a plausible provider/claim of the defined capability and include a concrete rationale for each possible match. Do not approve absence; the owner signs off later. Discard this context after the import is written.`;
+    const promptBasis = `# Forbidden-capability audit — ${capability.id}\n\nYou are a fresh isolated audit context assigned only ${capability.id}: ${capability.name}.\nRead the attached pack ${packId}. Inspect all ${RELEASE_COUNTS.resources.total} listings. Do not access catalog files, sidecars, author manifests, retrieval output, another capability pack, or another auditor's decisions. Return one decision for every listing using ForbiddenAuditImportSchema with pack_id ${packId}, capability_id ${capability.id}, run_id ${auditorBase.run_id}, and model ${auditorBase.model}. Set possible_match=true only for a plausible provider/claim of the defined capability and include a concrete rationale for each possible match. Do not approve absence; the owner signs off later. Discard this context after the import is written.`;
     const promptHash = `sha256:${sha256(JSON.stringify({ pack, prompt: promptBasis }))}`;
     const auditor = GraderRefSchema.parse({ ...auditorBase, prompt_hash: promptHash });
     const prompt = `${promptBasis}\nTask-pack prompt_hash: ${promptHash}\n`;

@@ -3,7 +3,7 @@
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { z } from "zod";
-import { GraderRefSchema, QrelRecordSchema, type CatalogRecord, type QrelRecord, type QueryRecord, type SidecarRecord } from "../schema/schema-v2.js";
+import { GraderRefSchema, QrelRecordSchema, RELEASE_COUNTS, type CatalogRecord, type QrelRecord, type QueryRecord, type SidecarRecord } from "../schema/schema-v2.js";
 import { PASS1_CANDIDATES_PER_QUERY, queryAssignment } from "../query-config.js";
 import { BlindGradingPackSchema, JudgmentImportSchema } from "./grading-pipeline.js";
 import { deterministicEligibility } from "./pool.js";
@@ -107,8 +107,9 @@ export function preparePass1Seed(
 ) {
   z.string().datetime().parse(createdAt);
   if (!sealedImportDirectory.trim()) throw new Error("sealed pass-1 import directory is required");
-  if (queries.length !== 100 || catalog.length !== 1_000 || sidecars.length !== 1_000) {
-    throw new Error(`pass-1 seed requires 100 queries and 1,000 paired resources; got ${queries.length}/${catalog.length}/${sidecars.length}`);
+  if (queries.length !== RELEASE_COUNTS.queries.total || catalog.length !== RELEASE_COUNTS.resources.total
+    || sidecars.length !== RELEASE_COUNTS.resources.total) {
+    throw new Error(`pass-1 seed requires ${RELEASE_COUNTS.queries.total} queries and ${RELEASE_COUNTS.resources.total} paired resources; got ${queries.length}/${catalog.length}/${sidecars.length}`);
   }
   const catalogById = new Map(catalog.map(item => [item.resource_id, item]));
   const sidecarById = new Map(sidecars.map(item => [item.resource_id, item]));

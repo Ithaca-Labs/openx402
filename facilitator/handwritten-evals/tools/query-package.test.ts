@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FORBIDDEN_CAPABILITIES, QUERY_ASSIGNMENTS } from "../query-config.js";
-import { POOL_SYSTEMS, TESTNET_USDC, type CatalogRecord, type QueryRecord, type SidecarRecord } from "../schema/schema-v2.js";
+import { POOL_SYSTEMS, RELEASE_COUNTS, TESTNET_USDC, type CatalogRecord, type QueryRecord, type SidecarRecord } from "../schema/schema-v2.js";
 import { finalizePass1Seed, Pass1SeedReportSchema, preparePass1Seed, validatePass1SeedImport } from "./query-pass1.js";
 
 const now = "2026-08-07T00:00:00.000Z";
@@ -11,7 +11,7 @@ const generation = (run: string) => ({ provider: "anthropic" as const, model: "t
 function fixtures() {
   const catalog: CatalogRecord[] = [];
   const sidecars: SidecarRecord[] = [];
-  for (let index = 1; index <= 1_000; index += 1) {
+  for (let index = 1; index <= RELEASE_COUNTS.resources.total; index += 1) {
     const id = `res-${String(index).padStart(4, "0")}`;
     catalog.push({ resource_id: id, wire: { x402Version: 2, resource: { url: `https://item-${index}.example/api`,
       serviceName: `Item ${index}`, description: `Independent service ${index}`, tags: ["fixture"] }, accepts: [{ scheme: "exact",

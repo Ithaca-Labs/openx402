@@ -8,7 +8,8 @@ from its siblings.
 adversarial payloads are written later, per slot, against the boundary stated here.
 
 Slot *n* of family *f* takes resource id number `(f-1)*5 + n`, so family 1 owns res-0001..res-0005,
-family 20 owns res-0096..res-0100. Distractors take res-0101..res-1000.
+family 20 owns res-0096..res-0100. Distractors take res-0101..res-0500 (MVP scope cut from
+res-0101..res-1000 — 400 distractors, not 900; see BUILD-PLAN sixth revision).
 
 ---
 
@@ -119,8 +120,9 @@ Notes on the shapes above:
 
 ### Distributions this file does not fix
 
-- The ~900 distractors (§1). Their only distribution constraint is ~99% `exact`-only, so the full
-  1,000-record corpus lands near 3% `upto`, and the `forbidden-capabilities.md` exclusion list.
+- The 400 distractors (§1, MVP scope cut from 900). Their only distribution constraint is ~99%
+  `exact`-only, so the full 500-record corpus lands near an `upto` minority, and the
+  `forbidden-capabilities.md` exclusion list.
 - Query counts and classes (§6). Planned separately once slots are authored.
 - Provider assignment across the 120 providers (§0.4), except that the `duplicate_provider` trap at
   F16 s3 must share a `provider_id` with an honest resource.

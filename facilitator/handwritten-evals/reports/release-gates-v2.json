@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T17:16:37.228Z",
+  "generated_at": "2026-08-07T17:39:31.202Z",
   "status": "blocked",
   "counts": {
     "catalog": 100,
@@ -60,10 +60,10 @@
     },
     {
       "step": 4,
-      "name": "900 distractors and exclusion audit",
+      "name": "400 distractors and exclusion audit",
       "status": "not_started",
       "evidence": [
-        "0/900 distractors"
+        "0/400 distractors"
       ],
       "blockers": [
         "authoring waves, critics, audits, and owner review missing"
@@ -155,10 +155,10 @@
     },
     {
       "id": "counts",
-      "requirement": "100 labeled resources, 900 distractors, 100 queries, frozen split and hashes",
+      "requirement": "100 labeled resources, 400 distractors, 100 queries, frozen split and hashes",
       "status": "blocked",
       "evidence": [
-        "resources 100/1000",
+        "resources 100/500",
         "queries 0/100",
         "frozen manifest missing"
       ]
