@@ -447,6 +447,8 @@ async function main(): Promise<void> {
     && distractors.length === RELEASE_COUNTS.resources.distractor;
   const allQueriesPresent = queries.length === RELEASE_COUNTS.queries.total
     && querySplitsCorrect && queryClassesCorrect;
+  const resourceProvenanceComplete = sidecars.length > 0
+    && sidecars.every(record => generationComplete(record.generation));
   const authoredProvenanceComplete = [...sidecars, ...queries].length > 0
     && [...sidecars, ...queries].every(record => generationComplete(record.generation));
   const qrelProvenanceComplete = qrels.length > 0 && qrels.every(record =>
@@ -608,7 +610,7 @@ async function main(): Promise<void> {
       `limitations ${limitationsReported ? "present" : "missing"}`),
   ];
 
-  const step3Done = labeled.length === 100 && ownerReviewedResources && provenanceComplete;
+  const step3Done = labeled.length === 100 && ownerReviewedResources && resourceProvenanceComplete;
   const step4Done = allResourcesPresent && ownerReviewedResources
     && parsedForbiddenAudit?.success === true
     && parsedForbiddenAudit.data.overall_passed;
