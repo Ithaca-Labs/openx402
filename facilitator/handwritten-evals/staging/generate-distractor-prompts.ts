@@ -1,5 +1,6 @@
 /**
- * Generates the frozen Step 4 task packs: 9 sequential waves × 10 fresh agents × 10 records.
+ * Generates the frozen Step 4 task packs: DISTRACTOR_WAVES sequential waves x
+ * DISTRACTOR_AGENTS_PER_WAVE fresh agents x DISTRACTOR_RECORDS_PER_SHARD records.
  * This script prepares prompts only. It never launches agents or creates authored records.
  */
 
@@ -80,14 +81,23 @@ async function main(): Promise<void> {
       });
       const promptHash = `sha256:${sha256(hashBasis)}`;
       const waveDispatchRule = wave === 1
-        ? "This is the first wave; start it only with ten fresh contexts."
+        ? `This is the first wave; start it only with ${DISTRACTOR_AGENTS_PER_WAVE} fresh contexts.`
         : `Dispatch wave ${wave} only after every wave ${wave - 1} context has been discarded.`;
 
       const prompt = `# Step 4 distractor authoring — wave ${wave}, agent ${agent}
 
-You are one fresh, isolated authoring context in wave ${wave} of 9. Author exactly 10 original HTTP
-distractor listings for Stellar Bazaar v2. This prompt prepares corpus records only; do not create
-queries, qrels, judgments, reviews, or merged catalog files.
+You are one fresh, isolated authoring context in wave ${wave} of ${DISTRACTOR_WAVES}. Author exactly
+${DISTRACTOR_RECORDS_PER_SHARD} original HTTP distractor listings for Stellar Bazaar v2. This prompt
+prepares corpus records only; do not create queries, qrels, judgments, reviews, or merged catalog
+files.
+
+This shard is larger than the original per-agent design (${DISTRACTOR_RECORDS_PER_SHARD} records
+instead of 10) as a deliberate MVP cost/speed tradeoff, accepted with the understanding that a human
+owner will review the merged output afterward rather than relying solely on agent isolation to catch
+repetition. That tradeoff makes your own vigilance against self-templating more important, not less:
+periodically stop and compare your most recent handful of records against your earlier ones in this
+same shard before continuing, since nothing else will catch a drifted pattern until the human review
+pass.
 
 ## Frozen inputs
 
@@ -112,8 +122,8 @@ template for any later wave.
 - Shard id: \`${shardId}\`
 - Prompt/task-pack hash: \`${promptHash}\`
 - Output directory: \`handwritten-evals/${outputDirectory}\`
-- Wire output: \`wire.jsonl\`, exactly 10 lines in id order
-- Sidecar output: \`sidecar.jsonl\`, exactly 10 lines in id order
+- Wire output: \`wire.jsonl\`, exactly ${DISTRACTOR_RECORDS_PER_SHARD} lines in id order
+- Sidecar output: \`sidecar.jsonl\`, exactly ${DISTRACTOR_RECORDS_PER_SHARD} lines in id order
 
 Use the following ids, providers, and scheme assignments exactly:
 
@@ -131,12 +141,13 @@ The hostname for each record is its assigned provider followed by
 
 ## Meaning and originality requirements
 
-Choose the ten topic areas yourself. They are intentionally not prescribed per slot. Each must be
-a plausible, buyer-useful marketplace listing while satisfying none of the 20 family in-scope
-definitions and none of FC-01 through FC-10. Topical proximity is allowed; capability overlap is
-not. If a reasonable grader could call a listing relevant to any labeled family, replace it.
+Choose the ${DISTRACTOR_RECORDS_PER_SHARD} topic areas yourself. They are intentionally not
+prescribed per slot. Each must be a plausible, buyer-useful marketplace listing while satisfying
+none of the 20 family in-scope definitions and none of FC-01 through FC-10. Topical proximity is
+allowed; capability overlap is not. If a reasonable grader could call a listing relevant to any
+labeled family, replace it.
 
-The ten topic areas must be genuinely different from one another. Do not create variants by
+Every one of the ${DISTRACTOR_RECORDS_PER_SHARD} topic areas must be genuinely different from one another. Do not create variants by
 changing names, locations, prices, paths, or adjectives in a shared design. Do not reuse sentence
 frames, tag sets, brands with numeric suffixes, or request/response schemas. The v1
 \`CDP-shaped weather 001\` through \`030\` pattern is explicitly forbidden.
@@ -164,9 +175,10 @@ Write original prose and schemas. Do not copy or lightly rewrite CDP marketplace
 - Do not provide, hint at, tag, or resemble any forbidden capability, including synonyms that are
   not in the deterministic signature list.
 
-Before finishing, parse both JSONL files, confirm exactly 10 matching ids, re-read all prose against
-the 20 family boundaries and ten forbidden capabilities, and verify no two records in the shard are
-near-duplicates. Stop after writing this shard; do not inspect or launch any other agent.
+Before finishing, parse both JSONL files, confirm exactly ${DISTRACTOR_RECORDS_PER_SHARD} matching
+ids, re-read all prose against the 20 family boundaries and ten forbidden capabilities, and verify no
+two records in the shard are near-duplicates. Stop after writing this shard; do not inspect or launch
+any other agent.
 `;
 
       const promptPath = resolve(waveDirectory, `agent-${padNumber(agent, 2)}.md`);
@@ -190,9 +202,10 @@ near-duplicates. Stop after writing this shard; do not inspect or launch any oth
     resolve(OUTPUT, "SHA256SUMS"),
     `${manifest.map(record => `${record.file_sha256}  ${record.prompt_path}`).join("\n")}\n`,
   );
+  const lastId = distractorResourceId(FIRST_DISTRACTOR_NUMBER + manifest.length * DISTRACTOR_RECORDS_PER_SHARD - 1);
   await writeFile(
     resolve(OUTPUT, "README.md"),
-    `# Step 4 distractor prompts\n\nGenerated by \`../generate-distractor-prompts.ts\`. Dispatch waves 01-09 sequentially. Within each wave, run its ten prompts in fresh contexts, then discard all ten contexts before starting the next wave. Never give an author another prompt or any shard output.\n\nPrompt count: ${manifest.length}. Resource coverage: \`res-0101\` through \`res-1000\`.\n`,
+    `# Step 4 distractor prompts\n\nGenerated by \`../generate-distractor-prompts.ts\`. Dispatch waves 01-${padNumber(DISTRACTOR_WAVES, 2)} sequentially. Within each wave, run its ${DISTRACTOR_AGENTS_PER_WAVE} prompts in fresh contexts, then discard all ${DISTRACTOR_AGENTS_PER_WAVE} contexts before starting the next wave. Never give an author another prompt or any shard output.\n\nMVP scope cut: ${DISTRACTOR_AGENTS_PER_WAVE} agents x ${DISTRACTOR_RECORDS_PER_SHARD} records each (not the original 10x10), with human review of the merged output compensating for the larger per-agent shard size.\n\nPrompt count: ${manifest.length}. Resource coverage: \`res-0101\` through \`${lastId}\`.\n`,
   );
 
   console.log(

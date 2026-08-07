@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T11:24:46.881Z",
+  "generated_at": "2026-08-07T17:16:37.228Z",
   "status": "blocked",
   "counts": {
     "catalog": 100,
@@ -29,14 +29,12 @@
     },
     {
       "step": 1,
-      "name": "mandatory end-to-end pilot",
-      "status": "blocked",
+      "name": "pilot (optional, non-blocking; see BUILD-PLAN fifth revision)",
+      "status": "done",
       "evidence": [
-        "pilot report missing"
+        "pilot gate removed from BUILD-PLAN; not required before later steps"
       ],
-      "blockers": [
-        "pilot evidence and owner review missing"
-      ]
+      "blockers": []
     },
     {
       "step": 2,
@@ -242,11 +240,10 @@
     },
     {
       "id": "judged-at-k",
-      "requirement": "judged@10 meets the pilot-derived threshold",
+      "requirement": "judged@10 meets a stated threshold, derived from actual §8 grading/pooling data",
       "status": "blocked",
       "evidence": [
-        "pilot missing/incomplete",
-        "pilot threshold missing/stale",
+        "report threshold missing",
         "report inputs missing/stale"
       ]
     },

@@ -19,7 +19,8 @@ import { z } from "zod";
  * ---------------------------------------------------------------------------------------------- */
 
 export const RELEASE_COUNTS = {
-  resources: { labeled: 100, distractor: 900, total: 1_000 },
+  /** MVP scope cut: 400 distractors (not the original 900) — see BUILD-PLAN sixth revision note. */
+  resources: { labeled: 100, distractor: 400, total: 500 },
   resource_types: { http: 85, mcp: 15 },
   queries: { development: 50, release: 50, total: 100 },
   qrels: { estimated: 3_500, exhaustive: false }, // pooled, not cross-product
@@ -41,8 +42,8 @@ export const RELEASE_COUNTS = {
 export function assertReleaseCounts(): void {
   const { labeled, distractor, total } = RELEASE_COUNTS.resources;
   if (labeled !== 100) throw new Error(`RELEASE_COUNTS.resources.labeled must be 100, got ${labeled}`);
-  if (distractor !== 900) throw new Error(`RELEASE_COUNTS.resources.distractor must be 900, got ${distractor}`);
-  if (total !== 1_000) throw new Error(`RELEASE_COUNTS.resources.total must be 1000, got ${total}`);
+  if (distractor !== 400) throw new Error(`RELEASE_COUNTS.resources.distractor must be 400, got ${distractor}`);
+  if (total !== 500) throw new Error(`RELEASE_COUNTS.resources.total must be 500, got ${total}`);
   const { http, mcp } = RELEASE_COUNTS.resource_types;
   if (http + mcp !== labeled) throw new Error(`resource_types must partition the ${labeled} labeled resources`);
   const { development, release } = RELEASE_COUNTS.queries;

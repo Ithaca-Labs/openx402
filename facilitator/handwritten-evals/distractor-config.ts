@@ -2,12 +2,14 @@
 
 import { RELEASE_COUNTS } from "./schema/schema-v2.js";
 
-export const DISTRACTOR_WAVES = 9;
-export const DISTRACTOR_AGENTS_PER_WAVE = 10;
-export const DISTRACTOR_RECORDS_PER_SHARD = 10;
+/** MVP scope cut: 4 agents x 100 records (400 total), not 9 waves x 10 x 10 (900). One wave. */
+export const DISTRACTOR_WAVES = 1;
+export const DISTRACTOR_AGENTS_PER_WAVE = 4;
+export const DISTRACTOR_RECORDS_PER_SHARD = 100;
 export const FIRST_DISTRACTOR_NUMBER = 101;
-export const LAST_DISTRACTOR_NUMBER = 1_000;
-export const DISTRACTOR_UPTO_NUMBERS = [147, 189, 358, 416, 493, 642, 788, 917, 994] as const;
+export const LAST_DISTRACTOR_NUMBER = 500;
+/** ~1% upto-bearing, matching DISTRIBUTION_TARGETS.distractor_upto_max_fraction (4/400). */
+export const DISTRACTOR_UPTO_NUMBERS = [147, 189, 358, 416] as const;
 
 export function padNumber(value: number, width: number): string {
   return String(value).padStart(width, "0");
