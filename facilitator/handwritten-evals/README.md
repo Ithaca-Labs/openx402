@@ -152,7 +152,7 @@ Known conflicts between §3's axis values and the v1 field enums are listed at t
 | step (§9) | state |
 |---|---|
 | 0 — v2 schema and v1 archive | done: current schema validates; specified v1 artifacts are preserved under `archive/v1/`; the golden wire fixture remains active |
-| 1 — mandatory end-to-end pilot | **blocked**: no pilot artifacts, measured `judged@10` threshold, exclusion-audit cost, dual grading, or owner review exist |
+| 1 — pilot | removed from the build order (optional, non-blocking); see BUILD-PLAN fifth revision note |
 | 2 — 20 families + axis assignments | done: `spec/families.md`, `spec/axes.md` |
 | 3 — author 100 resources | partial: all 100 labeled records are merged and schema-valid; all 100 sidecars remain `review_status: "pending"`, and release-grade provenance/owner acceptance is absent |
 | 4 — author ~900 distractors, validate no-result exclusion | package ready, authoring blocked: shared brief, scanner, assignment policy, and 90 isolated prompts exist; 0/900 distractors authored; the current 100-record catalog has zero deterministic forbidden-signature hits |

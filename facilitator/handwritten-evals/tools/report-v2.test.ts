@@ -6,7 +6,6 @@ import {
   EvaluationReportV2Schema,
   evaluationInputHashes,
   finalizeEvaluationReport,
-  PilotReportEvidenceSchema,
   REQUIRED_LIMITATIONS,
   reportArtifactHash,
   scoringRunsFromPoolRuns,
@@ -88,7 +87,7 @@ const options = {
   split: "release" as const,
   generatedAt,
   datasetManifestSha256: "b".repeat(64),
-  pilotJudgedAt10Threshold: 0.5,
+  judgedAt10Threshold: 0.5,
   ownerRates: { reviewed: 50, corrected: 5, rejected: 0, correction_rate: 0.1, rejection_rate: 0 },
   limitations: [...REQUIRED_LIMITATIONS],
   significanceIterations: 100,
@@ -101,41 +100,6 @@ describe("v2 evaluation report", () => {
       ...options,
       limitations: ["The benchmark has limitations."],
     })).toThrow("missing required BUILD-PLAN limitation");
-  });
-
-  it("requires measured pilot costs and a full-scale exclusion projection", () => {
-    expect(PilotReportEvidenceSchema.safeParse({
-      status: "approved",
-      judged_at_10_threshold: 0.8,
-      forbidden_audit_cost: {},
-    }).success).toBe(false);
-    expect(PilotReportEvidenceSchema.safeParse({
-      status: "approved",
-      pilot_scope: {
-        resources: 5, distractors: 10, capability_queries: 5,
-        no_result_queries: 1, graders: 2, adjudicators: 1,
-      },
-      judged_at_10_threshold: 0.8,
-      generation_grading_cost: {
-        agent_runs: 7, input_tokens: 10_000, output_tokens: 2_000,
-        wall_clock_seconds: 300, api_cost_usd: 1.2,
-        rejection_count: 1, regeneration_count: 1,
-        owner_review_seconds: 600, owner_corrections: 2,
-      },
-      forbidden_audit_cost: {
-        scanner_wall_clock_seconds: 0.1,
-        agent_audit: {
-          agent_runs: 1, input_tokens: 4_000, output_tokens: 300,
-          wall_clock_seconds: 60, api_cost_usd: 0.2,
-        },
-        owner_review_seconds: 120,
-        projection: {
-          catalog_records: 1_000, capabilities: 10, agent_runs: 10,
-          input_tokens: 2_666_667, output_tokens: 200_000,
-          api_cost_usd: 133.34, owner_review_seconds: 8_000,
-        },
-      },
-    }).success).toBe(true);
   });
 
   it("preserves canonical per-query latency when adapting pool runs", () => {
@@ -219,10 +183,10 @@ describe("v2 evaluation report", () => {
     }).success).toBe(false);
   });
 
-  it("refuses a release report without pilot and owner evidence", () => {
+  it("refuses a release report without a judged@10 threshold and owner evidence", () => {
     const queries = releaseQueries();
     const {
-      pilotJudgedAt10Threshold: _pilot,
+      judgedAt10Threshold: _threshold,
       ownerRates: _ownerRates,
       ...withoutReleaseEvidence
     } = options;
@@ -231,7 +195,7 @@ describe("v2 evaluation report", () => {
       releaseQrels(queries),
       runs(queries),
       withoutReleaseEvidence,
-    )).toThrow(/pilot-derived/);
+    )).toThrow(/judged@10 threshold/);
   });
 
   it("refuses unreviewed release qrels or incomplete system runs", () => {

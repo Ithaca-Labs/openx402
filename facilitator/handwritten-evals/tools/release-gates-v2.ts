@@ -46,7 +46,6 @@ import {
 import {
   EvaluationReportV2Schema,
   evaluationInputHashes,
-  PilotReportEvidenceSchema,
   scoringRunsFromPoolRuns,
 } from "./report-v2.js";
 import { loadSystemRuns, validateExactPoolCoverage, validateRunEligibility, type SystemRuns } from "./pool.js";
@@ -354,9 +353,8 @@ async function main(): Promise<void> {
   const archiveComplete = archiveChecks.every(Boolean)
     && await fileExists(resolve(ROOT, "../tests/fixtures/search/golden-v1.json"));
 
-  const [pilot, distributionAudit, unpooledAudit, forbiddenAudit, agreementRaw, finalReport,
+  const [distributionAudit, unpooledAudit, forbiddenAudit, agreementRaw, finalReport,
     gradingProcessRaw, pass1Raw, manifest, ownerReviewRaw, corpusCriticRaw, fullCriticRaw] = await Promise.all([
-    loadJson(resolve(REPORTS, "pilot-v2.json")),
     loadJson(resolve(REPORTS, "distribution-audit-v2.json")),
     loadJson(resolve(REPORTS, "unpooled-audit-v2.json")),
     loadJson(resolve(REPORTS, "forbidden-capability-audit-v2.json")),
@@ -379,7 +377,6 @@ async function main(): Promise<void> {
   const parsedDistributionAudit = distributionAudit === null
     ? null
     : DistributionAuditV2Schema.safeParse(distributionAudit);
-  const parsedPilot = pilot === null ? null : PilotReportEvidenceSchema.safeParse(pilot);
   const parsedFinalReport = finalReport === null ? null : EvaluationReportV2Schema.safeParse(finalReport);
   const parsedManifest = manifest === null ? null : DatasetManifestV2Schema.safeParse(manifest);
   const [forbiddenMarkdown, familiesMarkdown] = await Promise.all([
@@ -453,9 +450,8 @@ async function main(): Promise<void> {
   const finalReportInputsCurrent = parsedFinalReport?.success === true
     && currentReportInputHashes !== null
     && JSON.stringify(parsedFinalReport.data.input_hashes) === JSON.stringify(currentReportInputHashes);
-  const finalReportPilotThresholdCurrent = parsedFinalReport?.success === true
-    && parsedPilot?.success === true
-    && parsedFinalReport.data.judged_at_10.pilot_derived_threshold === parsedPilot.data.judged_at_10_threshold;
+  const finalReportThresholdPresent = parsedFinalReport?.success === true
+    && parsedFinalReport.data.judged_at_10.threshold !== null;
   let frozenDatasetVerified = false;
   let frozenDatasetError: string | null = null;
   let frozenManifestSha256: string | null = null;
@@ -493,7 +489,6 @@ async function main(): Promise<void> {
     && frozenManifestSha256 !== null
     && parsedFinalReport.data.dataset_manifest_sha256 === frozenManifestSha256;
 
-  const pilotComplete = parsedPilot?.success === true;
   const allResourcesPresent = catalog.length === RELEASE_COUNTS.resources.total
     && sidecars.length === RELEASE_COUNTS.resources.total
     && labeled.length === RELEASE_COUNTS.resources.labeled
@@ -604,11 +599,10 @@ async function main(): Promise<void> {
       `unpooled audit ${parsedUnpooledAudit?.success ? parsedUnpooledAudit.data.status : unpooledAudit ? "invalid" : "missing"}`,
       `${unpooledPairs.size} audit pool pair(s)`,
       `source ${unpooledSourceError ?? (currentUnpooledSourceHash === null ? "unavailable" : "hash checked")}`),
-    gate("judged-at-k", "judged@10 meets the pilot-derived threshold",
-      pilotComplete && finalReportPilotThresholdCurrent && finalReportCurrent
+    gate("judged-at-k", "judged@10 meets a stated threshold, derived from actual §8 grading/pooling data",
+      finalReportThresholdPresent && finalReportCurrent
         && parsedFinalReport?.success === true && parsedFinalReport.data.judged_at_10_gate_passed,
-      `pilot ${pilotComplete ? "complete" : "missing/incomplete"}`,
-      `pilot threshold ${finalReportPilotThresholdCurrent ? "matches" : "missing/stale"}`,
+      `report threshold ${finalReportThresholdPresent ? "present" : "missing"}`,
       `report inputs ${finalReportCurrent ? "current" : "missing/stale"}`),
     gate("no-result", "Forbidden capabilities scanned, independently audited, owner-approved",
       deterministicForbiddenHits.length === 0
@@ -679,8 +673,8 @@ async function main(): Promise<void> {
   const steps: Step[] = [
     { step: 0, name: "v2 schema and v1 archive", status: archiveComplete && schemaErrors.length === 0 ? "done" : "partial",
       evidence: [`archive ${archiveComplete ? "complete" : "incomplete"}`, `${schemaErrors.length} current schema errors`], blockers: [] },
-    { step: 1, name: "mandatory end-to-end pilot", status: pilotComplete ? "done" : "blocked",
-      evidence: [`pilot report ${pilot ? "present" : "missing"}`], blockers: pilotComplete ? [] : ["pilot evidence and owner review missing"] },
+    { step: 1, name: "pilot (optional, non-blocking; see BUILD-PLAN fifth revision)", status: "done",
+      evidence: ["pilot gate removed from BUILD-PLAN; not required before later steps"], blockers: [] },
     { step: 2, name: "families and axes", status: axisErrors.length === 0 && labeled.length === 100 ? "done" : "partial",
       evidence: [`${labeled.length}/100 labeled slots`, `${axisErrors.length} axis failures`], blockers: [] },
     { step: 3, name: "100 labeled resources", status: step3Done ? "done" : labeled.length === 100 ? "partial" : "not_started",

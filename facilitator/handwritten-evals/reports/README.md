@@ -4,8 +4,6 @@
 It never promotes absence to success. Semantic/review reports are produced only after their build
 steps run:
 
-- `pilot-v2.json` — approved pilot, numeric `judged_at_10_threshold`, and measured
-  `forbidden_audit_cost`.
 - `distribution-audit-v2.json` — deterministic release-time distribution and anti-correlation
   audit, recomputed by the release gate from the current catalog and sidecars.
 - `unpooled-audit-v2.json` — finalized owner-reviewed audit bound to the current pool and reviewed

@@ -12,7 +12,6 @@ import { verifyPoolSnapshot } from "./pool-snapshot-v2.js";
 import {
   buildEvaluationReport,
   LimitationsEvidenceSchema,
-  PilotReportEvidenceSchema,
   scoringRunsFromPoolRuns,
 } from "./report-v2.js";
 import {
@@ -102,10 +101,20 @@ async function main(): Promise<void> {
   const resourceIds = new Set(dataset.catalog.map(record => record.resource_id));
   const allQueryIds = new Set(dataset.queries.map(record => record.query_id));
   const poolRuns = await loadSystemRuns(resolve(root, "runs"), allQueryIds, resourceIds);
-  let pilotThreshold: number | undefined;
+  let judgedAt10Threshold: number | undefined;
   if (split === "release") {
-    const pilot = PilotReportEvidenceSchema.parse(await readJson(resolve(root, "reports/pilot-v2.json")));
-    pilotThreshold = pilot.judged_at_10_threshold;
+    const raw = process.env.BENCHMARK_JUDGED_AT_10_THRESHOLD;
+    if (raw === undefined) {
+      throw new Error(
+        "release report requires a judged@10 threshold; set BENCHMARK_JUDGED_AT_10_THRESHOLD "
+        + "to a value derived from actual §8 grading/pooling data (BUILD-PLAN §11)",
+      );
+    }
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
+      throw new Error("BENCHMARK_JUDGED_AT_10_THRESHOLD must be a number in [0,1]");
+    }
+    judgedAt10Threshold = parsed;
   }
   const pairRates = ownerReview[split].pairs;
   const plantedNegativeResourceIds = new Set(dataset.sidecars
@@ -115,7 +124,7 @@ async function main(): Promise<void> {
     split,
     generatedAt: process.env.BENCHMARK_RUN_AT ?? new Date().toISOString(),
     datasetManifestSha256: frozen.manifestSha256,
-    ...(pilotThreshold === undefined ? {} : { pilotJudgedAt10Threshold: pilotThreshold }),
+    ...(judgedAt10Threshold === undefined ? {} : { judgedAt10Threshold }),
     ownerRates: {
       reviewed: pairRates.total,
       corrected: pairRates.corrected,

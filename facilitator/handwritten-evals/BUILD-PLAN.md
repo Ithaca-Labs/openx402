@@ -38,13 +38,15 @@ the authoring context.
 > — recorded on every release-set run. Revisit the hardened ledger once multiple teams are
 > actually running release evals against a real, frozen dataset.
 >
-> **Fifth revision — Step 1 pilot is no longer a mandatory gate.** §9 previously blocked all
-> authoring at scale (steps 2–10) on a formal end-to-end pilot run with measured cost/timing
-> evidence. That gate is removed. Steps 2–10 may proceed without a completed pilot. The
-> `pilot/` package (protocol, frozen prompts, `tools/run-pilot-v2.ts`) is left in place and may
-> still be run informally or for spot-checking the isolation protocol, but nothing downstream
-> is blocked on it, and no `judged@k` threshold or forbidden-capability-audit cost figure is
-> required to be pilot-derived before proceeding (§9, §11).
+> **Fifth revision — Step 1 pilot removed entirely.** §9 previously blocked all authoring at
+> scale (steps 2–10) on a formal end-to-end pilot run with measured cost/timing evidence. That
+> gate, the `pilot/` package (protocol, frozen prompts, generator script), and the
+> `tools/pilot-v2.ts` / `tools/run-pilot-v2.ts` runner code are all deleted. Steps 2–10 proceed
+> without a pilot. `judged@10` no longer requires a pilot-derived threshold — the report tooling
+> now accepts any explicitly supplied threshold (see §11), sourced from actual §8 grading/pooling
+> data once that step runs. This is a deliberate reversal of the plan's original central
+> safeguard against repeating v1's failure — see the note logged when this was decided for the
+> tradeoff being accepted.
 
 ---
 
@@ -520,7 +522,7 @@ Required on **release** judgments only.
 | # | Step | Output | Est. |
 |---|---|---|---|
 | 0 | Complete v2 schema + archive v1 (§0) | valid schema | 2 h |
-| 1 | *(optional, non-blocking)* Pilot: 1 family, 5 resources, 10 distractors (1 shard), 5 capability queries + 1 `no_result` query, two graders and one adjudicator, end to end — see fifth revision note above. Not required before step 2. | if run: validated isolation, measured agent cost/rate | optional |
+| 1 | *(removed — see fifth revision note above)* | — | — |
 | 2 | Define 20 families + axis assignments | family spec | 2 h |
 | 3 | Ten isolated agents author 100 resources (10 each; 85 HTTP / 15 MCP) | catalog + sidecar | 10 agent runs + owner review |
 | 4 | Nine waves of ten fresh agents author ~900 distractors (10 each), then critics validate uniqueness and no-result exclusion | corpus at 1,000 | 90 agent runs + owner review |
