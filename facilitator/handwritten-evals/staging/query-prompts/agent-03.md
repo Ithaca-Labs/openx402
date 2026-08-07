@@ -1,6 +1,6 @@
 # Step 5 query authoring — isolated agent 03
 
-Author exactly ten buyer query records. Do not author resources, query answers, candidates, grades,
+Author exactly 20 buyer query records. Do not author resources, query answers, candidates, grades,
 qrels, reviews, or retrieval output. This context is fresh; discard it after writing the shard.
 
 Read in full: `handwritten-evals/staging/BRIEF-queries.md`,
@@ -13,7 +13,7 @@ buyer-use-case task pack; there are no placeholders to resolve elsewhere.
 
 - run_id: `run-queries-03`
 - shard_id: `shard-queries-03`
-- prompt_hash: `sha256:7c2cc5104e3439da435c4c23ebb349dbf313194a234fd4c7aa13e6e75dee44f1`
+- prompt_hash: `sha256:bb19fd060fdf1b640571b1e0e25c8464c3fd05b4629f688aa0ec471d27a41309`
 - output: `handwritten-evals/staging/queries/run-queries-03/queries.jsonl`
 
 Use every table value exactly. `—` means omit that optional field. The capability cell is an
@@ -21,19 +21,29 @@ authoring brief, not query text. Never expose benchmark metadata in the query.
 
 | id | split | class | register | family | buyer capability | filters | evaluation_constraints | MCP subtype | MCP facts | forbidden id | forbidden_capability | trap |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| qry-021 | development | mcp | keyword_only | F3 — DeFi / DEX analytics | swap_route_quote | {"type":"mcp"} | {} | transport | server=stellar-swap-router-mcp; tool=get_swap_route_quote; transport=streamable-http; input_schema_shape=nested_object | — | — | — |
-| qry-022 | development | adversarial | terse_agent | F4 — Address & wallet risk scoring | address_risk_score | {} | {} | — | — | — | — | capability_spoof |
-| qry-023 | development | cold_start | verbose_natural | F12 — Web scraping / extraction | structured_field_extraction | {} | {} | — | — | — | — | — |
-| qry-024 | development | no_result | keyword_only | null | SMS and telephony message delivery | {} | {} | — | — | FC-03 | SMS and telephony message delivery | — |
-| qry-025 | development | capability | terse_agent | F7 — Macro indicators | indicator_series_fetch | {} | {} | — | — | — | — | — |
-| qry-026 | development | semantic | verbose_natural | F8 — Equities & company data | equity_quote | {} | {} | — | — | — | — | — |
-| qry-027 | development | structured | keyword_only | F15 — Identity & KYC | proof_of_address_check | {"network":"stellar:testnet"} | {} | — | — | — | — | — |
-| qry-028 | development | price_category | terse_agent | F16 — Document parsing / OCR | page_classification | {} | {"max_price_usd":0.002} | — | — | — | — | — |
-| qry-029 | development | mcp | verbose_natural | F4 — Address & wallet risk scoring | exposure_breakdown | {"type":"mcp"} | {} | http_vs_mcp | server=wallet-exposure-mcp; tool=get_exposure_breakdown; transport=sse; input_schema_shape=array_input | — | — | — |
-| qry-030 | development | adversarial | keyword_only | F5 — Compliance / sanctions screening | jurisdiction_rule_lookup | {} | {} | — | — | — | — | scheme_mismatch_claim |
+| qry-041 | development | semantic | verbose_natural | F14 — Analytics & metrics | protocol_usage_metrics | {} | {} | — | — | — | — | — |
+| qry-042 | development | structured | keyword_only | F5 — Compliance / sanctions screening | pep_adverse_media_check | {"network":"stellar:pubnet","scheme":"upto"} | {} | — | — | — | — | — |
+| qry-043 | development | capability | terse_agent | F15 — Identity & KYC | id_document_verify | {} | {} | — | — | — | — | — |
+| qry-044 | development | capability | verbose_natural | F16 — Document parsing / OCR | pdf_text_extract | {} | {} | — | — | — | — | — |
+| qry-045 | development | capability | keyword_only | F17 — Geocoding & mapping | forward_geocode | {} | {} | — | — | — | — | — |
+| qry-046 | development | capability | terse_agent | F18 — Weather | current_conditions | {} | {} | — | — | — | — | — |
+| qry-047 | development | capability | verbose_natural | F19 — Translation & language | text_translate | {} | {} | — | — | — | — | — |
+| qry-048 | development | capability | keyword_only | F20 — News & feeds | headline_feed | {} | {} | — | — | — | — | — |
+| qry-049 | development | capability | terse_agent | F1 — On-chain state / block data | block_header_stream | {} | {} | — | — | — | — | — |
+| qry-050 | development | capability | verbose_natural | F2 — Token & market prices | ohlcv_candles | {} | {} | — | — | — | — | — |
+| qry-051 | release | capability | keyword_only | F3 — DeFi / DEX analytics | swap_route_quote | {} | {} | — | — | — | — | — |
+| qry-052 | release | semantic | terse_agent | F4 — Address & wallet risk scoring | tx_risk_screen | {} | {} | — | — | — | — | — |
+| qry-053 | release | structured | verbose_natural | F16 — Document parsing / OCR | table_extraction | {"type":"mcp"} | {} | — | — | — | — | — |
+| qry-054 | release | price_category | keyword_only | F17 — Geocoding & mapping | reverse_geocode | {} | {"max_price_usd":0.003} | — | — | — | — | — |
+| qry-055 | release | mcp | terse_agent | F7 — Macro indicators | fx_reference_rate | {"type":"mcp"} | {} | tuple_identity | server=fx-reference-rates-mcp; tool=get_fx_reference_rate; transport=streamable-http; input_schema_shape=flat_scalars | — | — | — |
+| qry-056 | release | adversarial | verbose_natural | F6 — Regulatory documents | regulation_text_fetch | {} | {} | — | — | — | — | prompt_injection |
+| qry-057 | release | cold_start | keyword_only | F17 — Geocoding & mapping | reverse_geocode | {} | {} | — | — | — | — | — |
+| qry-058 | release | no_result | terse_agent | null | Hosted code execution sandbox | {} | {} | — | — | FC-06 | Hosted code execution sandbox | — |
+| qry-059 | release | capability | verbose_natural | F5 — Compliance / sanctions screening | address_watchlist_check | {} | {} | — | — | — | — | — |
+| qry-060 | release | semantic | keyword_only | F6 — Regulatory documents | rule_docket_timeline | {} | {} | — | — | — | — | — |
 
 For every record use provider `anthropic`, the actual exact model/revision and timestamp,
 `generation_id: "run-queries-03"`, `review_status: "pending"`, `reviewed_at: null`, and
 `owner_note: null`. Write a real, specific use-case rationale. For adversarial assignments add a
-specific trap rationale. Validate the ten JSONL lines, then stop. Never inspect or launch another
+specific trap rationale. Validate the 20 JSONL lines, then stop. Never inspect or launch another
 authoring context.

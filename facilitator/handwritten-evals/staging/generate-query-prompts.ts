@@ -1,4 +1,4 @@
-/** Generates ten isolated Step 5 query-authoring prompts. Never launches agents. */
+/** Generates isolated Step 5 query-authoring prompts. Never launches agents. */
 
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -74,8 +74,8 @@ authoring context.
       run_id: runId, shard_id: shardId, prompt_hash: promptHash, file_sha256: sha256(prompt) });
   }
   await writeFile(resolve(OUTPUT, "manifest.jsonl"), `${manifest.map(item => JSON.stringify(item)).join("\n")}\n`);
-  await writeFile(resolve(OUTPUT, "README.md"), "# Step 5 query prompts\n\nTen isolated prompts, ten queries each. Dispatch each in a fresh context and discard it afterward. Never expose catalogs, retrieval output, or sibling work.\n");
-  console.log("generated 10 prompts covering qry-001..qry-100");
+  await writeFile(resolve(OUTPUT, "README.md"), `# Step 5 query prompts\n\n${QUERY_AGENTS} isolated prompts, ${QUERIES_PER_AGENT} queries each. Dispatch each in a fresh context and discard it afterward. Never expose catalogs, retrieval output, or sibling work.\n`);
+  console.log(`generated ${QUERY_AGENTS} prompts covering qry-001..qry-100`);
 }
 
 main().catch(error => { console.error(error); process.exit(1); });

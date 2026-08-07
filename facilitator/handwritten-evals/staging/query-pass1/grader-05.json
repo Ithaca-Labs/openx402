@@ -1,0 +1,1055 @@
+{
+  "version": 1,
+  "role": "grader",
+  "pack_id": "query-pass1-seed-05",
+  "instructions": "Independently grade capability relevance 0–3. Candidates passed hard filters. Return one judgment per candidate; do not infer source identity.",
+  "tasks": [
+    {
+      "task_id": "task-a44db222c16131dd",
+      "query": "I need to track usage trends across different protocols on the Stellar network to understand which ones have the highest activity and adoption rates.",
+      "candidates": [
+        {
+          "candidate_id": "candidate-d8b0b001de001f14",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Protocol Usage Metrics",
+            "description": "Daily computed usage aggregates for a named protocol — unique active accounts, transaction counts, and gross volume — rolled up once per day across every chain the protocol is deployed to, so a buyer gets a single ready-to-use number instead of raw event logs to sum themselves. Designed for dashboards, growth reporting, and competitive comparisons where the underlying transaction history is irrelevant and only the aggregate matters.",
+            "tags": [
+              "usage-metrics",
+              "protocol-analytics",
+              "daily-aggregate",
+              "multi-chain"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-63824bebb0c6d2b3",
+          "listing": {
+            "resource_type": "mcp",
+            "serviceName": "Top-N Leaderboard",
+            "description": "An MCP tool that ranks entities — wallets, protocols, or pools — by a chosen metric such as fee revenue, transaction volume, or unique traders, and returns the top N as an ordered list. Rankings are recomputed daily across multiple chains, with the metric and N supplied as tool arguments so an agent can pull leading-by-volume, leading-by-fees, or any other supported ranking on demand instead of downloading and sorting the full dataset itself. Offered with a capped-billing option alongside standard per-call pricing.",
+            "tags": [
+              "leaderboard",
+              "top-n",
+              "mcp-tool",
+              "ranking"
+            ],
+            "mimeType": "application/json",
+            "mcp": {
+              "server_name": "leaderboard-analytics-mcp",
+              "tool_name": "get_top_n_leaderboard",
+              "transport": "sse",
+              "tool_count": 1,
+              "input_schema_shape": "enum_union"
+            }
+          }
+        },
+        {
+          "candidate_id": "candidate-3387a844627e4c29",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Cohort Retention"
+          }
+        },
+        {
+          "candidate_id": "candidate-ad5314628f27d0fc",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Custom Visualization Renderer",
+            "description": "Renders custom chart types from arbitrary datasets.",
+            "tags": [
+              "viz",
+              "viz-render"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-fc6a874873f106c6",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Event Planning Coordinator",
+            "description": "End-to-end event planning -- vendor coordination and timeline management included.",
+            "tags": [
+              "event-planning",
+              "vendor-coordination",
+              "timelines"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-f9669c04e6979406",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Swimming Records Database",
+            "description": "Olympic and world swimming records across every distance and stroke, with meet results tracked per swimmer.",
+            "tags": [
+              "swimming",
+              "records",
+              "times"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-50b47aac96bf1d2c",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Programming Language Features",
+            "description": "Programming languages compared on syntax, runtime behavior, and ecosystem maturity.",
+            "tags": [
+              "programming",
+              "languages",
+              "features"
+            ],
+            "mimeType": "application/json"
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "task-8be6b51189308663",
+      "query": "PEP adverse media screening, Stellar pubnet, metered pay-as-you-go pricing",
+      "candidates": [
+        {
+          "candidate_id": "candidate-5aacd0e6835324a7",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "PEP & Adverse Media Check",
+            "description": "Submit a name, date of birth, and optional known aliases in a JSON request body to check for politically exposed person designations and adverse media coverage. The response is a list of ranked matches, each with source publication, category (financial crime, corruption, sanctions-adjacent, etc.), and a link to the underlying article or record. Coverage is global with source content refreshed hourly.",
+            "tags": [
+              "pep",
+              "adverse-media",
+              "screening",
+              "aml",
+              "compliance"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-e291357ec7176254",
+          "listing": {
+            "resource_type": "mcp",
+            "serviceName": "Streaming Completion Tool",
+            "description": "Stream token-by-token completions over MCP for agents that need to render partial output as it is generated, rather than waiting for a full response. The tool emits incremental deltas suitable for live chat UIs, voice-to-text pipelines, and dashboards that display generation progress. Base usage is free; sustained high-throughput streaming sessions are billed under a capped rate to protect against runaway usage.",
+            "tags": [
+              "streaming",
+              "completion",
+              "llm",
+              "tokens",
+              "real-time"
+            ],
+            "mcp": {
+              "server_name": "llm-streaming-completions",
+              "tool_name": "stream_chat_completion",
+              "transport": "sse",
+              "tool_count": 1,
+              "input_schema_shape": "flat_scalars"
+            }
+          }
+        },
+        {
+          "candidate_id": "candidate-ea44f0adc7d09143",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Attestation Bundle History",
+            "description": "Retrieves an ordered archive of previously issued signed attestation bundles — price marks, randomness rounds, or oracle reports — for a chosen window, complete with their original signatures and attestor references intact. Built for audit, dispute resolution, and replay verification, where a buyer needs to prove what an attestor actually signed at a past point in time rather than only its current state. Coverage spans multiple chains recorded on Stellar pubnet.",
+            "tags": [
+              "attestation-history",
+              "audit-trail",
+              "signed-feed",
+              "historical"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-5ceea756fe3e1384",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Comment Period Alerts",
+            "description": "Query which public comment periods are currently open across tracked regulatory dockets, filtered by agency, topic, or jurisdiction query parameters. Returns a list of open periods with deadlines, so downstream systems can notify stakeholders before a window closes. Coverage refreshes hourly and billing is metered up to a per-call cap rather than a flat exact fee.",
+            "tags": [
+              "comment-period",
+              "alerts",
+              "rulemaking",
+              "regulatory",
+              "notifications"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-369b7ecd993cf82a",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Address Risk Score",
+            "description": "Real-time heuristic risk score for any wallet address, aggregating transaction behavior, counterparty exposure, and cluster signals into a single 0-100 score with capped-tier pricing. Also includes sanctions list screening and watchlist matching to flag addresses tied to known bad actors.",
+            "tags": [
+              "address-risk",
+              "risk-score",
+              "wallet-reputation",
+              "sanctions-screening",
+              "behavioral-risk"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-0e56f6eac6552c19",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Similarity Scorer",
+            "description": "Compute a similarity score between two pieces of text without needing to manage vectors yourself. Send a pair of strings and receive a single normalized score indicating how closely related they are in meaning, useful for deduplication, FAQ matching, and lightweight semantic search reranking where a full embedding pipeline is overkill.",
+            "tags": [
+              "similarity",
+              "comparison",
+              "matching",
+              "scoring",
+              "nlp"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-f32b36b6bb1e5c05",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "ScriptShift Transliterate",
+            "description": "Convert names, addresses, and short phrases between writing systems, for example Cyrillic to Latin or Devanagari to Latin, while preserving pronunciation rather than meaning. ScriptShift focuses on the language pairs and scripts most requested in South and Southeast Asian and Eastern European markets, returning transliterated text over a simple query-parameter GET call. Billed on a capped, upto-only schedule so callers never pay more than their configured ceiling.",
+            "tags": [
+              "transliteration",
+              "script-conversion",
+              "romanization",
+              "language",
+              "text"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "task-70165f3d27eaee7a",
+      "query": "Verify that submitted identity documents are valid and genuine.",
+      "candidates": [
+        {
+          "candidate_id": "candidate-55044c71d089b596",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "ID Document Verify",
+            "description": "Verify government-issued ID documents in real time. Upload a photo of a passport, driver's license, or national ID and receive an authenticity status covering tamper detection, MRZ validation, and expiry checks. Built for onboarding flows that need a fast pass/fail signal before a human reviewer gets involved.",
+            "tags": [
+              "identity-verification",
+              "document-check",
+              "kyc",
+              "onboarding"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-6560b020558bc473",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Proof of Address Check",
+            "description": "Submit a utility bill, bank statement, or lease and get back a status on whether it satisfies proof-of-address requirements. Checks document age, name match, and address format, and returns a signed attestation of the result you can hand to a downstream compliance system.",
+            "tags": [
+              "proof-of-address",
+              "kyc",
+              "document-check",
+              "compliance"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-4546c718c1c5f352",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Business Registry Lookup",
+            "description": "Look up a registered business by name or registration number against regional company registries. Returns incorporation status, registered address, filing history, and directors on record, refreshed daily. Useful for KYB checks before onboarding a merchant or counterparty.",
+            "tags": [
+              "kyb",
+              "business-registry",
+              "company-lookup",
+              "compliance"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-feddb9e4fa2d1ed6",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Image Optimization Pipeline",
+            "description": "Resizes and converts images on the fly for responsive delivery.",
+            "tags": [
+              "img",
+              "img-optimize"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-b4970686c1a3157b",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Podcast Series Directory",
+            "description": "A searchable podcast catalog by genre, episode count, and how often a show actually publishes, with listener ratings attached.",
+            "tags": [
+              "podcasts",
+              "audio",
+              "media"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-9895fdfd3e41a106",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Yoga Pose Anatomist",
+            "description": "Yoga poses explained anatomically: what each asana benefits, who should modify it, and how breath work ties in.",
+            "tags": [
+              "yoga",
+              "poses",
+              "wellness"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-ef6a0ce313f5afb5",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Feature Engineering Pipeline",
+            "description": "Transforms raw data into model-ready features.",
+            "tags": [
+              "feat",
+              "feat-engineer"
+            ],
+            "mimeType": "application/json"
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "task-da1cff82f590fa59",
+      "query": "Our customer onboarding system receives PDF documents that contain identity information. We need to automatically extract all text from these PDFs so we can parse names, dates, and other required data without manual data entry.",
+      "candidates": [
+        {
+          "candidate_id": "candidate-28cc23a667e1e612",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "PDF Text Extract",
+            "description": "Extract plain text from PDF documents, including multi-column layouts and scanned pages run through OCR. Send a PDF and get back clean, reading-order text ready for downstream search or analysis. No table structure or field parsing, just fast, accurate text extraction.",
+            "tags": [
+              "pdf",
+              "text-extraction",
+              "ocr",
+              "document-processing"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-178ad9beff64675d",
+          "listing": {
+            "resource_type": "mcp",
+            "serviceName": "Table Extraction",
+            "mcp": {
+              "server_name": "table-extract-mcp",
+              "tool_name": "extract_tables",
+              "transport": "streamable-http",
+              "tool_count": 1,
+              "input_schema_shape": "nested_object"
+            }
+          }
+        },
+        {
+          "candidate_id": "candidate-a8195e4e4ea25fa5",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Page Classification",
+            "description": "Classify each page of a multi-page document by type: invoice, contract, ID, form, or other. Returns a confidence score per page so you can route documents to the right downstream parser without a human sorting them first.",
+            "tags": [
+              "page-classification",
+              "document-routing",
+              "ocr",
+              "triage"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-17af5a674dee5d51",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Fish Species Culinary Guide",
+            "description": "Seafood species with flavor profile, best cooking method, and a sustainability rating attached.",
+            "tags": [
+              "seafood",
+              "fish",
+              "cooking"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-d04fb8bd79783d6d",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Business Continuity Planner",
+            "description": "Calculates RTO/RPO targets and runs continuity scenario tests.",
+            "tags": [
+              "bc",
+              "bc-planner"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-514199a56a14598a",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Model Version Registry",
+            "description": "Tracks model versions and their metadata in one registry.",
+            "tags": [
+              "model",
+              "model-registry"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-f2a853805ff152a5",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Format Standardization",
+            "description": "Normalizes inconsistent data into a common format.",
+            "tags": [
+              "format",
+              "format-std"
+            ],
+            "mimeType": "application/json"
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "task-9e8299a028be77e7",
+      "query": "convert location names to geographic coordinates",
+      "candidates": [
+        {
+          "candidate_id": "candidate-1b8327b66395916f",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Forward Geocoder",
+            "description": "Convert street addresses, place names, and points of interest into precise latitude/longitude coordinates anywhere in the world. Backed by a daily-refreshed global gazetteer covering cities, postal codes, landmarks, and administrative boundaries. Returns structured components (locality, region, country, postal code) alongside the resolved point so downstream mapping and logistics tools can consume results without extra parsing.",
+            "tags": [
+              "geocoding",
+              "address-lookup",
+              "coordinates",
+              "gazetteer",
+              "mapping"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-ea6bb321470af3bd",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Route ETA Estimator",
+            "description": "Submit an origin, destination, and optional waypoints as a JSON body and receive a live, traffic-aware travel-time score for driving, walking, or cycling profiles across a supported region. The score blends current road-network conditions with historical congestion patterns to give a single confidence-weighted ETA figure suitable for dispatch and delivery-window planning.",
+            "tags": [
+              "route-eta",
+              "travel-time",
+              "navigation",
+              "traffic",
+              "dispatch"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-b6590d026e398197",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Reverse Geocode"
+          }
+        },
+        {
+          "candidate_id": "candidate-7402fdd06f6c9b6d",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "LinguaBridge Translate",
+            "description": "Submit a single string and target language code to receive an accurate machine translation in seconds. LinguaBridge Translate covers over 60 language pairs with domain-tuned models for everyday, business, and technical text, and returns plain translated text ready to drop into your product. Built for high-throughput apps that need per-call pricing rather than a subscription.",
+            "tags": [
+              "translation",
+              "text-translate",
+              "language-pair",
+              "nlp",
+              "localization"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-9c3efd97ae369764",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Ocean Species Taxonomy",
+            "description": "Marine organisms classified by depth range and feeding behavior, with conservation status noted per species.",
+            "tags": [
+              "marine-biology",
+              "ocean",
+              "species"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-df638a23eea5190d",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Dog Training Course Platform",
+            "description": "Video-based dog training courses that track progress on specific behavioral issues.",
+            "tags": [
+              "dog-training",
+              "video-courses",
+              "behavior"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-7828a946878cce5d",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Anomaly Detection Engine",
+            "description": "Flags statistical outliers in a dataset as anomalies worth a second look.",
+            "tags": [
+              "anomaly",
+              "anomaly-detect"
+            ],
+            "mimeType": "application/json"
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "task-e18d9704b7358e11",
+      "query": "Get current weather conditions for a location.",
+      "candidates": [
+        {
+          "candidate_id": "candidate-5459c97ef5327933",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Current Conditions",
+            "description": "Real-time current weather conditions for any coordinate worldwide — temperature, humidity, wind speed and direction, precipitation, cloud cover, and pressure, refreshed continuously as new station and satellite readings arrive. Every response is cryptographically signed at the point of observation so downstream consumers can verify the reading was not altered in transit.",
+            "tags": [
+              "weather",
+              "current-conditions",
+              "temperature",
+              "live-data",
+              "signed-observations"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-fbc4a48722b28c18",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Hourly Forecast Feed",
+            "description": "Hour-by-hour weather forecast for a supported region out to 48 hours, covering temperature, precipitation probability, wind, and sky conditions, refreshed on an hourly cadence as new model runs complete. Available on both Stellar testnet and Stellar pubnet, so integrators can test against the sandbox network before moving spend to production.",
+            "tags": [
+              "weather",
+              "hourly-forecast",
+              "regional",
+              "forecast-model"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-5918c3579cfbb172",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Marine Forecast API",
+            "description": "Submit a coastal or offshore coordinate as a JSON body and receive an hourly marine forecast covering wave height, swell period and direction, wind over water, and general sea state for the surrounding regional waters. Built for coastal operators, fishing fleets, and marine logistics planners who need conditions specific to a stretch of coastline rather than a generic land-based forecast.",
+            "tags": [
+              "marine-forecast",
+              "wave-height",
+              "coastal-weather",
+              "sea-state"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-f8702e9499111a81",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Orderbook Depth",
+            "description": "Live orderbook depth for a single trading pair on a Stellar-based DEX, returned as a list of bid and ask levels with cumulative size at each price band. Path-addressable by pair symbol for fast integration into execution and slippage-estimation tools.",
+            "tags": [
+              "orderbook",
+              "depth-chart",
+              "liquidity",
+              "live-data",
+              "single-chain"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-c30c673f567fd402",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "ID Document Verify",
+            "description": "Verify government-issued ID documents in real time. Upload a photo of a passport, driver's license, or national ID and receive an authenticity status covering tamper detection, MRZ validation, and expiry checks. Built for onboarding flows that need a fast pass/fail signal before a human reviewer gets involved.",
+            "tags": [
+              "identity-verification",
+              "document-check",
+              "kyc",
+              "onboarding"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-f401e44beb148278",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "History Timeline Creator",
+            "description": "Builds a custom historical timeline from selected periods, regions, and themes, citing sources for every event.",
+            "tags": [
+              "history",
+              "timelines",
+              "education"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-0cf458cb4a588340",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Passport and Visa Tracker",
+            "description": "Visa requirements and processing times by destination country, with the documentation checklist laid out for travelers.",
+            "tags": [
+              "travel",
+              "visas",
+              "documentation"
+            ],
+            "mimeType": "application/json"
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "task-77127d226da62868",
+      "query": "Our support team receives customer inquiries from around the world in many different languages. We need to translate all incoming messages to English so the team can provide consistent and timely responses.",
+      "candidates": [
+        {
+          "candidate_id": "candidate-664ed4c0bb81b138",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "LinguaBridge Translate",
+            "description": "Submit a single string and target language code to receive an accurate machine translation in seconds. LinguaBridge Translate covers over 60 language pairs with domain-tuned models for everyday, business, and technical text, and returns plain translated text ready to drop into your product. Built for high-throughput apps that need per-call pricing rather than a subscription.",
+            "tags": [
+              "translation",
+              "text-translate",
+              "language-pair",
+              "nlp",
+              "localization"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-5e4c55bdf4c4f319",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "ScriptShift Transliterate",
+            "description": "Convert names, addresses, and short phrases between writing systems, for example Cyrillic to Latin or Devanagari to Latin, while preserving pronunciation rather than meaning. ScriptShift focuses on the language pairs and scripts most requested in South and Southeast Asian and Eastern European markets, returning transliterated text over a simple query-parameter GET call. Billed on a capped, upto-only schedule so callers never pay more than their configured ceiling.",
+            "tags": [
+              "transliteration",
+              "script-conversion",
+              "romanization",
+              "language",
+              "text"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-3b40b2e53a5e8837",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "PolyGlot Lang Detect",
+            "description": "Send any snippet of text as query parameters and get back the detected language code with a confidence score, ideal for routing incoming support tickets, comments, or documents to the right translation or moderation pipeline. Handles short and ambiguous text more reliably than dictionary-based detectors by scoring across candidate languages. Offered with a metered per-call rate and an optional capped-spend billing mode for predictable batch jobs.",
+            "tags": [
+              "language-detection",
+              "langid",
+              "nlp",
+              "classification",
+              "text-analysis"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-766a8fd8ed7b0f5e",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Butterfly Species Catalog",
+            "description": "Lepidoptera classified by morphology and geographic distribution, life cycle included, species by species.",
+            "tags": [
+              "lepidoptera",
+              "insects",
+              "taxonomy"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-be3a3ad469a1338a",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Privacy Policy Templates",
+            "description": "Provides privacy-policy document templates and consent-form generators for small business websites.",
+            "tags": [
+              "privacy",
+              "templates",
+              "legal"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-6ba3f3ef7272318a",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Time Management Coaching",
+            "description": "One-on-one coaching for productivity and schedule optimization.",
+            "tags": [
+              "time-management",
+              "coaching",
+              "productivity"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-707512ed041fbd9c",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Programming Language Selector",
+            "description": "Weighs programming languages against each other on syntax, performance, and ecosystem, matched to project type and team.",
+            "tags": [
+              "programming",
+              "technology",
+              "tools"
+            ],
+            "mimeType": "application/json"
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "task-b94dc40440d6e741",
+      "query": "headline feed crypto news blockchain",
+      "candidates": [
+        {
+          "candidate_id": "candidate-b7f399e22c355de3",
+          "listing": {
+            "resource_type": "mcp",
+            "serviceName": "NewsPulse Headline Feed",
+            "description": "An MCP tool that returns a ranked list of current top headlines for a requested category or region, refreshed live as stories break. NewsPulse Headline Feed is designed for agent workflows that need a quick, structured news snapshot rather than a full search index, and supports both metered per-call pricing and a capped upto billing mode for always-on monitoring agents. Delivered over Stellar pubnet.",
+            "tags": [
+              "headline-feed",
+              "news",
+              "mcp",
+              "real-time",
+              "list"
+            ],
+            "mcp": {
+              "server_name": "newspulse-headline-mcp",
+              "tool_name": "get_top_headlines",
+              "transport": "streamable-http",
+              "tool_count": 1,
+              "input_schema_shape": "flat_scalars"
+            }
+          }
+        },
+        {
+          "candidate_id": "candidate-6ea2fa4dca43e815",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "AlertWire Keyword News",
+            "description": "Post a list of keywords or entity names and receive back the newest matching articles published across tracked global sources, suitable for building real-time alerting pipelines. Every response is cryptographically signed so downstream systems can verify the feed content was not tampered with in transit. Priced per call on Stellar pubnet with exact-amount billing only.",
+            "tags": [
+              "keyword-alerts",
+              "news-monitoring",
+              "alerting",
+              "list",
+              "signed"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-1342b2654fa5eb68",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Feed Sentiment Tags"
+          }
+        },
+        {
+          "candidate_id": "candidate-763c53c93744a40d",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Consent Management Platform",
+            "description": "Tracks and enforces user consent preferences across systems.",
+            "tags": [
+              "consent",
+              "consent-mgmt"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-e5b056b6faadee59",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Encryption Standard Reference",
+            "description": "Cryptographic algorithm specs: key sizes and the security level each provides.",
+            "tags": [
+              "cryptography",
+              "encryption",
+              "security"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-09cd7cbcb81b5fa3",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Antique Appraisal Service",
+            "description": "Expert valuation for antique furniture, art, and decorative pieces.",
+            "tags": [
+              "antiques",
+              "appraisal",
+              "valuation"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-53209044b038a162",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Photography Technique Library",
+            "description": "Composition, lighting, post-processing -- photography technique explained with the camera settings and gear that go with each.",
+            "tags": [
+              "photography",
+              "techniques",
+              "art"
+            ],
+            "mimeType": "application/json"
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "task-687818ef3f2720d6",
+      "query": "Stream new block headers from the Stellar network as they are published.",
+      "candidates": [
+        {
+          "candidate_id": "candidate-1a50dca93b4fc00d",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Ledger Header Stream",
+            "description": "Real-time block header stream and ledger header stream covering Stellar and connected chains -- block headers, ledger headers, block header data, ledger header data, delivered the instant each new block header or ledger header lands. Subscribe once and get a continuous block header feed / ledger header feed: streaming block headers, streaming ledger headers, block header updates, ledger header updates, live block header stream, live ledger header stream, for anyone building block header monitoring or ledger header monitoring.",
+            "tags": [
+              "block-header",
+              "ledger-header",
+              "header-stream",
+              "block-headers",
+              "live-headers"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-f7d51b993ebd3d9a",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Contract Event Log"
+          }
+        },
+        {
+          "candidate_id": "candidate-daba6f178ae6f3f9",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Ledger Entry Lookup",
+            "description": "Fetch a single ledger entry by key directly from Stellar pubnet -- account state, trustlines, contract data, or offers -- with no aggregation or interpretation applied. Returns the raw, decoded entry as JSON for a specific path-addressed key, ideal for wallets and indexers that need authoritative point-in-time state without paying for a full node.",
+            "tags": [
+              "ledger-entry",
+              "account-state",
+              "raw-state",
+              "pubnet"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-4277597dd167d45b",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Cruise Ship Itinerary Planner",
+            "description": "Searches cruise options across lines by cabin configuration, ports of call, and onboard amenities.",
+            "tags": [
+              "cruises",
+              "ships",
+              "travel"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-ed6173235731afa5",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Push Notification Routing",
+            "description": "Routes push notifications by device type and delivery capability.",
+            "tags": [
+              "push",
+              "push-route"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-97078a39258121c1",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Science Lab Equipment Guide",
+            "description": "Lab equipment specced by discipline, with calibration procedures and safety protocol attached to each instrument.",
+            "tags": [
+              "science",
+              "equipment",
+              "education"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-7c3826f8b06ba50b",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Cooking Technique Reference",
+            "description": "A culinary technique library covering temperature control, timing, and the texture each method produces.",
+            "tags": [
+              "cooking",
+              "techniques",
+              "methods"
+            ],
+            "mimeType": "application/json"
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "task-be24c53e1ae64485",
+      "query": "I need historical candlestick data with open, high, low, close, and volume information for various trading pairs across different time intervals to conduct technical analysis and backtest trading algorithms.",
+      "candidates": [
+        {
+          "candidate_id": "candidate-2a99c7799fb9c9c6",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "OHLCV Candle Feed",
+            "description": "Hourly open-high-low-close-volume candles for tokens traded on Stellar pubnet. Request a symbol and a lookback window and receive an ordered list of candle bars suitable for charting libraries or backtesting a trading strategy, backed by trade data aggregated across the pair's active venues.",
+            "tags": [
+              "ohlcv",
+              "candles",
+              "hourly-bars",
+              "pubnet"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-476ff752e9a88afe",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "TWAP Reference Price",
+            "description": "A cryptographically signed time-weighted average price for a token pair over the trailing hour, computed from trades on both Stellar testnet and pubnet and delivered as a single reference score. Intended for on-chain oracle consumers and settlement contracts that need a manipulation-resistant mark with an attached signature rather than a raw last-trade tick.",
+            "tags": [
+              "twap",
+              "signed-price",
+              "reference-mark",
+              "oracle-feed"
+            ]
+          }
+        },
+        {
+          "candidate_id": "candidate-d3955c576303c28b",
+          "listing": {
+            "resource_type": "mcp",
+            "serviceName": "Historical Price Series",
+            "description": "An MCP tool that returns a daily close price series for a token pair over an arbitrary historical date range on Stellar testnet. Pass the pair and a start and end date as structured tool arguments and get back an ordered list of dated closing prices, suitable for backtests, performance charts, or tax-lot reconstruction.",
+            "tags": [
+              "price-history",
+              "daily-close",
+              "backtest-data",
+              "testnet"
+            ],
+            "mcp": {
+              "server_name": "stellar-price-history-server",
+              "tool_name": "get_historical_price_series",
+              "transport": "sse",
+              "tool_count": 1,
+              "input_schema_shape": "nested_object"
+            }
+          }
+        },
+        {
+          "candidate_id": "candidate-7c42dc7bc966d620",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Antique Appraisal Service",
+            "description": "Expert valuation for antique furniture, art, and decorative pieces.",
+            "tags": [
+              "antiques",
+              "appraisal",
+              "valuation"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-c8c8bbe3332f8d41",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Reverse Geocode"
+          }
+        },
+        {
+          "candidate_id": "candidate-1e68e502be332aef",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Render Status Check",
+            "description": "Poll the render status of a previously submitted headless-browser job by its job ID path parameter, returning current state (queued, rendering, complete, failed) along with timing metadata. Backed by a distributed render farm; also available on Stellar pubnet for teams that prefer mainnet settlement.",
+            "tags": [
+              "render-status",
+              "headless-browser",
+              "job-polling",
+              "status-check",
+              "browser-automation"
+            ],
+            "mimeType": "application/json"
+          }
+        },
+        {
+          "candidate_id": "candidate-8a0ca8753f4fdba2",
+          "listing": {
+            "resource_type": "http",
+            "serviceName": "Business Continuity Planner",
+            "description": "Calculates RTO/RPO targets and runs continuity scenario tests.",
+            "tags": [
+              "bc",
+              "bc-planner"
+            ],
+            "mimeType": "application/json"
+          }
+        }
+      ]
+    }
+  ]
+}

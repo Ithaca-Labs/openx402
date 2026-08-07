@@ -82,7 +82,7 @@ const STRUCTURED_TARGETS = [
   [2, 5, { type: "mcp" }],
   [5, 4, { network: "stellar:pubnet", scheme: "upto" }],
   [16, 2, { type: "mcp" }],
-  [20, 1, { type: "mcp", scheme: "upto" }],
+  [20, 1, { type: "mcp", network: "stellar:pubnet" }],
   [4, 5, { network: "stellar:testnet", scheme: "upto" }],
   [8, 3, { network: "stellar:pubnet" }],
   [12, 1, { type: "mcp" }],
