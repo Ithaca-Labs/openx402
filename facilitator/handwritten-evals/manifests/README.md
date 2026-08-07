@@ -17,22 +17,24 @@ Release judgments remain sealed from normal development tuning. Any milestone/fi
 must record a `started` event before reading release inputs, and exactly one terminal event after:
 
 ```sh
-export STELLAR_BAZAAR_RELEASE_HOLDOUT=I_ACKNOWLEDGE_THIS_IS_A_RECORDED_HOLDOUT_RUN
 npx tsx handwritten-evals/tools/release-run-ledger-v2.ts \
   --phase started --run-id release-2026-08-07-01 --purpose milestone \
-  --actor OWNER --reason "Milestone evaluation" \
-  --confirm-release-holdout RELEASE_HOLDOUT_ACCESS_RECORDED
+  --actor OWNER --reason "Milestone evaluation"
 
 # Run the isolated release evaluator here. Normal CI/development commands must never do this.
 
 npx tsx handwritten-evals/tools/release-run-ledger-v2.ts \
   --phase completed --run-id release-2026-08-07-01 --purpose milestone \
   --actor OWNER --reason "Milestone evaluation completed" \
-  --report reports/final-v2.json \
-  --confirm-release-holdout RELEASE_HOLDOUT_ACCESS_RECORDED
+  --report reports/final-v2.json
 ```
 
 Use `--phase failed --failure-reason "..."` instead of `completed` after a failed release attempt.
-The JSONL ledger is append-only and hash-chained. The command has no update or delete operation,
-validates the complete frozen dataset before every append, rejects reused run IDs and duplicate
-terminal events, and serializes concurrent writers with an exclusive lock.
+
+**MVP scope note (see BUILD-PLAN sixth/seventh revisions):** the ledger is a plain append-only
+JSONL log — timestamp, actor, reason, phase. It still refuses reused run IDs and duplicate terminal
+events, and still validates the complete frozen dataset before every append, but it is **not**
+hash-chained, not lock-serialized against concurrent writers, and does not require a CLI/env-var
+double acknowledgement. That hardening was deferred past MVP — there is no real release set to
+protect yet. Restore it once multiple teams are actually running release evals against a real,
+frozen dataset.

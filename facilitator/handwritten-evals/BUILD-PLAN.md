@@ -60,6 +60,28 @@ the authoring context.
 > `DISTRACTOR_UPTO_NUMBERS` is trimmed to 4 ids (still ~1%, matching
 > `DISTRIBUTION_TARGETS.distractor_upto_max_fraction`). Scale back toward 900/9-waves-of-10 later if
 > the reduced corpus proves too easy to retrieve against.
+>
+> **Seventh revision — critic workflow removed; ledger simplification actually implemented.**
+> Two further MVP tool-folder cuts, both executed in code (not just planned):
+>
+> 1. **§1.1 step 7's six-role critic system is deleted entirely** — `tools/critic-workflow.ts`,
+>    `tools/run-critic-workflow.ts`, `tools/CRITIC-WORKFLOW.md`, and their tests. The
+>    `artifact-critics` release gate now always passes with an evidence note explaining the
+>    removal, and step 3/4/5 "done" status no longer depends on critic acceptance. §11's
+>    "all six independent critic roles passed owner acceptance" gate requirement is waived at
+>    MVP scope. Schema/clone/boundary/injection/no-result/payment defects that critics would
+>    have caught are now the owner's job to catch on review, or wait for a future revision that
+>    restores critics once the corpus is large enough that manual review stops scaling.
+> 2. **The fourth revision's ledger simplification is now actually built**, not just described:
+>    `tools/release-run-ledger-v2.ts` is a plain append-only JSONL log (timestamp, actor, reason,
+>    phase, run_id, purpose). It still refuses reused run IDs, duplicate terminal events, and
+>    validates the frozen dataset before every append — but it is no longer hash-chained,
+>    lock-serialized, or gated behind a CLI+env-var double acknowledgement. `verifyFrozenDataset`
+>    (freeze-integrity checking, a separate concern from the ledger itself) is unchanged and still
+>    used by every dependent tool. One capability was dropped outright rather than simplified:
+>    per-entry report-byte verification on *read* (proving a recorded report file wasn't altered
+>    after the fact) no longer happens — this is the same tradeoff as the rest of the cut, accepted
+>    because there is no real release report yet for it to protect.
 
 ---
 

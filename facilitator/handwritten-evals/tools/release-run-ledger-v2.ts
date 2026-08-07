@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 
 /**
- * Append-only release holdout access ledger (BUILD-PLAN §12.1).
+ * Release holdout access log (BUILD-PLAN §12.1, MVP scope — see sixth revision note).
  *
  * A release runner must append `started` before it reads release inputs, then append exactly one
- * `completed` or `failed` event. Two independent acknowledgements keep normal development tuning
- * from accidentally invoking this command.
+ * `completed` or `failed` event. This is a plain append-only log: timestamp, actor, reason. The
+ * original hash-chained, lock-serialized, doubly-acknowledged version was deferred past MVP —
+ * there was no real release set to protect it against yet. Restore that hardening once multiple
+ * teams are actually running release evals against a real, frozen dataset.
  */
 
-import { createHash } from "node:crypto";
-import { mkdir, open, readFile, unlink } from "node:fs/promises";
+import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { z } from "zod";
 import {
-  canonicalJson,
   DATASET_MANIFEST_PATH,
   DatasetManifestV2Schema,
   hashFile,
@@ -25,10 +25,6 @@ import {
   type DatasetManifestV2,
   type ReleaseQueryIndexV2,
 } from "./manifest-v2.js";
-
-export const RELEASE_HOLDOUT_CLI_ACKNOWLEDGEMENT = "RELEASE_HOLDOUT_ACCESS_RECORDED";
-export const RELEASE_HOLDOUT_ENV_NAME = "STELLAR_BAZAAR_RELEASE_HOLDOUT";
-export const RELEASE_HOLDOUT_ENV_ACKNOWLEDGEMENT = "I_ACKNOWLEDGE_THIS_IS_A_RECORDED_HOLDOUT_RUN";
 
 const sha256 = z.string().regex(/^[a-f0-9]{64}$/);
 const relativeArtifactPath = z.string().min(1).refine(
@@ -66,9 +62,6 @@ export function releaseReportCompletionPath(runId: string, purpose: ReleaseRunPu
 }
 
 export const ReleaseRunLedgerEntryV2Schema = z.object({
-  sequence: z.number().int().positive(),
-  previous_event_hash: sha256.nullable(),
-  event_hash: sha256,
   recorded_at: z.string().datetime(),
   phase: z.enum(RELEASE_RUN_PHASES),
   run_id: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$/),
@@ -155,21 +148,10 @@ export interface RecordReleaseRunOptions {
   purpose: ReleaseRunPurpose;
   actor: string;
   reason: string;
-  acknowledgement: string;
-  environmentAcknowledgement: string | undefined;
   reportPath?: string;
   failureReason?: string;
   recordedAt?: string;
   ledgerPath?: string;
-}
-
-export function releaseRunEventHash(entry: Omit<ReleaseRunLedgerEntryV2, "event_hash">): string {
-  return createHash("sha256").update(canonicalJson(entry)).digest("hex");
-}
-
-function withoutEventHash(entry: ReleaseRunLedgerEntryV2): Omit<ReleaseRunLedgerEntryV2, "event_hash"> {
-  const { event_hash: _eventHash, ...body } = entry;
-  return body;
 }
 
 function rootRelativePath(root: string, path: string): string {
@@ -182,9 +164,10 @@ function rootRelativePath(root: string, path: string): string {
   return result.split(sep).join("/");
 }
 
+/** Plain parse of the append-only log. No hash chain to verify (MVP scope — see file header). */
 export async function readReleaseRunLedger(
   path: string,
-  rootInput?: string,
+  _rootInput?: string,
 ): Promise<ReleaseRunLedgerEntryV2[]> {
   let text: string;
   try {
@@ -205,42 +188,6 @@ export async function readReleaseRunLedger(
     const parsed = ReleaseRunLedgerEntryV2Schema.safeParse(raw);
     if (!parsed.success) throw new Error(`${path}:${index + 1}: ${parsed.error.message}`);
     entries.push(parsed.data);
-  }
-  for (const [index, entry] of entries.entries()) {
-    const expectedPrevious = index === 0 ? null : entries[index - 1]!.event_hash;
-    if (entry.sequence !== index + 1) throw new Error(`${path}:${index + 1}: broken sequence`);
-    if (entry.previous_event_hash !== expectedPrevious) throw new Error(`${path}:${index + 1}: broken hash chain`);
-    if (entry.event_hash !== releaseRunEventHash(withoutEventHash(entry))) {
-      throw new Error(`${path}:${index + 1}: event hash mismatch`);
-    }
-  }
-  // The canonical ledger lives in <root>/manifests/. Callers using another location must pass root.
-  const root = resolve(rootInput ?? resolve(dirname(path), ".."));
-  for (const [index, entry] of entries.entries()) {
-    if (!entry.report) continue;
-    const verifyReport = async (relativePath: string, expected: string, label: string): Promise<void> => {
-      rootRelativePath(root, relativePath);
-      let actual: string;
-      try {
-        actual = (await hashFile(resolve(root, relativePath))).sha256;
-      } catch (error) {
-        throw new Error(
-          `${path}:${index + 1}: cannot verify ${label} ${relativePath}: `
-          + `${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
-      if (actual !== expected) {
-        throw new Error(`${path}:${index + 1}: ${label} ${relativePath} differs from recorded SHA-256`);
-      }
-    };
-    await verifyReport(entry.report.path, entry.report.sha256, "completed report");
-    if (entry.report.versioned_path && entry.report.versioned_sha256) {
-      await verifyReport(
-        entry.report.versioned_path,
-        entry.report.versioned_sha256,
-        "immutable completed report",
-      );
-    }
   }
   return entries;
 }
@@ -279,17 +226,10 @@ function validateTransition(entries: ReleaseRunLedgerEntryV2[], options: RecordR
 }
 
 /**
- * Appends one hash-chained event. There is intentionally no update/delete API.
- *
- * The filesystem lock serializes readers/writers so concurrent invocations cannot fork the chain.
+ * Appends one plain log entry. There is intentionally no update/delete API — append-only, but not
+ * hash-chained or lock-serialized at MVP scope (see file header).
  */
 export async function recordReleaseRunEvent(options: RecordReleaseRunOptions): Promise<ReleaseRunLedgerEntryV2> {
-  if (options.acknowledgement !== RELEASE_HOLDOUT_CLI_ACKNOWLEDGEMENT) {
-    throw new Error(`release run refused: pass the exact holdout acknowledgement ${RELEASE_HOLDOUT_CLI_ACKNOWLEDGEMENT}`);
-  }
-  if (options.environmentAcknowledgement !== RELEASE_HOLDOUT_ENV_ACKNOWLEDGEMENT) {
-    throw new Error(`release run refused: set ${RELEASE_HOLDOUT_ENV_NAME} to the documented acknowledgement`);
-  }
   if (options.phase === "completed" && !options.reportPath) throw new Error("completed event requires --report");
   if (options.phase === "failed" && !options.failureReason) throw new Error("failed event requires --failure-reason");
   if (options.phase !== "completed" && options.reportPath) throw new Error("--report is valid only for completed events");
@@ -299,79 +239,56 @@ export async function recordReleaseRunEvent(options: RecordReleaseRunOptions): P
   const ledgerPath = resolve(root, options.ledgerPath ?? RELEASE_RUN_LEDGER_PATH);
   rootRelativePath(root, ledgerPath);
   await mkdir(dirname(ledgerPath), { recursive: true });
-  const lockPath = `${ledgerPath}.lock`;
-  let lock;
-  try {
-    lock = await open(lockPath, "wx", 0o600);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "EEXIST") {
-      throw new Error(`${ledgerPath}: another ledger writer is active (or a stale lock requires owner review)`);
-    }
-    throw error;
+
+  const frozen = await verifyFrozenDataset(root);
+  const entries = await readReleaseRunLedger(ledgerPath, root);
+  validateTransition(entries, options);
+  const started = entries.find(entry => entry.run_id === options.runId && entry.phase === "started");
+  if (started && started.dataset_manifest_sha256 !== frozen.manifestSha256) {
+    throw new Error(`${options.runId}: frozen manifest differs from the started event`);
   }
-  try {
-    const frozen = await verifyFrozenDataset(root);
-    const entries = await readReleaseRunLedger(ledgerPath, root);
-    validateTransition(entries, options);
-    const started = entries.find(entry => entry.run_id === options.runId && entry.phase === "started");
-    if (started && started.dataset_manifest_sha256 !== frozen.manifestSha256) {
-      throw new Error(`${options.runId}: frozen manifest differs from the started event`);
+  let report: ReleaseRunLedgerEntryV2["report"] = null;
+  if (options.reportPath) {
+    const path = rootRelativePath(root, options.reportPath);
+    const expectedVersionedPath = versionedReleaseReportPath(options.runId, options.purpose);
+    const expectedPrimaryPath = releaseReportCompletionPath(options.runId, options.purpose);
+    if (path !== expectedPrimaryPath) {
+      throw new Error(
+        `${options.runId}: ${options.purpose} completion must use --report ${expectedPrimaryPath}`,
+      );
     }
-    let report: ReleaseRunLedgerEntryV2["report"] = null;
-    if (options.reportPath) {
-      const path = rootRelativePath(root, options.reportPath);
-      const expectedVersionedPath = versionedReleaseReportPath(options.runId, options.purpose);
-      const expectedPrimaryPath = releaseReportCompletionPath(options.runId, options.purpose);
-      if (path !== expectedPrimaryPath) {
-        throw new Error(
-          `${options.runId}: ${options.purpose} completion must use --report ${expectedPrimaryPath}`,
-        );
-      }
-      const [primary, versioned] = await Promise.all([
-        hashFile(resolve(root, path)),
-        hashFile(resolve(root, expectedVersionedPath)),
-      ]);
-      if (primary.sha256 !== versioned.sha256) {
-        throw new Error(`${options.runId}: canonical and immutable release report bytes differ`);
-      }
-      report = {
-        path,
-        sha256: primary.sha256,
-        versioned_path: expectedVersionedPath,
-        versioned_sha256: versioned.sha256,
-      };
+    const [primary, versioned] = await Promise.all([
+      hashFile(resolve(root, path)),
+      hashFile(resolve(root, expectedVersionedPath)),
+    ]);
+    if (primary.sha256 !== versioned.sha256) {
+      throw new Error(`${options.runId}: canonical and immutable release report bytes differ`);
     }
-    const body: Omit<ReleaseRunLedgerEntryV2, "event_hash"> = {
-      sequence: entries.length + 1,
-      previous_event_hash: entries.at(-1)?.event_hash ?? null,
-      recorded_at: options.recordedAt ?? new Date().toISOString(),
-      phase: options.phase,
-      run_id: options.runId,
-      purpose: options.purpose,
-      actor: options.actor,
-      reason: options.reason,
-      dataset_manifest_path: DATASET_MANIFEST_PATH,
-      dataset_manifest_sha256: frozen.manifestSha256,
-      release_query_index_sha256: frozen.manifest.release_holdout.query_index_sha256,
-      report,
-      failure_reason: options.failureReason ?? null,
+    report = {
+      path,
+      sha256: primary.sha256,
+      versioned_path: expectedVersionedPath,
+      versioned_sha256: versioned.sha256,
     };
-    const entry = ReleaseRunLedgerEntryV2Schema.parse({ ...body, event_hash: releaseRunEventHash(body) });
-    const ledger = await open(ledgerPath, "a", 0o600);
-    try {
-      await ledger.writeFile(`${JSON.stringify(entry)}\n`, "utf8");
-      await ledger.sync();
-    } finally {
-      await ledger.close();
-    }
-    return entry;
-  } finally {
-    await lock.close();
-    await unlink(lockPath);
   }
+  const entry = ReleaseRunLedgerEntryV2Schema.parse({
+    recorded_at: options.recordedAt ?? new Date().toISOString(),
+    phase: options.phase,
+    run_id: options.runId,
+    purpose: options.purpose,
+    actor: options.actor,
+    reason: options.reason,
+    dataset_manifest_path: DATASET_MANIFEST_PATH,
+    dataset_manifest_sha256: frozen.manifestSha256,
+    release_query_index_sha256: frozen.manifest.release_holdout.query_index_sha256,
+    report,
+    failure_reason: options.failureReason ?? null,
+  });
+  await appendFile(ledgerPath, `${JSON.stringify(entry)}\n`, { mode: 0o600 });
+  return entry;
 }
 
-interface ReleaseLedgerCliOptions extends Omit<RecordReleaseRunOptions, "environmentAcknowledgement"> {}
+type ReleaseLedgerCliOptions = RecordReleaseRunOptions;
 
 export function parseReleaseRunLedgerArgs(argv: string[]): ReleaseLedgerCliOptions {
   const values = new Map<string, string>();
@@ -391,7 +308,7 @@ export function parseReleaseRunLedgerArgs(argv: string[]): ReleaseLedgerCliOptio
   const purpose = z.enum(RELEASE_RUN_PURPOSES).parse(required("--purpose"));
   const known = new Set([
     "--root", "--phase", "--run-id", "--purpose", "--actor", "--reason",
-    "--confirm-release-holdout", "--report", "--failure-reason", "--recorded-at",
+    "--report", "--failure-reason", "--recorded-at",
   ]);
   for (const flag of values.keys()) if (!known.has(flag)) throw new Error(`unknown argument: ${flag}`);
   const root = values.get("--root") ?? resolve(import.meta.dirname, "..");
@@ -402,7 +319,6 @@ export function parseReleaseRunLedgerArgs(argv: string[]): ReleaseLedgerCliOptio
     purpose,
     actor: required("--actor"),
     reason: required("--reason"),
-    acknowledgement: required("--confirm-release-holdout"),
     ...(values.has("--report") ? { reportPath: values.get("--report")! } : {}),
     ...(values.has("--failure-reason") ? { failureReason: values.get("--failure-reason")! } : {}),
     ...(values.has("--recorded-at") ? { recordedAt: values.get("--recorded-at")! } : {}),
@@ -411,11 +327,8 @@ export function parseReleaseRunLedgerArgs(argv: string[]): ReleaseLedgerCliOptio
 
 export async function runReleaseRunLedgerCli(argv: string[]): Promise<void> {
   const options = parseReleaseRunLedgerArgs(argv);
-  const entry = await recordReleaseRunEvent({
-    ...options,
-    environmentAcknowledgement: process.env[RELEASE_HOLDOUT_ENV_NAME],
-  });
-  console.log(`release holdout ${entry.phase}: ${entry.run_id}; ledger sequence ${entry.sequence}`);
+  const entry = await recordReleaseRunEvent(options);
+  console.log(`release holdout ${entry.phase}: ${entry.run_id} (${entry.recorded_at})`);
 }
 
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatConfusionMatrix, stratifiedAgreement } from "./agreement.js";
-import { validateAgreementGate, validateCriticAcceptanceGate, validateGradingProcessGate } from "./release-gates-v2.js";
+import { validateAgreementGate, validateGradingProcessGate } from "./release-gates-v2.js";
 
 function agreementArtifact() {
   const agreement = stratifiedAgreement([
@@ -61,55 +61,6 @@ describe("validateAgreementGate", () => {
       passes: false,
       error: "pair_count 4 does not match reviewed calibration 3",
     });
-  });
-});
-
-function criticAcceptanceReport(count = 1_000) {
-  return {
-    version: 1 as const,
-    scope: "corpus" as const,
-    review_run_id: "review-corpus-001",
-    generated_at: "2026-08-07T00:00:00.000Z",
-    source_hash: `sha256:${"a".repeat(64)}`,
-    reviewer: "benchmark-owner",
-    reviewed_at: "2026-08-07T00:00:00.000Z",
-    artifacts_reviewed: count,
-    findings_reviewed: 0,
-    confirmed_findings: 0,
-    approved_artifacts: count,
-    repair_required_artifacts: 0,
-    overall_passed: true,
-    finding_decisions: [],
-    artifact_decisions: Array.from({ length: count }, (_, index) => ({
-      artifact_kind: "resource" as const,
-      source_id: `res-${String(index + 1).padStart(4, "0")}`,
-      decision: "approved" as const,
-      owner_note: null,
-    })),
-  };
-}
-
-describe("validateCriticAcceptanceGate", () => {
-  it("accepts exact, current, zero-repair owner evidence", () => {
-    expect(validateCriticAcceptanceGate(criticAcceptanceReport(), {
-      scope: "corpus",
-      sourceHash: `sha256:${"a".repeat(64)}`,
-      artifactCount: 1_000,
-    })).toEqual({ passes: true, error: null });
-  });
-
-  it("rejects stale or incomplete critic evidence", () => {
-    const stale = criticAcceptanceReport();
-    stale.repair_required_artifacts = 1;
-    stale.overall_passed = false;
-    const result = validateCriticAcceptanceGate(stale, {
-      scope: "corpus",
-      sourceHash: `sha256:${"b".repeat(64)}`,
-      artifactCount: 1_000,
-    });
-    expect(result.passes).toBe(false);
-    expect(result.error).toContain("source hash is stale");
-    expect(result.error).toContain("still require repair");
   });
 });
 

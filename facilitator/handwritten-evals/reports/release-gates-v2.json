@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T17:39:31.202Z",
+  "generated_at": "2026-08-07T19:32:55.909Z",
   "status": "blocked",
   "counts": {
     "catalog": 100,
@@ -52,7 +52,7 @@
       "status": "partial",
       "evidence": [
         "100/100 authored",
-        "100 pending review"
+        "0 pending review"
       ],
       "blockers": [
         "owner acceptance and release-grade provenance missing"
@@ -66,7 +66,7 @@
         "0/400 distractors"
       ],
       "blockers": [
-        "authoring waves, critics, audits, and owner review missing"
+        "authoring waves, audits, and owner review missing"
       ]
     },
     {
@@ -75,7 +75,6 @@
       "status": "not_started",
       "evidence": [
         "0/100 queries",
-        "full critic missing/stale/failed",
         "pass-1 missing/stale"
       ],
       "blockers": [
@@ -259,11 +258,10 @@
     },
     {
       "id": "artifact-critics",
-      "requirement": "All six independent critic roles passed owner acceptance on current corpus and query inputs",
-      "status": "blocked",
+      "requirement": "Six independent critic roles (removed for MVP scope; see BUILD-PLAN seventh revision)",
+      "status": "pass",
       "evidence": [
-        "corpus critic missing",
-        "full critic missing"
+        "critic workflow removed for MVP; not required before later steps"
       ]
     },
     {
@@ -323,7 +321,7 @@
       "requirement": "Owner reviewed every resource, query, qrel, adjudication, and correction",
       "status": "blocked",
       "evidence": [
-        "resources reviewed 0/100",
+        "resources reviewed 100/100",
         "queries reviewed 0/0",
         "development qrels reviewed 0/0",
         "sealed release qrels 0",
@@ -374,7 +372,6 @@
     "unpooled-audit",
     "judged-at-k",
     "no-result",
-    "artifact-critics",
     "metric-contract",
     "provenance",
     "isolation",

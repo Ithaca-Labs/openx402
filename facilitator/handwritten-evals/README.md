@@ -83,7 +83,6 @@ Empty directories are placeholders for build-order steps that have not run yet (
 | `merge-distractors.ts` | validates and merges Step 4 shards; scans the complete catalog for forbidden capabilities (§6) |
 | `metamorphic.test.ts` | the six label-free CI invariants (§12.4) |
 | `release-gates-v2.ts` | validates present artifacts, reports §9 build status, and blocks absent §11 release evidence |
-| `critic-workflow.ts` | creates six opaque critic packs, validates findings, and prepares fresh-context repairs (§1.1) |
 | `pool-snapshot-v2.ts` | binds catalog/query/profile/implementation/run/pool bytes and fails stale pools (§12.3) |
 | `development-ci-v2.ts` | scores exactly the 50 development queries in CI without opening release judgments (§12.1) |
 

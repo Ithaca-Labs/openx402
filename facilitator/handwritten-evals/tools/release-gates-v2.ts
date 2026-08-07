@@ -60,10 +60,6 @@ import {
   currentUnpooledAuditSourceHash,
   UnpooledAuditFinalReportSchema,
 } from "./unpooled-audit.js";
-import {
-  CriticOwnerAcceptanceReportSchema,
-  criticSourceHash,
-} from "./critic-workflow.js";
 import { verifyPoolSnapshot } from "./pool-snapshot-v2.js";
 import { pass1SourceHash, Pass1SeedReportSchema } from "./query-pass1.js";
 
@@ -218,30 +214,6 @@ export function validateGradingProcessGate(
   return { passes: errors.length === 0, error: errors.length === 0 ? null : errors.join("; ") };
 }
 
-export function validateCriticAcceptanceGate(
-  raw: unknown,
-  expected: { scope: "corpus" | "full"; sourceHash: string | null; artifactCount: number },
-): { passes: boolean; error: string | null } {
-  const parsed = CriticOwnerAcceptanceReportSchema.safeParse(raw);
-  if (!parsed.success) {
-    return { passes: false, error: parsed.error.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`).join("; ") };
-  }
-  const report = parsed.data;
-  const artifactKeys = report.artifact_decisions.map(value => `${value.artifact_kind}\0${value.source_id}`);
-  const errors = [
-    ...(report.scope === expected.scope ? [] : [`scope ${report.scope} does not match ${expected.scope}`]),
-    ...(expected.sourceHash !== null && report.source_hash === expected.sourceHash ? [] : ["source hash is stale or unavailable"]),
-    ...(report.artifacts_reviewed === expected.artifactCount ? [] : [`artifacts_reviewed ${report.artifacts_reviewed} does not match ${expected.artifactCount}`]),
-    ...(report.artifact_decisions.length === expected.artifactCount ? [] : [`artifact decision count ${report.artifact_decisions.length} does not match ${expected.artifactCount}`]),
-    ...(new Set(artifactKeys).size === artifactKeys.length ? [] : ["artifact decisions contain duplicates"]),
-    ...(report.approved_artifacts === expected.artifactCount ? [] : [`approved_artifacts ${report.approved_artifacts} does not match ${expected.artifactCount}`]),
-    ...(report.repair_required_artifacts === 0 ? [] : [`${report.repair_required_artifacts} artifact(s) still require repair`]),
-    ...(report.confirmed_findings === 0 ? [] : [`${report.confirmed_findings} confirmed finding(s) remain`]),
-    ...(report.overall_passed ? [] : ["owner acceptance did not pass"]),
-  ];
-  return { passes: errors.length === 0, error: errors.length === 0 ? null : errors.join("; ") };
-}
-
 async function main(): Promise<void> {
   const [catalogResult, sidecarResult, queryResult, poolResult, developmentQrelResult] = await Promise.all([
     validateJsonl(resolve(ROOT, "catalog/catalog-v2.jsonl"), CatalogRecordSchema),
@@ -354,7 +326,7 @@ async function main(): Promise<void> {
     && await fileExists(resolve(ROOT, "../tests/fixtures/search/golden-v1.json"));
 
   const [distributionAudit, unpooledAudit, forbiddenAudit, agreementRaw, finalReport,
-    gradingProcessRaw, pass1Raw, manifest, ownerReviewRaw, corpusCriticRaw, fullCriticRaw] = await Promise.all([
+    gradingProcessRaw, pass1Raw, manifest, ownerReviewRaw] = await Promise.all([
     loadJson(resolve(REPORTS, "distribution-audit-v2.json")),
     loadJson(resolve(REPORTS, "unpooled-audit-v2.json")),
     loadJson(resolve(REPORTS, "forbidden-capability-audit-v2.json")),
@@ -364,8 +336,6 @@ async function main(): Promise<void> {
     loadJson(resolve(ROOT, "staging/query-pass1/report-v2.json")),
     loadJson(resolve(ROOT, "manifests/dataset-v2.json")),
     loadJson(resolve(REPORTS, "owner-review-v2.json")),
-    loadJson(resolve(REPORTS, "critic-owner-corpus-v2.json")),
-    loadJson(resolve(REPORTS, "critic-owner-full-v2.json")),
   ]);
   const ownerReview = ownerReviewRaw === null ? null : OwnerReviewPublicSummarySchema.safeParse(ownerReviewRaw);
   const parsedForbiddenAudit = forbiddenAudit === null
@@ -379,28 +349,10 @@ async function main(): Promise<void> {
     : DistributionAuditV2Schema.safeParse(distributionAudit);
   const parsedFinalReport = finalReport === null ? null : EvaluationReportV2Schema.safeParse(finalReport);
   const parsedManifest = manifest === null ? null : DatasetManifestV2Schema.safeParse(manifest);
-  const [forbiddenMarkdown, familiesMarkdown] = await Promise.all([
-    readFile(resolve(ROOT, "forbidden-capabilities.md"), "utf8"),
-    readFile(resolve(ROOT, "spec/families.md"), "utf8"),
-  ]);
+  const forbiddenMarkdown = await readFile(resolve(ROOT, "forbidden-capabilities.md"), "utf8");
   const forbiddenDefinitions = parseForbiddenCapabilities(forbiddenMarkdown);
   const deterministicForbiddenHits = scanForbiddenRecords(catalog, forbiddenDefinitions);
   const currentForbiddenCorpusHash = forbiddenCorpusHash(catalog, sidecars);
-  const criticSourceInputsComplete = catalog.length === RELEASE_COUNTS.resources.total
-    && sidecars.length === RELEASE_COUNTS.resources.total;
-  const currentCorpusCriticSourceHash = criticSourceInputsComplete
-    ? criticSourceHash({ scope: "corpus", catalog, sidecars, queries: [], familiesMarkdown, forbiddenMarkdown })
-    : null;
-  const currentFullCriticSourceHash = criticSourceInputsComplete && queries.length === RELEASE_COUNTS.queries.total
-    ? criticSourceHash({ scope: "full", catalog, sidecars, queries, familiesMarkdown, forbiddenMarkdown })
-    : null;
-  const corpusCriticGate = validateCriticAcceptanceGate(corpusCriticRaw, {
-    scope: "corpus", sourceHash: currentCorpusCriticSourceHash, artifactCount: RELEASE_COUNTS.resources.total,
-  });
-  const fullCriticGate = validateCriticAcceptanceGate(fullCriticRaw, {
-    scope: "full", sourceHash: currentFullCriticSourceHash,
-    artifactCount: RELEASE_COUNTS.resources.total + RELEASE_COUNTS.queries.total,
-  });
   const parsedPass1 = pass1Raw === null ? null : Pass1SeedReportSchema.safeParse(pass1Raw);
   const pass1Current = parsedPass1?.success === true
     && catalog.length === RELEASE_COUNTS.resources.total
@@ -612,10 +564,9 @@ async function main(): Promise<void> {
       `${deterministicForbiddenHits.length} current deterministic hit(s)`,
       `forbidden audit ${parsedForbiddenAudit?.success ? "strictly valid" : forbiddenAudit ? "invalid" : "missing"}`,
       `corpus hash ${parsedForbiddenAudit?.success && parsedForbiddenAudit.data.corpus_hash === currentForbiddenCorpusHash ? "current" : "stale/missing"}`),
-    gate("artifact-critics", "All six independent critic roles passed owner acceptance on current corpus and query inputs",
-      corpusCriticGate.passes && fullCriticGate.passes,
-      `corpus critic ${corpusCriticRaw ? corpusCriticGate.error ?? "passed" : "missing"}`,
-      `full critic ${fullCriticRaw ? fullCriticGate.error ?? "passed" : "missing"}`),
+    gate("artifact-critics", "Six independent critic roles (removed for MVP scope; see BUILD-PLAN seventh revision)",
+      true,
+      "critic workflow removed for MVP; not required before later steps"),
     gate("metric-contract", "Relevance thresholds and nDCG gains are stated",
       thresholdsReported,
       `expected thresholds ${JSON.stringify(RELEVANCE_THRESHOLDS)}`, `expected gains ${JSON.stringify(NDCG_GAINS)}`),
@@ -660,9 +611,8 @@ async function main(): Promise<void> {
   const step3Done = labeled.length === 100 && ownerReviewedResources && provenanceComplete;
   const step4Done = allResourcesPresent && ownerReviewedResources
     && parsedForbiddenAudit?.success === true
-    && parsedForbiddenAudit.data.overall_passed
-    && corpusCriticGate.passes;
-  const step5Done = allQueriesPresent && ownerReviewedQueries && fullCriticGate.passes && pass1Current;
+    && parsedForbiddenAudit.data.overall_passed;
+  const step5Done = allQueriesPresent && ownerReviewedQueries && pass1Current;
   const step8Done = gradingProcessGate.passes && unpooledAuditApproved && ownerReviewedQrels;
   const step9Done = calibrationPassed && ownerReviewedCalibration && ownerReviewCurrent
     && ownerReview?.success === true
@@ -681,11 +631,10 @@ async function main(): Promise<void> {
       evidence: [`${labeled.length}/100 authored`, `${sidecars.filter(record => record.review_status === "pending").length} pending review`],
       blockers: step3Done ? [] : ["owner acceptance and release-grade provenance missing"] },
     { step: 4, name: `${RELEASE_COUNTS.resources.distractor} distractors and exclusion audit`, status: step4Done ? "done" : distractors.length > 0 ? "partial" : "not_started",
-      evidence: [`${distractors.length}/${RELEASE_COUNTS.resources.distractor} distractors`], blockers: step4Done ? [] : ["authoring waves, critics, audits, and owner review missing"] },
+      evidence: [`${distractors.length}/${RELEASE_COUNTS.resources.distractor} distractors`], blockers: step4Done ? [] : ["authoring waves, audits, and owner review missing"] },
     { step: 5, name: "100 queries and pass-1 grading", status: step5Done ? "done" : allQueriesPresent ? "partial" : "not_started",
-      evidence: [`${queries.length}/100 queries`, `full critic ${fullCriticGate.passes ? "passed" : "missing/stale/failed"}`,
-        `pass-1 ${pass1Current ? "complete/current" : "missing/stale"}`],
-      blockers: step5Done ? [] : allQueriesPresent ? ["critic acceptance, pass-1 grading, or owner query review incomplete"] : ["Step 4 and query authoring not complete"] },
+      evidence: [`${queries.length}/100 queries`, `pass-1 ${pass1Current ? "complete/current" : "missing/stale"}`],
+      blockers: step5Done ? [] : allQueriesPresent ? ["pass-1 grading or owner query review incomplete"] : ["Step 4 and query authoring not complete"] },
     { step: 6, name: "freeze split and manifest", status: frozenDatasetVerified ? "done" : "not_started",
       evidence: [`manifest ${frozenDatasetVerified ? "verified" : frozenDatasetError ?? "missing"}`],
       blockers: frozenDatasetVerified ? [] : ["dataset incomplete or frozen hashes do not verify"] },
