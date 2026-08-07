@@ -20,7 +20,7 @@ if (mode !== "--prepare" && mode !== "--finalize") {
   throw new Error("usage: tsx tools/merge-queries.ts [--prepare|--finalize]");
 }
 const PromptSchema = z.object({ run_id: z.string(), shard_id: z.string(), prompt_hash: z.string(),
-  query_ids: z.array(z.string()).length(10) }).passthrough();
+  query_ids: z.array(z.string()).length(QUERIES_PER_AGENT) }).passthrough();
 
 async function jsonl(path: string, optional = false): Promise<unknown[]> {
   let text: string;
@@ -51,7 +51,7 @@ async function main(): Promise<void> {
   const records: QueryRecord[] = [];
   for (const dir of dirs) {
     const raw = await jsonl(resolve(STAGING, dir, "queries.jsonl"));
-    if (raw.length !== QUERIES_PER_AGENT) errors.push(`${dir}: expected 10 records, got ${raw.length}`);
+    if (raw.length !== QUERIES_PER_AGENT) errors.push(`${dir}: expected ${QUERIES_PER_AGENT} records, got ${raw.length}`);
     for (const value of raw) {
       const parsed = QueryRecordSchema.safeParse(value);
       if (!parsed.success) { errors.push(`${dir}/${(value as { query_id?: string }).query_id ?? "?"}: ${parsed.error.message}`); continue; }

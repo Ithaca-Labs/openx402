@@ -39,7 +39,7 @@ async function main(): Promise<void> {
     ].map(value => `| ${String(value).replaceAll("|", "\\|")} `).join("") + "|").join("\n");
     const prompt = `# Step 5 query authoring — isolated agent ${String(agent).padStart(2, "0")}
 
-Author exactly ten buyer query records. Do not author resources, query answers, candidates, grades,
+Author exactly ${QUERIES_PER_AGENT} buyer query records. Do not author resources, query answers, candidates, grades,
 qrels, reviews, or retrieval output. This context is fresh; discard it after writing the shard.
 
 Read in full: \`handwritten-evals/staging/BRIEF-queries.md\`,
@@ -65,7 +65,7 @@ ${rows}
 For every record use provider \`anthropic\`, the actual exact model/revision and timestamp,
 \`generation_id: "${runId}"\`, \`review_status: "pending"\`, \`reviewed_at: null\`, and
 \`owner_note: null\`. Write a real, specific use-case rationale. For adversarial assignments add a
-specific trap rationale. Validate the ten JSONL lines, then stop. Never inspect or launch another
+specific trap rationale. Validate the ${QUERIES_PER_AGENT} JSONL lines, then stop. Never inspect or launch another
 authoring context.
 `;
     const path = resolve(OUTPUT, `agent-${String(agent).padStart(2, "0")}.md`);

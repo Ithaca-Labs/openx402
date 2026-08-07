@@ -2,8 +2,8 @@
 
 import { QUERY_CLASS_TARGETS, type QueryRecord } from "./schema/schema-v2.js";
 
-export const QUERY_AGENTS = 10;
-export const QUERIES_PER_AGENT = 10;
+export const QUERY_AGENTS = 5;
+export const QUERIES_PER_AGENT = 20;
 export const PASS1_CANDIDATES_PER_QUERY = 7;
 export const QUERY_PROMPT_PROVIDER = "anthropic" as const;
 
