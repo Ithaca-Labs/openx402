@@ -19,12 +19,15 @@ import {
   ReleaseQueryIndexV2Schema,
 } from "./manifest-v2.js";
 import {
+  FINAL_RELEASE_REPORT_PATH,
   recordReleaseRunEvent,
   readReleaseRunLedger,
+  releaseRunEventHash,
   RELEASE_HOLDOUT_CLI_ACKNOWLEDGEMENT,
   RELEASE_HOLDOUT_ENV_ACKNOWLEDGEMENT,
   ReleaseRunLedgerEntryV2Schema,
   verifyFrozenDataset,
+  versionedReleaseReportPath,
 } from "./release-run-ledger-v2.js";
 
 const PAY_TO = "GAOH2NR3A3R2VS6TUE6L75A3OMJ4UKJWEHHNL5GIIEQTS5RVZEK5LAP4";
@@ -274,8 +277,9 @@ describe("§12.1 release-run ledger", () => {
   it("appends a hash-chained start and terminal event and rejects reuse", async () => {
     const root = await datasetFixture();
     await freezeDatasetV2({ root, frozenAt: REVIEWED_AT });
-    await mkdir(resolve(root, "reports"), { recursive: true });
-    await writeFile(resolve(root, "reports/final-v2.json"), "{\"status\":\"pass\"}\n");
+    const reportPath = versionedReleaseReportPath("release-test-001", "milestone");
+    await mkdir(resolve(root, "reports/releases"), { recursive: true });
+    await writeFile(resolve(root, reportPath), "{\"status\":\"pass\"}\n");
     const common = {
       root,
       runId: "release-test-001",
@@ -294,14 +298,15 @@ describe("§12.1 release-run ledger", () => {
       ...common,
       phase: "completed",
       reason: "test milestone completed",
-      reportPath: "reports/final-v2.json",
+      reportPath,
       recordedAt: "2026-08-07T01:01:00.000Z",
     });
     expect(started.sequence).toBe(1);
     expect(started.previous_event_hash).toBeNull();
     expect(completed.sequence).toBe(2);
     expect(completed.previous_event_hash).toBe(started.event_hash);
-    expect(completed.report?.sha256).toBe((await hashFile(resolve(root, "reports/final-v2.json"))).sha256);
+    expect(completed.report).toMatchObject({ path: reportPath, versioned_path: reportPath });
+    expect(completed.report?.sha256).toBe((await hashFile(resolve(root, reportPath))).sha256);
     const lines = (await readFile(resolve(root, "manifests/release-runs-v2.jsonl"), "utf8")).trim().split("\n");
     expect(lines.map(line => ReleaseRunLedgerEntryV2Schema.parse(JSON.parse(line)))).toHaveLength(2);
     expect(await readReleaseRunLedger(resolve(root, "manifests/release-runs-v2.jsonl"))).toHaveLength(2);
@@ -309,8 +314,140 @@ describe("§12.1 release-run ledger", () => {
       ...common,
       phase: "completed",
       reason: "duplicate terminal",
-      reportPath: "reports/final-v2.json",
+      reportPath,
     })).rejects.toThrow(/already has a terminal event/);
+  });
+
+  it("preserves milestone and final reports at distinct immutable paths", async () => {
+    const root = await datasetFixture();
+    await freezeDatasetV2({ root, frozenAt: REVIEWED_AT });
+    await mkdir(resolve(root, "reports/releases"), { recursive: true });
+    const acknowledgement = {
+      root,
+      actor: "owner",
+      acknowledgement: RELEASE_HOLDOUT_CLI_ACKNOWLEDGEMENT,
+      environmentAcknowledgement: RELEASE_HOLDOUT_ENV_ACKNOWLEDGEMENT,
+    };
+
+    const milestoneRunId = "release-milestone-001";
+    const milestonePath = versionedReleaseReportPath(milestoneRunId, "milestone");
+    await writeFile(resolve(root, milestonePath), "{\"run\":\"milestone\"}\n");
+    await recordReleaseRunEvent({
+      ...acknowledgement, phase: "started", runId: milestoneRunId, purpose: "milestone",
+      reason: "milestone start",
+    });
+    await recordReleaseRunEvent({
+      ...acknowledgement, phase: "completed", runId: milestoneRunId, purpose: "milestone",
+      reason: "milestone complete", reportPath: milestonePath,
+    });
+
+    const finalRunId = "release-final-001";
+    const finalVersionedPath = versionedReleaseReportPath(finalRunId, "final");
+    const finalBytes = "{\"run\":\"final\"}\n";
+    await Promise.all([
+      writeFile(resolve(root, finalVersionedPath), finalBytes),
+      writeFile(resolve(root, FINAL_RELEASE_REPORT_PATH), finalBytes),
+    ]);
+    await recordReleaseRunEvent({
+      ...acknowledgement, phase: "started", runId: finalRunId, purpose: "final",
+      reason: "final start",
+    });
+    const completedFinal = await recordReleaseRunEvent({
+      ...acknowledgement, phase: "completed", runId: finalRunId, purpose: "final",
+      reason: "final complete", reportPath: FINAL_RELEASE_REPORT_PATH,
+    });
+
+    expect(completedFinal.report).toMatchObject({
+      path: FINAL_RELEASE_REPORT_PATH,
+      versioned_path: finalVersionedPath,
+    });
+    expect(ReleaseRunLedgerEntryV2Schema.safeParse({
+      ...completedFinal,
+      report: { ...completedFinal.report!, path: "reports/other.json" },
+    }).success).toBe(false);
+    const ledger = await readReleaseRunLedger(resolve(root, "manifests/release-runs-v2.jsonl"));
+    expect(ledger).toHaveLength(4);
+    expect(ledger.filter(entry => entry.phase === "completed").map(entry => entry.report?.versioned_path))
+      .toEqual([milestonePath, finalVersionedPath]);
+  });
+
+  it("rejects changed canonical or immutable report bytes when reading the ledger", async () => {
+    const root = await datasetFixture();
+    await freezeDatasetV2({ root, frozenAt: REVIEWED_AT });
+    await mkdir(resolve(root, "reports/releases"), { recursive: true });
+    const runId = "release-final-integrity";
+    const versionedPath = versionedReleaseReportPath(runId, "final");
+    const original = "{\"status\":\"original\"}\n";
+    await Promise.all([
+      writeFile(resolve(root, versionedPath), original),
+      writeFile(resolve(root, FINAL_RELEASE_REPORT_PATH), original),
+    ]);
+    const common = {
+      root, runId, purpose: "final" as const, actor: "owner",
+      acknowledgement: RELEASE_HOLDOUT_CLI_ACKNOWLEDGEMENT,
+      environmentAcknowledgement: RELEASE_HOLDOUT_ENV_ACKNOWLEDGEMENT,
+    };
+    await recordReleaseRunEvent({ ...common, phase: "started", reason: "integrity start" });
+    await recordReleaseRunEvent({
+      ...common, phase: "completed", reason: "integrity complete",
+      reportPath: FINAL_RELEASE_REPORT_PATH,
+    });
+    const ledgerPath = resolve(root, "manifests/release-runs-v2.jsonl");
+
+    await writeFile(resolve(root, FINAL_RELEASE_REPORT_PATH), "{\"status\":\"changed\"}\n");
+    await expect(readReleaseRunLedger(ledgerPath)).rejects.toThrow(/completed report .* differs from recorded SHA-256/);
+    await writeFile(resolve(root, FINAL_RELEASE_REPORT_PATH), original);
+    await writeFile(resolve(root, versionedPath), "{\"status\":\"changed\"}\n");
+    await expect(readReleaseRunLedger(ledgerPath)).rejects.toThrow(/immutable completed report .* differs from recorded SHA-256/);
+  });
+
+  it("requires matching final copies and contains ledger-controlled report paths below root", async () => {
+    const root = await datasetFixture();
+    await freezeDatasetV2({ root, frozenAt: REVIEWED_AT });
+    await mkdir(resolve(root, "reports/releases"), { recursive: true });
+    const runId = "release-final-mismatch";
+    const versionedPath = versionedReleaseReportPath(runId, "final");
+    await Promise.all([
+      writeFile(resolve(root, versionedPath), "{\"copy\":1}\n"),
+      writeFile(resolve(root, FINAL_RELEASE_REPORT_PATH), "{\"copy\":2}\n"),
+    ]);
+    const common = {
+      root, runId, purpose: "final" as const, actor: "owner",
+      acknowledgement: RELEASE_HOLDOUT_CLI_ACKNOWLEDGEMENT,
+      environmentAcknowledgement: RELEASE_HOLDOUT_ENV_ACKNOWLEDGEMENT,
+    };
+    await recordReleaseRunEvent({ ...common, phase: "started", reason: "mismatch start" });
+    await expect(recordReleaseRunEvent({
+      ...common, phase: "completed", reason: "mismatch complete",
+      reportPath: FINAL_RELEASE_REPORT_PATH,
+    })).rejects.toThrow(/canonical and immutable release report bytes differ/);
+    await expect(recordReleaseRunEvent({
+      ...common, phase: "completed", reason: "escape attempt", reportPath: "../escape.json",
+    })).rejects.toThrow(/must name a file below the handwritten-evals root/);
+  });
+
+  it("rejects a hash-valid legacy ledger entry whose report path escapes the dataset root", async () => {
+    const root = await datasetFixture();
+    const frozen = await freezeDatasetV2({ root, frozenAt: REVIEWED_AT });
+    const body = {
+      sequence: 1,
+      previous_event_hash: null,
+      recorded_at: "2026-08-07T01:00:00.000Z",
+      phase: "completed" as const,
+      run_id: "release-legacy-escape",
+      purpose: "milestone" as const,
+      actor: "owner",
+      reason: "legacy entry",
+      dataset_manifest_path: DATASET_MANIFEST_PATH as typeof DATASET_MANIFEST_PATH,
+      dataset_manifest_sha256: (await hashFile(resolve(root, DATASET_MANIFEST_PATH))).sha256,
+      release_query_index_sha256: frozen.manifest.release_holdout.query_index_sha256,
+      report: { path: "reports/../../outside.json", sha256: "0".repeat(64) },
+      failure_reason: null,
+    };
+    const entry = ReleaseRunLedgerEntryV2Schema.parse({ ...body, event_hash: releaseRunEventHash(body) });
+    const ledgerPath = resolve(root, "manifests/release-runs-v2.jsonl");
+    await writeFile(ledgerPath, `${JSON.stringify(entry)}\n`);
+    await expect(readReleaseRunLedger(ledgerPath)).rejects.toThrow(/must name a file below the handwritten-evals root/);
   });
 
   it("refuses ledger access after any frozen input changes", async () => {

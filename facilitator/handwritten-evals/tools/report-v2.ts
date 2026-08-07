@@ -1,9 +1,11 @@
 /** Deterministic BUILD-PLAN §10 report composition over already-validated artifacts. */
 
+import { createHash } from "node:crypto";
 import { z } from "zod";
 import {
   NDCG_GAINS,
   POOL_SYSTEMS,
+  QUERY_CLASSES,
   RELEVANCE_THRESHOLDS,
   type QrelRecord,
   type QueryRecord,
@@ -75,12 +77,120 @@ export const OwnerRatesSchema = z.object({
   rejection_rate: z.number().min(0).max(1),
 }).strict();
 
-export const EvaluationReportV2Schema = z.object({
+const Sha256Schema = z.string().regex(/^sha256:[a-f0-9]{64}$/);
+const FiniteSchema = z.number().finite();
+const RateSchema = FiniteSchema.min(0).max(1);
+const MeanWithSupportSchema = z.object({
+  value: FiniteSchema.nullable(),
+  support: z.number().int().nonnegative(),
+}).strict().superRefine((value, context) => {
+  if ((value.value === null) !== (value.support === 0)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "null value must mean zero support" });
+  }
+});
+const CutoffMeansSchema = z.object(Object.fromEntries([1, 3, 5, 10, 20]
+  .map(cutoff => [String(cutoff), MeanWithSupportSchema])) as Record<"1" | "3" | "5" | "10" | "20", typeof MeanWithSupportSchema>).strict();
+const CutoffCountsSchema = z.object(Object.fromEntries([1, 3, 5, 10, 20]
+  .map(cutoff => [String(cutoff), z.number().int().nonnegative()])) as Record<"1" | "3" | "5" | "10" | "20", z.ZodNumber>).strict();
+const ClassMetricsSchema = z.object({
+  queries: z.number().int().positive(),
+  rankingQueries: z.number().int().nonnegative(),
+  ndcg: CutoffMeansSchema,
+  recall: CutoffMeansSchema,
+  judged: CutoffMeansSchema,
+  violations: CutoffCountsSchema,
+  mrr: MeanWithSupportSchema,
+  bpref: MeanWithSupportSchema,
+  noResultAccuracy: RateSchema.nullable(),
+}).strict().superRefine((value, context) => {
+  if (value.rankingQueries > value.queries) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["rankingQueries"], message: "cannot exceed queries" });
+  }
+});
+const ReportedSystemSchema = z.object({
+  primary: z.object({
+    ndcg_at_10: MeanWithSupportSchema,
+    judged_at_10: MeanWithSupportSchema,
+    mrr: MeanWithSupportSchema,
+    bpref: MeanWithSupportSchema,
+  }).strict(),
+  secondary: z.object({
+    recall_at_20: MeanWithSupportSchema,
+    violations_at_10: z.number().int().nonnegative(),
+    no_result_accuracy: RateSchema.nullable(),
+    has_result_rate: RateSchema.nullable(),
+    latency_ms: z.object({
+      p50: FiniteSchema.nonnegative().nullable(),
+      p95: FiniteSchema.nonnegative().nullable(),
+      p99: FiniteSchema.nonnegative().nullable(),
+      mean: FiniteSchema.nonnegative().nullable(),
+    }).strict(),
+  }).strict(),
+  by_query_class: z.record(z.enum(QUERY_CLASSES), ClassMetricsSchema),
+}).strict();
+
+const ConfidenceIntervalSchema = z.object({
+  point: FiniteSchema,
+  lower: FiniteSchema,
+  upper: FiniteSchema,
+  level: RateSchema,
+  iterations: z.number().int().positive(),
+  n: z.number().int().positive(),
+  bias: FiniteSchema,
+  standardError: FiniteSchema.nonnegative(),
+}).strict().superRefine((value, context) => {
+  if (value.lower > value.upper) context.addIssue({ code: z.ZodIssueCode.custom, path: ["lower"], message: "must not exceed upper" });
+});
+const ComparisonReportSchema = z.object({
+  metric: z.string().min(1),
+  n: z.number().int().positive(),
+  baselineMean: FiniteSchema,
+  candidateMean: FiniteSchema,
+  baselineCI: ConfidenceIntervalSchema,
+  candidateCI: ConfidenceIntervalSchema,
+  difference: ConfidenceIntervalSchema,
+  permutation: z.object({
+    observedDiff: FiniteSchema,
+    meanBaseline: FiniteSchema,
+    meanCandidate: FiniteSchema,
+    pValue: RateSchema,
+    n: z.number().int().positive(),
+    exact: z.boolean(),
+    iterations: z.number().int().nonnegative(),
+    alternative: z.enum(["two-sided", "greater", "less"]),
+    ties: z.number().int().nonnegative(),
+  }).strict(),
+  significant: z.boolean(),
+  alpha: RateSchema,
+  summary: z.string().min(1),
+}).strict().superRefine((value, context) => {
+  const supports = [value.baselineCI.n, value.candidateCI.n, value.difference.n, value.permutation.n];
+  if (supports.some(support => support !== value.n)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["n"], message: "all paired supports must match" });
+  }
+  const expectedSignificance = value.permutation.pValue < value.alpha
+    && (value.difference.lower > 0 || value.difference.upper < 0);
+  if (value.significant !== expectedSignificance) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["significant"], message: `must equal ${expectedSignificance}` });
+  }
+});
+const MetricComparisonsSchema = z.object({
+  ndcg_at_10: ComparisonReportSchema,
+  mrr: ComparisonReportSchema,
+  bpref: ComparisonReportSchema,
+}).strict();
+
+const EvaluationReportCoreV2Schema = z.object({
   schema_version: z.literal("2.0.0"),
-  status: z.literal("draft_pending_owner_review"),
   generated_at: z.string().datetime(),
   split: z.enum(["development", "release"]),
   dataset_manifest_sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  input_hashes: z.object({
+    qrels: Sha256Schema,
+    system_runs: z.object(Object.fromEntries(POOL_SYSTEMS.map(system => [system, Sha256Schema])) as {
+      [K in PoolSystem]: typeof Sha256Schema;
+    }).strict(),
+  }).strict(),
   query_count: z.literal(50),
   qrel_count: z.number().int().nonnegative(),
   baseline: z.enum(POOL_SYSTEMS),
@@ -94,10 +204,10 @@ export const EvaluationReportV2Schema = z.object({
     z.literal(NDCG_GAINS[0]), z.literal(NDCG_GAINS[1]),
     z.literal(NDCG_GAINS[2]), z.literal(NDCG_GAINS[3]),
   ]),
-  systems: z.object(Object.fromEntries(POOL_SYSTEMS.map(system => [system, z.unknown()])) as {
-    [K in PoolSystem]: z.ZodUnknown;
+  systems: z.object(Object.fromEntries(POOL_SYSTEMS.map(system => [system, ReportedSystemSchema])) as {
+    [K in PoolSystem]: typeof ReportedSystemSchema;
   }).strict(),
-  significance: z.record(z.record(z.unknown())),
+  significance: z.record(MetricComparisonsSchema),
   significance_reported: z.literal(true),
   bm25_baseline: z.literal(true),
   judged_at_10: z.object({
@@ -110,6 +220,60 @@ export const EvaluationReportV2Schema = z.object({
   owner_rates_reported: z.boolean(),
   limitations: z.array(z.string().trim().min(1)).min(1),
 }).strict();
+
+function validateReportContract(value: {
+  split: "development" | "release";
+  baseline: PoolSystem;
+  qrel_count: number;
+  systems: Record<string, z.infer<typeof ReportedSystemSchema>>;
+  significance: Record<string, z.infer<typeof MetricComparisonsSchema>>;
+  judged_at_10: { pilot_derived_threshold: number | null; minimum_observed: number | null; gate_passed: boolean };
+  judged_at_10_gate_passed: boolean;
+}, context: z.RefinementCtx): void {
+  if (value.split === "release" && value.judged_at_10.pilot_derived_threshold === null) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["judged_at_10", "pilot_derived_threshold"], message: "release report requires pilot threshold" });
+  }
+  if (value.split === "release" && value.qrel_count === 0) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["qrel_count"], message: "release report requires judged pairs" });
+  }
+  const expectedComparisons = POOL_SYSTEMS.filter(system => system !== value.baseline).sort();
+  if (Object.keys(value.significance).sort().join("\n") !== expectedComparisons.join("\n")) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["significance"], message: "must compare every non-baseline system exactly once" });
+  }
+  for (const [system, report] of Object.entries(value.systems)) {
+    for (const [metric, result] of Object.entries(report.primary)) {
+      if (result.support === 0) {
+        context.addIssue({ code: z.ZodIssueCode.custom, path: ["systems", system, "primary", metric], message: "primary metric requires positive support" });
+      }
+    }
+  }
+  const expected = value.judged_at_10.pilot_derived_threshold !== null
+    && value.judged_at_10.minimum_observed !== null
+    && value.judged_at_10.minimum_observed >= value.judged_at_10.pilot_derived_threshold;
+  if (value.judged_at_10.gate_passed !== expected || value.judged_at_10_gate_passed !== expected) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["judged_at_10_gate_passed"], message: "judged@10 gate must be derived from minimum and pilot threshold" });
+  }
+}
+
+export const EvaluationReportDraftV2Schema = EvaluationReportCoreV2Schema.extend({
+  status: z.literal("draft_pending_owner_review"),
+}).strict().superRefine(validateReportContract);
+
+export const EvaluationReportOwnerSignoffSchema = z.object({
+  version: z.literal(1),
+  decision: z.literal("approved"),
+  draft_report_hash: Sha256Schema,
+  reviewer: z.string().min(1),
+  reviewed_at: z.string().datetime(),
+  rationale: z.string().min(1).max(2_000),
+  limitations_acknowledged: z.literal(true),
+}).strict();
+
+/** Only this owner-approved shape may occupy a completed release-report path. */
+export const EvaluationReportV2Schema = EvaluationReportCoreV2Schema.extend({
+  status: z.literal("approved"),
+  owner_signoff: EvaluationReportOwnerSignoffSchema,
+}).strict().superRefine(validateReportContract);
 
 export interface SystemRun {
   system: PoolSystem;
@@ -172,15 +336,18 @@ export interface ReportedSystem {
     latency_ms: RunMetrics["latency"];
   };
   by_query_class: RunMetrics["byClass"];
-  complete_metrics: RunMetrics;
 }
 
-export interface EvaluationReportV2 {
+export interface EvaluationReportDraftV2 {
   schema_version: "2.0.0";
   status: "draft_pending_owner_review";
   generated_at: string;
   split: "development" | "release";
   dataset_manifest_sha256: string;
+  input_hashes: {
+    qrels: string;
+    system_runs: Record<PoolSystem, string>;
+  };
   query_count: number;
   qrel_count: number;
   baseline: PoolSystem;
@@ -199,6 +366,62 @@ export interface EvaluationReportV2 {
   owner_rates: OwnerRates | null;
   owner_rates_reported: boolean;
   limitations: string[];
+}
+
+export type EvaluationReportV2 = Omit<EvaluationReportDraftV2, "status"> & {
+  status: "approved";
+  owner_signoff: z.infer<typeof EvaluationReportOwnerSignoffSchema>;
+};
+
+function canonicalHashValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalHashValue);
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>)
+      .filter(([, child]) => child !== undefined)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, child]) => [key, canonicalHashValue(child)]));
+  }
+  return value;
+}
+
+export function reportArtifactHash(value: unknown): string {
+  return `sha256:${createHash("sha256").update(JSON.stringify(canonicalHashValue(value))).digest("hex")}`;
+}
+
+export function evaluationInputHashes(
+  queries: readonly QueryRecord[],
+  qrels: readonly QrelRecord[],
+  runs: readonly SystemRun[],
+  split: "development" | "release",
+): EvaluationReportDraftV2["input_hashes"] {
+  const selectedIds = new Set(queries.filter(query => query.split === split).map(query => query.query_id));
+  const selectedQrels = qrels.filter(qrel => selectedIds.has(qrel.query_id))
+    .sort((left, right) => `${left.query_id}\0${left.resource_id}`.localeCompare(`${right.query_id}\0${right.resource_id}`));
+  const systemRuns = Object.fromEntries(POOL_SYSTEMS.map(system => {
+    const run = runs.find(value => value.system === system);
+    const results = (run?.results ?? []).filter(result => selectedIds.has(result.queryId))
+      .sort((left, right) => left.queryId.localeCompare(right.queryId));
+    return [system, reportArtifactHash(results)];
+  })) as Record<PoolSystem, string>;
+  return { qrels: reportArtifactHash(selectedQrels), system_runs: systemRuns };
+}
+
+/** Converts a preserved draft into a distinct approved artifact; the draft is never overwritten. */
+export function finalizeEvaluationReport(
+  rawDraft: unknown,
+  rawSignoff: unknown,
+): EvaluationReportV2 {
+  const draft = EvaluationReportDraftV2Schema.parse(rawDraft) as EvaluationReportDraftV2;
+  const signoff = EvaluationReportOwnerSignoffSchema.parse(rawSignoff);
+  if (signoff.draft_report_hash !== reportArtifactHash(draft)) {
+    throw new Error("owner signoff draft_report_hash does not match the preserved draft");
+  }
+  const { status: _draftStatus, ...core } = draft;
+  return EvaluationReportV2Schema.parse({
+    ...core,
+    status: "approved",
+    owner_signoff: signoff,
+  }) as EvaluationReportV2;
 }
 
 function assertIsoDate(value: string): void {
@@ -297,7 +520,6 @@ function reportSystem(metrics: RunMetrics): ReportedSystem {
       latency_ms: metrics.latency,
     },
     by_query_class: metrics.byClass,
-    complete_metrics: metrics,
   };
 }
 
@@ -327,7 +549,7 @@ export function buildEvaluationReport(
   qrels: readonly QrelRecord[],
   runs: readonly SystemRun[],
   options: BuildReportOptions,
-): EvaluationReportV2 {
+): EvaluationReportDraftV2 {
   const selected = validateInputs(queries, qrels, runs, options);
   const selectedIds = new Set(selected.map(query => query.query_id));
   const selectedQrels = qrels.filter(qrel => selectedIds.has(qrel.query_id));
@@ -374,12 +596,13 @@ export function buildEvaluationReport(
   const threshold = options.pilotJudgedAt10Threshold ?? null;
   const judgedGatePassed = threshold !== null && minimumObserved !== null && minimumObserved >= threshold;
 
-  const report: EvaluationReportV2 = {
+  const report: EvaluationReportDraftV2 = {
     schema_version: "2.0.0",
     status: "draft_pending_owner_review",
     generated_at: options.generatedAt,
     split: options.split,
     dataset_manifest_sha256: options.datasetManifestSha256,
+    input_hashes: evaluationInputHashes(queries, qrels, runs, options.split),
     query_count: selected.length,
     qrel_count: selectedQrels.length,
     baseline,
@@ -399,6 +622,6 @@ export function buildEvaluationReport(
     owner_rates_reported: options.ownerRates !== undefined,
     limitations: [...options.limitations],
   };
-  EvaluationReportV2Schema.parse(report);
+  EvaluationReportDraftV2Schema.parse(report);
   return report;
 }

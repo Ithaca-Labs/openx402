@@ -8,6 +8,7 @@
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import type { z } from "zod";
 import {
   ADVERSARIAL_KINDS,
@@ -36,15 +37,26 @@ import {
 } from "../schema/schema-v2.js";
 import { DatasetManifestV2Schema } from "./manifest-v2.js";
 import { readReleaseRunLedger, verifyFrozenDataset } from "./release-run-ledger-v2.js";
-import { OwnerReviewReportSchema } from "./grading-pipeline.js";
-import { EvaluationReportV2Schema, PilotReportEvidenceSchema } from "./report-v2.js";
-import { loadSystemRuns, validateExactPoolCoverage, validateRunEligibility } from "./pool.js";
+import { AgreementArtifactSchema, OwnerReviewReportSchema } from "./grading-pipeline.js";
+import {
+  EvaluationReportV2Schema,
+  evaluationInputHashes,
+  PilotReportEvidenceSchema,
+  scoringRunsFromPoolRuns,
+} from "./report-v2.js";
+import { loadSystemRuns, validateExactPoolCoverage, validateRunEligibility, type SystemRuns } from "./pool.js";
 import {
   ForbiddenCapabilityAuditReportSchema,
   forbiddenCorpusHash,
   parseForbiddenCapabilities,
 } from "./forbidden-capability-audit.js";
 import { scanForbiddenRecords } from "./forbidden-scanner.js";
+import { buildDistributionAuditV2, DistributionAuditV2Schema } from "./distribution-audit-v2.js";
+import {
+  currentUnpooledAuditSourceHash,
+  UnpooledAuditFinalReportSchema,
+  unpooledArtifactHash,
+} from "./unpooled-audit.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const REPORTS = resolve(ROOT, "reports");
@@ -147,13 +159,44 @@ function generationComplete(value: {
   prompt_hash: string;
   run_id: string;
   shard_id: string;
-  temperature?: number;
+  temperature?: number | undefined;
 }): boolean {
   return exactPromptHash(value.prompt_hash)
     && exactModelRevision(value.model)
     && value.run_id.length > 0
     && value.shard_id.length > 0
     && value.temperature !== undefined;
+}
+
+export function validateAgreementGate(raw: unknown, expectedPairCount: number): {
+  passes: boolean;
+  kappa: number | null;
+  error: string | null;
+} {
+  const parsed = AgreementArtifactSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      passes: false,
+      kappa: null,
+      error: parsed.error.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`).join("; "),
+    };
+  }
+  const kappa = parsed.data.agreement.relevantFamily.kappaQuadratic.kappa;
+  const pairCountMatches = parsed.data.pair_count === expectedPairCount;
+  const adjudicationComplete = parsed.data.adjudicated_count === parsed.data.disagreement_count;
+  return {
+    passes: kappa !== null
+      && kappa >= 0.6
+      && parsed.data.agreement.passes
+      && pairCountMatches
+      && adjudicationComplete,
+    kappa,
+    error: !pairCountMatches
+      ? `pair_count ${parsed.data.pair_count} does not match reviewed calibration ${expectedPairCount}`
+      : !adjudicationComplete
+        ? `adjudicated_count ${parsed.data.adjudicated_count} does not match disagreement_count ${parsed.data.disagreement_count}`
+        : null,
+  };
 }
 
 async function main(): Promise<void> {
@@ -165,7 +208,7 @@ async function main(): Promise<void> {
     validateJsonl(resolve(ROOT, "pool/pool-v2.jsonl"), PoolRecordSchema),
     validateJsonl(resolve(ROOT, "qrels/development-v2.jsonl"), QrelRecordSchema),
     validateJsonl(resolve(ROOT, "qrels/release-v2.jsonl"), QrelRecordSchema),
-    validateJsonl(resolve(ROOT, "reports/calibration-records-v2.jsonl"), AgentCalibrationSchema),
+    validateJsonl(resolve(ROOT, "reports/calibration-v2.jsonl"), AgentCalibrationSchema),
   ]);
   const catalog = catalogResult.records as CatalogRecord[];
   const sidecars = sidecarResult.records as SidecarRecord[];
@@ -246,6 +289,7 @@ async function main(): Promise<void> {
 
   const systemsInPool = new Set(pool.flatMap(record => record.contributions.map(item => item.system)));
   let poolCoverageError: string | null = "complete dataset and run artifacts are missing";
+  let currentSystemRuns: SystemRuns | null = null;
   if (catalog.length === RELEASE_COUNTS.resources.total
       && sidecars.length === RELEASE_COUNTS.resources.total
       && queries.length === RELEASE_COUNTS.queries.total) {
@@ -253,6 +297,7 @@ async function main(): Promise<void> {
       const queryIds = new Set(queries.map(record => record.query_id));
       const resourceIds = new Set(catalog.map(record => record.resource_id));
       const runs = await loadSystemRuns(resolve(ROOT, "runs"), queryIds, resourceIds);
+      currentSystemRuns = runs;
       validateRunEligibility({ catalog, sidecars, queries }, runs);
       validateExactPoolCoverage(pool, runs);
       poolCoverageError = null;
@@ -276,13 +321,13 @@ async function main(): Promise<void> {
   const archiveComplete = archiveChecks.every(Boolean)
     && await fileExists(resolve(ROOT, "../tests/fixtures/search/golden-v1.json"));
 
-  const [pilot, distributionAudit, unpooledAudit, forbiddenAudit, calibrationReport, finalReport,
+  const [pilot, distributionAudit, unpooledAudit, forbiddenAudit, agreementRaw, finalReport,
     isolationAudit, blindnessAudit, manifest, ownerReviewRaw] = await Promise.all([
     loadJson(resolve(REPORTS, "pilot-v2.json")),
     loadJson(resolve(REPORTS, "distribution-audit-v2.json")),
     loadJson(resolve(REPORTS, "unpooled-audit-v2.json")),
     loadJson(resolve(REPORTS, "forbidden-capability-audit-v2.json")),
-    loadJson(resolve(REPORTS, "calibration-v2.json")),
+    loadJson(resolve(REPORTS, "agreement-v2.json")),
     loadJson(resolve(REPORTS, "final-v2.json")),
     loadJson(resolve(REPORTS, "isolation-audit-v2.json")),
     loadJson(resolve(REPORTS, "grading-blindness-v2.json")),
@@ -293,6 +338,12 @@ async function main(): Promise<void> {
   const parsedForbiddenAudit = forbiddenAudit === null
     ? null
     : ForbiddenCapabilityAuditReportSchema.safeParse(forbiddenAudit);
+  const parsedUnpooledAudit = unpooledAudit === null
+    ? null
+    : UnpooledAuditFinalReportSchema.safeParse(unpooledAudit);
+  const parsedDistributionAudit = distributionAudit === null
+    ? null
+    : DistributionAuditV2Schema.safeParse(distributionAudit);
   const parsedPilot = pilot === null ? null : PilotReportEvidenceSchema.safeParse(pilot);
   const parsedFinalReport = finalReport === null ? null : EvaluationReportV2Schema.safeParse(finalReport);
   const parsedManifest = manifest === null ? null : DatasetManifestV2Schema.safeParse(manifest);
@@ -300,6 +351,42 @@ async function main(): Promise<void> {
   const forbiddenDefinitions = parseForbiddenCapabilities(forbiddenMarkdown);
   const deterministicForbiddenHits = scanForbiddenRecords(catalog, forbiddenDefinitions);
   const currentForbiddenCorpusHash = forbiddenCorpusHash(catalog, sidecars);
+  let distributionAuditCurrent = false;
+  if (parsedDistributionAudit?.success) {
+    const recomputed = buildDistributionAuditV2(catalog, sidecars, parsedDistributionAudit.data.generated_at);
+    distributionAuditCurrent = JSON.stringify(recomputed) === JSON.stringify(parsedDistributionAudit.data);
+  }
+  const unpooledPairs = new Set(pool.filter(record => record.origin === "unpooled_audit")
+    .map(record => `${record.query_id}\0${record.resource_id}`));
+  const currentUnpooledQrels = qrels.filter(record => unpooledPairs.has(`${record.query_id}\0${record.resource_id}`))
+    .sort((left, right) => `${left.query_id}\0${left.resource_id}`.localeCompare(`${right.query_id}\0${right.resource_id}`));
+  let currentUnpooledSourceHash: string | null = null;
+  let unpooledSourceError: string | null = null;
+  try {
+    if (catalog.length === RELEASE_COUNTS.resources.total
+        && sidecars.length === RELEASE_COUNTS.resources.total
+        && queries.length === RELEASE_COUNTS.queries.total) {
+      currentUnpooledSourceHash = currentUnpooledAuditSourceHash({ catalog, sidecars, queries, pool });
+    }
+  } catch (error) {
+    unpooledSourceError = (error as Error).message;
+  }
+  const unpooledAuditApproved = parsedUnpooledAudit?.success === true
+    && parsedUnpooledAudit.data.status === "approved"
+    && parsedUnpooledAudit.data.source_hash === currentUnpooledSourceHash
+    && unpooledPairs.size === parsedUnpooledAudit.data.audited_pair_count
+    && currentUnpooledQrels.length === parsedUnpooledAudit.data.audited_pair_count
+    && parsedUnpooledAudit.data.reviewed_qrels_hash === unpooledArtifactHash(currentUnpooledQrels);
+  const releaseQueryIdsForReport = new Set(queries.filter(query => query.split === "release").map(query => query.query_id));
+  const currentReportInputHashes = currentSystemRuns === null || releaseQueryIdsForReport.size !== RELEASE_COUNTS.queries.release
+    ? null
+    : evaluationInputHashes(queries, qrels, scoringRunsFromPoolRuns(currentSystemRuns, releaseQueryIdsForReport), "release");
+  const finalReportInputsCurrent = parsedFinalReport?.success === true
+    && currentReportInputHashes !== null
+    && JSON.stringify(parsedFinalReport.data.input_hashes) === JSON.stringify(currentReportInputHashes);
+  const finalReportPilotThresholdCurrent = parsedFinalReport?.success === true
+    && parsedPilot?.success === true
+    && parsedFinalReport.data.judged_at_10.pilot_derived_threshold === parsedPilot.data.judged_at_10_threshold;
   let frozenDatasetVerified = false;
   let frozenDatasetError: string | null = null;
   let releaseLedgerEntries = 0;
@@ -356,9 +443,8 @@ async function main(): Promise<void> {
     && releaseQrels.every(qrel => Boolean(qrel.rationale));
 
   const thresholdsReported = parsedFinalReport?.success === true;
-  const calibrationPassed = evidenceApproved(calibrationReport)
-    && typeof calibrationReport?.relevant_family_weighted_kappa === "number"
-    && calibrationReport.relevant_family_weighted_kappa >= 0.6;
+  const agreementGate = validateAgreementGate(agreementRaw, calibrationResult.records.length);
+  const calibrationPassed = agreementGate.passes;
   const significanceReported = parsedFinalReport?.success === true && parsedFinalReport.data.significance_reported;
   const bm25Reported = parsedFinalReport?.success === true
     && parsedFinalReport.data.bm25_baseline && systemsInPool.has("bm25");
@@ -378,7 +464,11 @@ async function main(): Promise<void> {
     gate("axis-differences", "Every labeled sibling pair differs on at least two axes",
       labeled.length === 100 && axisErrors.length === 0, `${axisErrors.length} failures`),
     gate("anti-correlation", "upto, mcp, and network show no prohibited correlation",
-      evidenceApproved(distributionAudit), `distribution audit ${distributionAudit ? "present" : "missing"}`),
+      parsedDistributionAudit?.success === true
+        && parsedDistributionAudit.data.all_checks_passed
+        && distributionAuditCurrent,
+      `distribution audit ${parsedDistributionAudit?.success ? parsedDistributionAudit.data.status : distributionAudit ? "invalid" : "missing"}`,
+      `current inputs ${distributionAuditCurrent ? "verified" : "stale/missing"}`),
     gate("adversarial", "At least six adversarial kinds are present",
       new Set(labeled.map(record => record.adversarial_kind).filter(Boolean)).size >= 6,
       `${new Set(labeled.map(record => record.adversarial_kind).filter(Boolean)).size}/${ADVERSARIAL_KINDS.length} kinds`),
@@ -389,11 +479,16 @@ async function main(): Promise<void> {
       fiveSystemPool && unjudgedPool.length === 0, `${systemsInPool.size}/5 systems`,
       `exact coverage ${poolCoverageError ?? "verified"}`, `${unjudgedPool.length} unjudged pooled pairs`),
     gate("unpooled-audit", "Unpooled audit performed and relevance rate reported",
-      evidenceApproved(unpooledAudit) && typeof unpooledAudit?.audited_relevance_rate === "number",
-      `unpooled audit ${unpooledAudit ? "present" : "missing"}`),
+      unpooledAuditApproved,
+      `unpooled audit ${parsedUnpooledAudit?.success ? parsedUnpooledAudit.data.status : unpooledAudit ? "invalid" : "missing"}`,
+      `${unpooledPairs.size} audit pool pair(s), ${currentUnpooledQrels.length} reviewed qrel(s)`,
+      `source ${unpooledSourceError ?? (currentUnpooledSourceHash === null ? "unavailable" : "hash checked")}`),
     gate("judged-at-k", "judged@10 meets the pilot-derived threshold",
-      pilotComplete && parsedFinalReport?.success === true && parsedFinalReport.data.judged_at_10_gate_passed,
-      `pilot ${pilotComplete ? "complete" : "missing/incomplete"}`),
+      pilotComplete && finalReportPilotThresholdCurrent && finalReportInputsCurrent
+        && parsedFinalReport?.success === true && parsedFinalReport.data.judged_at_10_gate_passed,
+      `pilot ${pilotComplete ? "complete" : "missing/incomplete"}`,
+      `pilot threshold ${finalReportPilotThresholdCurrent ? "matches" : "missing/stale"}`,
+      `report inputs ${finalReportInputsCurrent ? "current" : "missing/stale"}`),
     gate("no-result", "Forbidden capabilities scanned, independently audited, owner-approved",
       deterministicForbiddenHits.length === 0
         && parsedForbiddenAudit?.success === true
@@ -412,14 +507,16 @@ async function main(): Promise<void> {
     gate("blindness", "Grading was blind to system, score, rank, author, and other grader",
       evidenceApproved(blindnessAudit), `blindness audit ${blindnessAudit ? "present" : "missing"}`),
     gate("agreement", "Restricted weighted kappa is reported and at least 0.6",
-      calibrationPassed, `calibration ${calibrationReport ? "present" : "missing"}`),
+      calibrationPassed,
+      `agreement ${agreementRaw ? agreementGate.error ?? "strictly valid" : "missing"}`,
+      `relevant-family quadratic kappa ${agreementGate.kappa ?? "undefined"}`,
+      `${calibrationResult.records.length} reviewed calibration rows`),
     gate("rationales", "All release judgments carry rationales", releaseRationales,
       `${releaseIds.size}/50 release queries`, `${qrels.length} total qrels`),
     gate("owner-review", "Owner reviewed every resource, query, qrel, adjudication, and correction",
       ownerReviewedResources && ownerReviewedQueries && ownerReviewedQrels && ownerReviewedCalibration
         && ownerReview?.success === true
-        && ownerReview.data.pairs.rejected === 0 && ownerReview.data.queries.rejected === 0
-        && evidenceApproved(calibrationReport),
+        && ownerReview.data.pairs.rejected === 0 && ownerReview.data.queries.rejected === 0,
       `resources reviewed ${sidecars.filter(record => record.review_status !== "pending").length}/${sidecars.length}`,
       `queries reviewed ${queries.filter(record => record.review_status !== "pending").length}/${queries.length}`,
       `qrels reviewed ${qrels.filter(record => record.review_status !== "pending").length}/${qrels.length}`,
@@ -439,6 +536,10 @@ async function main(): Promise<void> {
 
   const step3Done = labeled.length === 100 && ownerReviewedResources && provenanceComplete;
   const step4Done = allResourcesPresent && evidenceApproved(forbiddenAudit);
+  const step9Done = calibrationPassed && ownerReviewedCalibration
+    && ownerReview?.success === true
+    && ownerReview.data.pairs.rejected === 0
+    && ownerReview.data.queries.rejected === 0;
   const steps: Step[] = [
     { step: 0, name: "v2 schema and v1 archive", status: archiveComplete && schemaErrors.length === 0 ? "done" : "partial",
       evidence: [`archive ${archiveComplete ? "complete" : "incomplete"}`, `${schemaErrors.length} current schema errors`], blockers: [] },
@@ -460,8 +561,10 @@ async function main(): Promise<void> {
       evidence: [`${systemsInPool.size}/5 systems`, `${pool.length} pool rows`], blockers: fiveSystemPool ? [] : ["runs and pool builder output missing"] },
     { step: 8, name: "dual grading and unpooled audit", status: qrels.length > 0 ? "partial" : "not_started",
       evidence: [`${qrels.length} qrels`], blockers: qrels.length > 0 ? ["pool completeness/unpooled audit incomplete"] : ["pool and grading absent"] },
-    { step: 9, name: "adjudication and owner review", status: calibrationPassed ? "done" : "not_started",
-      evidence: [`${calibrationResult.records.length} calibration rows`], blockers: calibrationPassed ? [] : ["adjudication/calibration/owner review absent"] },
+    { step: 9, name: "adjudication and owner review", status: step9Done ? "done" : "not_started",
+      evidence: [`${calibrationResult.records.length} calibration rows`,
+        `agreement ${agreementRaw ? agreementGate.error ?? "strictly valid" : "missing"}`],
+      blockers: step9Done ? [] : ["adjudication/calibration/owner review absent"] },
     { step: 10, name: "score, significance, and report", status: completedFinalHoldoutRun ? "done" : "not_started",
       evidence: [`final report ${finalReport ? "present" : "missing"}`, `final holdout ledger ${completedFinalHoldoutRun ? "complete" : "incomplete"}`],
       blockers: completedFinalHoldoutRun ? [] : ["judgments, run outputs, owner review, or final ledger event absent"] },
@@ -495,7 +598,9 @@ async function main(): Promise<void> {
   if (blockers.length > 0 && !process.argv.includes("--report-only")) process.exitCode = 1;
 }
 
-main().catch(error => {
-  console.error(error);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
+}

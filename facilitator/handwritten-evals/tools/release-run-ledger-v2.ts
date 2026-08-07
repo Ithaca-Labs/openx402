@@ -38,6 +38,32 @@ const relativeArtifactPath = z.string().min(1).refine(
 
 export const RELEASE_RUN_PHASES = ["started", "completed", "failed"] as const;
 export const RELEASE_RUN_PURPOSES = ["milestone", "final"] as const;
+export const FINAL_RELEASE_REPORT_PATH = "reports/final-v2.json";
+
+/** Immutable report path for one recorded holdout run. */
+export function versionedReleaseReportPath(runId: string, purpose: ReleaseRunPurpose): string {
+  const parsedRunId = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$/).parse(runId);
+  const parsedPurpose = z.enum(RELEASE_RUN_PURPOSES).parse(purpose);
+  return `reports/releases/${parsedPurpose}-${parsedRunId}-v2.json`;
+}
+
+/** Preserved pre-signoff report; never accepted by the release ledger or release gates. */
+export function releaseReportDraftPath(runId: string, purpose: ReleaseRunPurpose): string {
+  const parsedRunId = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$/).parse(runId);
+  const parsedPurpose = z.enum(RELEASE_RUN_PURPOSES).parse(purpose);
+  return `reports/drafts/${parsedPurpose}-${parsedRunId}-v2.json`;
+}
+
+/** Paths created together by the report generator. */
+export function releaseReportOutputPaths(runId: string, purpose: ReleaseRunPurpose): string[] {
+  const versioned = versionedReleaseReportPath(runId, purpose);
+  return purpose === "final" ? [versioned, FINAL_RELEASE_REPORT_PATH] : [versioned];
+}
+
+/** Compatibility path recorded as `report.path`; the immutable path is always recorded separately. */
+export function releaseReportCompletionPath(runId: string, purpose: ReleaseRunPurpose): string {
+  return purpose === "final" ? FINAL_RELEASE_REPORT_PATH : versionedReleaseReportPath(runId, purpose);
+}
 
 export const ReleaseRunLedgerEntryV2Schema = z.object({
   sequence: z.number().int().positive(),
@@ -52,7 +78,14 @@ export const ReleaseRunLedgerEntryV2Schema = z.object({
   dataset_manifest_path: z.literal(DATASET_MANIFEST_PATH),
   dataset_manifest_sha256: sha256,
   release_query_index_sha256: sha256,
-  report: z.object({ path: relativeArtifactPath, sha256 }).strict().nullable(),
+  report: z.object({
+    /** Compatibility path consumed by release gates; final runs retain the canonical final path. */
+    path: relativeArtifactPath,
+    sha256,
+    /** Run-specific immutable copy. Absent only on ledger entries created before this field existed. */
+    versioned_path: relativeArtifactPath.optional(),
+    versioned_sha256: sha256.optional(),
+  }).strict().nullable(),
   failure_reason: z.string().min(1).max(2_000).nullable(),
 }).strict().superRefine((value, context) => {
   if (value.phase === "completed" && value.report === null) {
@@ -60,6 +93,42 @@ export const ReleaseRunLedgerEntryV2Schema = z.object({
   }
   if (value.phase !== "completed" && value.report !== null) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["report"], message: "only completed events carry a report" });
+  }
+  if (value.report) {
+    const versionedFields = value.report.versioned_path !== undefined
+      || value.report.versioned_sha256 !== undefined;
+    if (versionedFields && (value.report.versioned_path === undefined || value.report.versioned_sha256 === undefined)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["report"],
+        message: "versioned report path and hash must be recorded together",
+      });
+    }
+    if (value.report.versioned_path !== undefined) {
+      const expectedVersionedPath = versionedReleaseReportPath(value.run_id, value.purpose);
+      const expectedPrimaryPath = releaseReportCompletionPath(value.run_id, value.purpose);
+      if (value.report.path !== expectedPrimaryPath) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["report", "path"],
+          message: `expected completion report path ${expectedPrimaryPath}`,
+        });
+      }
+      if (value.report.versioned_path !== expectedVersionedPath) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["report", "versioned_path"],
+          message: `expected immutable report path ${expectedVersionedPath}`,
+        });
+      }
+      if (value.report.versioned_sha256 !== value.report.sha256) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["report", "versioned_sha256"],
+          message: "canonical and immutable report bytes must match",
+        });
+      }
+    }
   }
   if (value.phase === "failed" && value.failure_reason === null) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["failure_reason"], message: "failed events require a reason" });
@@ -113,7 +182,10 @@ function rootRelativePath(root: string, path: string): string {
   return result.split(sep).join("/");
 }
 
-export async function readReleaseRunLedger(path: string): Promise<ReleaseRunLedgerEntryV2[]> {
+export async function readReleaseRunLedger(
+  path: string,
+  rootInput?: string,
+): Promise<ReleaseRunLedgerEntryV2[]> {
   let text: string;
   try {
     text = await readFile(path, "utf8");
@@ -140,6 +212,34 @@ export async function readReleaseRunLedger(path: string): Promise<ReleaseRunLedg
     if (entry.previous_event_hash !== expectedPrevious) throw new Error(`${path}:${index + 1}: broken hash chain`);
     if (entry.event_hash !== releaseRunEventHash(withoutEventHash(entry))) {
       throw new Error(`${path}:${index + 1}: event hash mismatch`);
+    }
+  }
+  // The canonical ledger lives in <root>/manifests/. Callers using another location must pass root.
+  const root = resolve(rootInput ?? resolve(dirname(path), ".."));
+  for (const [index, entry] of entries.entries()) {
+    if (!entry.report) continue;
+    const verifyReport = async (relativePath: string, expected: string, label: string): Promise<void> => {
+      rootRelativePath(root, relativePath);
+      let actual: string;
+      try {
+        actual = (await hashFile(resolve(root, relativePath))).sha256;
+      } catch (error) {
+        throw new Error(
+          `${path}:${index + 1}: cannot verify ${label} ${relativePath}: `
+          + `${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      if (actual !== expected) {
+        throw new Error(`${path}:${index + 1}: ${label} ${relativePath} differs from recorded SHA-256`);
+      }
+    };
+    await verifyReport(entry.report.path, entry.report.sha256, "completed report");
+    if (entry.report.versioned_path && entry.report.versioned_sha256) {
+      await verifyReport(
+        entry.report.versioned_path,
+        entry.report.versioned_sha256,
+        "immutable completed report",
+      );
     }
   }
   return entries;
@@ -211,7 +311,7 @@ export async function recordReleaseRunEvent(options: RecordReleaseRunOptions): P
   }
   try {
     const frozen = await verifyFrozenDataset(root);
-    const entries = await readReleaseRunLedger(ledgerPath);
+    const entries = await readReleaseRunLedger(ledgerPath, root);
     validateTransition(entries, options);
     const started = entries.find(entry => entry.run_id === options.runId && entry.phase === "started");
     if (started && started.dataset_manifest_sha256 !== frozen.manifestSha256) {
@@ -220,7 +320,26 @@ export async function recordReleaseRunEvent(options: RecordReleaseRunOptions): P
     let report: ReleaseRunLedgerEntryV2["report"] = null;
     if (options.reportPath) {
       const path = rootRelativePath(root, options.reportPath);
-      report = { path, sha256: (await hashFile(resolve(root, path))).sha256 };
+      const expectedVersionedPath = versionedReleaseReportPath(options.runId, options.purpose);
+      const expectedPrimaryPath = releaseReportCompletionPath(options.runId, options.purpose);
+      if (path !== expectedPrimaryPath) {
+        throw new Error(
+          `${options.runId}: ${options.purpose} completion must use --report ${expectedPrimaryPath}`,
+        );
+      }
+      const [primary, versioned] = await Promise.all([
+        hashFile(resolve(root, path)),
+        hashFile(resolve(root, expectedVersionedPath)),
+      ]);
+      if (primary.sha256 !== versioned.sha256) {
+        throw new Error(`${options.runId}: canonical and immutable release report bytes differ`);
+      }
+      report = {
+        path,
+        sha256: primary.sha256,
+        versioned_path: expectedVersionedPath,
+        versioned_sha256: versioned.sha256,
+      };
     }
     const body: Omit<ReleaseRunLedgerEntryV2, "event_hash"> = {
       sequence: entries.length + 1,

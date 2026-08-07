@@ -2,10 +2,10 @@
 
 /** BUILD-PLAN §10 report CLI. Development is the safe default; release requires a started ledger event. */
 
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { QrelRecordSchema, type QrelRecord } from "../schema/schema-v2.js";
-import { OwnerReviewReportSchema } from "./grading-pipeline.js";
+import { OwnerReviewReportSchema, writeArtifactBundleExclusive } from "./grading-pipeline.js";
 import { loadSystemRuns, loadV2Dataset } from "./pool.js";
 import {
   buildEvaluationReport,
@@ -13,7 +13,12 @@ import {
   PilotReportEvidenceSchema,
   scoringRunsFromPoolRuns,
 } from "./report-v2.js";
-import { readReleaseRunLedger, verifyFrozenDataset } from "./release-run-ledger-v2.js";
+import {
+  readReleaseRunLedger,
+  releaseReportDraftPath,
+  verifyFrozenDataset,
+  type ReleaseRunLedgerEntryV2,
+} from "./release-run-ledger-v2.js";
 
 async function readJson(path: string): Promise<unknown> {
   try {
@@ -39,7 +44,11 @@ async function readQrels(path: string): Promise<QrelRecord[]> {
   });
 }
 
-async function assertStartedReleaseRun(root: string, runId: string, manifestSha256: string): Promise<void> {
+async function assertStartedReleaseRun(
+  root: string,
+  runId: string,
+  manifestSha256: string,
+): Promise<ReleaseRunLedgerEntryV2> {
   const ledger = await readReleaseRunLedger(resolve(root, "manifests/release-runs-v2.jsonl"));
   const entries = ledger.filter(entry => entry.run_id === runId);
   const started = entries.filter(entry => entry.phase === "started");
@@ -52,6 +61,7 @@ async function assertStartedReleaseRun(root: string, runId: string, manifestSha2
   if (started[0]!.dataset_manifest_sha256 !== manifestSha256) {
     throw new Error(`${runId}: ledger event references a different frozen manifest`);
   }
+  return started[0]!;
 }
 
 async function main(): Promise<void> {
@@ -67,7 +77,9 @@ async function main(): Promise<void> {
   }
   const root = resolve(rootInput ?? resolve(import.meta.dirname, ".."));
   const frozen = await verifyFrozenDataset(root);
-  if (split === "release") await assertStartedReleaseRun(root, releaseRunId!, frozen.manifestSha256);
+  const releaseStart = split === "release"
+    ? await assertStartedReleaseRun(root, releaseRunId!, frozen.manifestSha256)
+    : undefined;
 
   // Release qrels are not touched until the explicit ledger check above succeeds.
   const qrelPath = resolve(root, split === "release" ? "qrels/release-v2.jsonl" : "qrels/development-v2.jsonl");
@@ -109,12 +121,16 @@ async function main(): Promise<void> {
     limitations: limitations.limitations,
     plantedNegativeResourceIds,
   });
-  const output = resolve(root, split === "release" ? "reports/final-v2.json" : "reports/development-v2.json");
-  await mkdir(dirname(output), { recursive: true });
-  await writeFile(output, `${JSON.stringify(report, null, 2)}\n`, { flag: "wx" });
-  console.log(`${split} report: ${report.query_count} queries, 5 systems -> ${output}`);
+  const relativeOutputs = split === "release"
+    ? [releaseReportDraftPath(releaseRunId!, releaseStart!.purpose)]
+    : ["reports/development-v2.json"];
+  const outputs = relativeOutputs.map(path => resolve(root, path));
+  await writeArtifactBundleExclusive(outputs.map(path => ({ path, value: report })));
+  console.log(`${split} report: ${report.query_count} queries, 5 systems -> ${outputs.join(", ")}`);
   if (split === "release") {
-    console.log(`owner review required; then append a completed ${releaseRunId} ledger event with --report ${output}`);
+    console.log(
+      `owner review required; finalize the preserved draft with finalize-report-v2.ts ${releaseRunId} <signoff.json>`,
+    );
   }
 }
 

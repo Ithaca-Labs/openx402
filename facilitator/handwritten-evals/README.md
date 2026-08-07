@@ -146,11 +146,10 @@ Known conflicts between §3's axis values and the v1 field enums are listed at t
 | 1 — mandatory end-to-end pilot | **blocked**: no pilot artifacts, measured `judged@10` threshold, exclusion-audit cost, dual grading, or owner review exist |
 | 2 — 20 families + axis assignments | done: `spec/families.md`, `spec/axes.md` |
 | 3 — author 100 resources | partial: all 100 labeled records are merged and schema-valid; all 100 sidecars remain `review_status: "pending"`, and release-grade provenance/owner acceptance is absent |
-| 4 — author ~900 distractors, validate no-result exclusion | package ready, authoring blocked: shared brief, scanner, assignment policy, and 90 isolated prompts exist; 0/900 distractors authored; labeled `res-0045` currently matches FC-08 (`voice-to-text`) |
-| 5 — author 100 queries + pass-1 labels | not started |
+| 4 — author ~900 distractors, validate no-result exclusion | package ready, authoring blocked: shared brief, scanner, assignment policy, and 90 isolated prompts exist; 0/900 distractors authored; the current 100-record catalog has zero deterministic forbidden-signature hits |
+| 5 — author 100 queries + pass-1 labels | package ready, authoring not started: 10 isolated query prompts and 10 concrete anchor-aware blind pass-1 grader prompts are generated; 0/100 queries |
 | 6–10 — freeze, pool, grade, review, score | not started |
 
 Run `npm run benchmark:v2:status` for the evidence-backed snapshot in
 `reports/release-gates-v2.json`. Missing semantic or owner-review evidence is always reported as
 blocked, never inferred. Step 1 remains mandatory before any full-scale authoring wave is launched.
-The existing FC-08 catalog conflict also requires owner review before Step 4 dispatch.

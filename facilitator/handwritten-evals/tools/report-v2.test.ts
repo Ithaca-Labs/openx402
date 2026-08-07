@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { POOL_SYSTEMS, type QrelRecord, type QueryRecord } from "../schema/schema-v2.js";
 import {
-  buildEvaluationReport, PilotReportEvidenceSchema, scoringRunsFromPoolRuns, type SystemRun,
+  buildEvaluationReport,
+  EvaluationReportDraftV2Schema,
+  EvaluationReportV2Schema,
+  evaluationInputHashes,
+  finalizeEvaluationReport,
+  PilotReportEvidenceSchema,
+  reportArtifactHash,
+  scoringRunsFromPoolRuns,
+  type SystemRun,
 } from "./report-v2.js";
 import type { SystemRuns } from "./pool.js";
 
@@ -142,6 +150,7 @@ describe("v2 evaluation report", () => {
     const queries = releaseQueries();
     const report = buildEvaluationReport(queries, releaseQrels(queries), runs(queries), options);
 
+    expect(EvaluationReportDraftV2Schema.parse(report)).toEqual(report);
     expect(Object.keys(report.systems)).toEqual(POOL_SYSTEMS);
     expect(report.ndcg_gains).toEqual([0, 1, 3, 7]);
     expect(report.relevance_thresholds).toMatchObject({ mrr: 2, recall_at_k: 2, bpref: 2 });
@@ -151,6 +160,55 @@ describe("v2 evaluation report", () => {
     expect(report.significance.reranked!.ndcg_at_10!.summary).toContain("NOT significant");
     expect(report.bm25_baseline).toBe(true);
     expect(report.owner_rates_reported).toBe(true);
+    expect(report.input_hashes).toEqual(evaluationInputHashes(queries, releaseQrels(queries), runs(queries), "release"));
+  });
+
+  it("requires an exact owner signoff before producing an approved final report", () => {
+    const queries = releaseQueries();
+    const draft = buildEvaluationReport(queries, releaseQrels(queries), runs(queries), options);
+    const signoff = {
+      version: 1 as const,
+      decision: "approved" as const,
+      draft_report_hash: reportArtifactHash(draft),
+      reviewer: "benchmark-owner",
+      reviewed_at: generatedAt,
+      rationale: "Reviewed metrics, significance, coverage, owner rates, and disclosed limitations.",
+      limitations_acknowledged: true as const,
+    };
+    const approved = finalizeEvaluationReport(draft, signoff);
+    expect(EvaluationReportV2Schema.parse(approved)).toEqual(approved);
+    expect(approved.status).toBe("approved");
+    expect(approved.owner_signoff).toEqual(signoff);
+    expect(draft.status).toBe("draft_pending_owner_review");
+    expect(() => finalizeEvaluationReport(draft, {
+      ...signoff, draft_report_hash: `sha256:${"f".repeat(64)}`,
+    })).toThrow(/does not match the preserved draft/);
+  });
+
+  it("hash-binds reports to the selected qrels and ranked run inputs", () => {
+    const queries = releaseQueries();
+    const qrels = releaseQrels(queries);
+    const systemRuns = runs(queries);
+    const initial = evaluationInputHashes(queries, qrels, systemRuns, "release");
+    qrels[0] = { ...qrels[0]!, grade: 2 };
+    expect(evaluationInputHashes(queries, qrels, systemRuns, "release").qrels).not.toBe(initial.qrels);
+    systemRuns[0]!.results[0] = { ...systemRuns[0]!.results[0]!, ranking: ["res-0002", "res-0001"] };
+    expect(evaluationInputHashes(queries, qrels, systemRuns, "release").system_runs.lexical)
+      .not.toBe(initial.system_runs.lexical);
+  });
+
+  it("rejects opaque or self-asserted metric evidence", () => {
+    const queries = releaseQueries();
+    const draft = buildEvaluationReport(queries, releaseQrels(queries), runs(queries), options);
+    expect(EvaluationReportDraftV2Schema.safeParse({
+      ...draft, systems: { ...draft.systems, lexical: {} },
+    }).success).toBe(false);
+    expect(EvaluationReportDraftV2Schema.safeParse({
+      ...draft, significance: {},
+    }).success).toBe(false);
+    expect(EvaluationReportDraftV2Schema.safeParse({
+      ...draft, judged_at_10_gate_passed: false,
+    }).success).toBe(false);
   });
 
   it("refuses a release report without pilot and owner evidence", () => {

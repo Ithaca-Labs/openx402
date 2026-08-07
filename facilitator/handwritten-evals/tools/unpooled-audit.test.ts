@@ -14,10 +14,14 @@ import {
   assertNoUnpooledAuditPackLeakage,
   AUDIT_BATCH_COUNT,
   AUDIT_PAIR_COUNT,
+  applyUnpooledAuditOwnerReview,
+  currentUnpooledAuditSourceHash,
   finalizeUnpooledAudit,
   parseUnpooledAuditPrerequisites,
   prepareUnpooledAudit,
   UnpooledAuditPendingReportSchema,
+  UnpooledAuditFinalReportSchema,
+  unpooledArtifactHash,
   validateUnpooledAuditImports,
   writeUnpooledAuditPreparationExclusive,
   type UnpooledAuditImport,
@@ -205,6 +209,34 @@ function imports(manifest: UnpooledAuditManifest): UnpooledAuditImport[] {
   }));
 }
 
+function ownerDecision(
+  report: ReturnType<typeof finalizeUnpooledAudit>["report"],
+  qrels: ReturnType<typeof finalizeUnpooledAudit>["qrels"],
+  threshold = 0.6,
+) {
+  return {
+    version: 1 as const,
+    pipeline_run_id: report.pipeline_run_id,
+    source_hash: report.source_hash,
+    raw_report_hash: unpooledArtifactHash(report),
+    reviewer: "benchmark-owner",
+    reviewed_at: NOW,
+    materiality_threshold: threshold,
+    pooling_decision: "approved" as const,
+    rationale: "The measured unpooled relevance rate is below the predeclared materiality threshold.",
+    pair_decisions: qrels.map(qrel => ({
+      query_id: qrel.query_id,
+      resource_id: qrel.resource_id,
+      decision: "approved" as const,
+      grade: qrel.grade,
+      reviewer: "benchmark-owner",
+      reviewed_at: NOW,
+      rationale: qrel.rationale ?? "Owner reviewed the audit judgment.",
+      notes: null,
+    })),
+  };
+}
+
 describe("Pass 2b preparation", () => {
   it("deterministically creates 10 blind 20-pair packs and an owner-only mapping", () => {
     const raw = sources();
@@ -310,6 +342,62 @@ describe("fresh audit import validation and report", () => {
     const records = imports(preparation.manifest);
     raw.catalog[10]!.wire.resource.description = "Shared astronomy topic changed after preparation.";
     expect(() => finalizeUnpooledAudit(raw, preparation.manifest, records, NOW)).toThrow(/source_hash does not match current inputs/);
+  });
+});
+
+describe("owner finalization", () => {
+  it("requires complete append-only owner review and emits reviewed qrels", () => {
+    const raw = sources();
+    const preparation = prepare(raw);
+    const pending = finalizeUnpooledAudit(raw, preparation.manifest, imports(preparation.manifest), NOW);
+    const result = applyUnpooledAuditOwnerReview(pending.report, pending.qrels, ownerDecision(pending.report, pending.qrels));
+    expect(UnpooledAuditFinalReportSchema.parse(result.report)).toEqual(result.report);
+    expect(result.report.status).toBe("approved");
+    expect(result.report.audited_relevance_rate).toBe(0.5);
+    expect(result.report.reviewed_qrels_hash).toBe(unpooledArtifactHash(result.reviewedQrels));
+    expect(result.reviewedQrels).toHaveLength(AUDIT_PAIR_COUNT);
+    expect(result.reviewedQrels.every(qrel => qrel.judge === "reviewed_agent"
+      && qrel.review_status === "approved" && qrel.reviewed_by === "benchmark-owner")).toBe(true);
+    expect(pending.qrels.every(qrel => qrel.judge === "agent" && qrel.review_status === "pending")).toBe(true);
+    expect(currentUnpooledAuditSourceHash({ ...raw, pool: [...raw.pool, ...pending.poolRecords] }))
+      .toBe(pending.report.source_hash);
+  });
+
+  it("recomputes the rate after corrections and enforces the materiality decision", () => {
+    const raw = sources();
+    const preparation = prepare(raw);
+    const pending = finalizeUnpooledAudit(raw, preparation.manifest, imports(preparation.manifest), NOW);
+    const owner = ownerDecision(pending.report, pending.qrels, 0.5);
+    const correctedIndex = pending.qrels.findIndex(qrel => qrel.grade === 0);
+    owner.pair_decisions[correctedIndex] = {
+      ...owner.pair_decisions[correctedIndex]!, decision: "corrected", grade: 3,
+      notes: "Owner found the candidate fully relevant after review.",
+    };
+    expect(() => applyUnpooledAuditOwnerReview(pending.report, pending.qrels, owner)).toThrow(/pooling_decision must be repool_required/);
+    const result = applyUnpooledAuditOwnerReview(pending.report, pending.qrels, {
+      ...owner, pooling_decision: "repool_required",
+    });
+    expect(result.report.status).toBe("repool_required");
+    expect(result.report.corrected_pair_count).toBe(1);
+    expect(result.report.audited_relevance_rate).toBe(101 / 200);
+  });
+
+  it("rejects stale, incomplete, or rejected owner evidence", () => {
+    const raw = sources();
+    const preparation = prepare(raw);
+    const pending = finalizeUnpooledAudit(raw, preparation.manifest, imports(preparation.manifest), NOW);
+    const owner = ownerDecision(pending.report, pending.qrels);
+    expect(() => applyUnpooledAuditOwnerReview(pending.report, pending.qrels, {
+      ...owner, raw_report_hash: `sha256:${"f".repeat(64)}`,
+    })).toThrow(/raw_report_hash/);
+    expect(() => applyUnpooledAuditOwnerReview(pending.report, pending.qrels, {
+      ...owner, pair_decisions: owner.pair_decisions.slice(1),
+    })).toThrow();
+    const rejected = { ...owner.pair_decisions[0]!, decision: "rejected" as const, grade: null,
+      notes: "Fresh audit replacement required." };
+    expect(() => applyUnpooledAuditOwnerReview(pending.report, pending.qrels, {
+      ...owner, pair_decisions: [rejected, ...owner.pair_decisions.slice(1)],
+    })).toThrow(/fresh replacement audit/);
   });
 });
 

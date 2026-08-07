@@ -26,6 +26,7 @@ import {
   type SidecarRecord,
 } from "../schema/schema-v2.js";
 import { buildCatalogIndex } from "./bm25.js";
+import { OwnerPairDecisionSchema } from "./grading-pipeline.js";
 import { deterministicEligibility, validateDatasetCompleteness, type V2Dataset } from "./pool.js";
 
 export const AUDIT_QUERY_BATCH_SIZE = 10;
@@ -186,10 +187,87 @@ export const UnpooledAuditPendingReportSchema = z.object({
   }
 });
 
+const ArtifactHashSchema = z.string().regex(/^sha256:[a-f0-9]{64}$/);
+
+/** Append-only owner decisions over every raw unpooled-audit judgment. */
+export const UnpooledAuditOwnerDecisionSchema = z.object({
+  version: z.literal(1),
+  pipeline_run_id: z.string().min(1),
+  source_hash: ArtifactHashSchema,
+  raw_report_hash: ArtifactHashSchema,
+  reviewer: z.string().min(1),
+  reviewed_at: z.string().datetime(),
+  materiality_threshold: z.number().min(0).max(1),
+  pooling_decision: z.enum(["approved", "repool_required"]),
+  rationale: z.string().min(1).max(2_000),
+  pair_decisions: z.array(OwnerPairDecisionSchema).length(AUDIT_PAIR_COUNT),
+}).strict().superRefine((value, context) => {
+  if (value.pair_decisions.some(decision => decision.reviewer !== value.reviewer)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["pair_decisions"], message: "every pair reviewer must match reviewer" });
+  }
+  if (value.pair_decisions.some(decision => decision.reviewed_at !== value.reviewed_at)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["pair_decisions"], message: "every pair timestamp must match reviewed_at" });
+  }
+});
+
+export const UnpooledAuditFinalReportSchema = z.object({
+  version: z.literal(1),
+  artifact: z.literal("unpooled-audit-v2"),
+  status: z.enum(["approved", "repool_required"]),
+  owner_review: z.enum(["approved", "repool_required"]),
+  reviewed_at: z.string().datetime(),
+  reviewed_by: z.string().min(1),
+  pipeline_run_id: z.string().min(1),
+  generated_at: z.string().datetime(),
+  source_hash: ArtifactHashSchema,
+  raw_report_hash: ArtifactHashSchema,
+  owner_decision_hash: ArtifactHashSchema,
+  reviewed_qrels_hash: ArtifactHashSchema,
+  sampling_method: z.literal("bm25_related_window_then_seeded_sample"),
+  bm25_is_relevance_judgment: z.literal(false),
+  batch_count: z.literal(AUDIT_BATCH_COUNT),
+  query_count: z.literal(RELEASE_COUNTS.queries.total),
+  audited_pair_count: z.literal(AUDIT_PAIR_COUNT),
+  relevant_pair_count: z.number().int().min(0).max(AUDIT_PAIR_COUNT),
+  audited_relevance_rate: z.number().min(0).max(1),
+  grade_counts: z.object({
+    "0": z.number().int().nonnegative(),
+    "1": z.number().int().nonnegative(),
+    "2": z.number().int().nonnegative(),
+    "3": z.number().int().nonnegative(),
+  }).strict(),
+  corrected_pair_count: z.number().int().min(0).max(AUDIT_PAIR_COUNT),
+  materiality_threshold: z.number().min(0).max(1),
+  pooling_assessment: z.enum(["acceptable_unjudged_rate", "repool_required"]),
+  owner_rationale: z.string().min(1).max(2_000),
+}).strict().superRefine((value, context) => {
+  const gradeTotal = Object.values(value.grade_counts).reduce((sum, count) => sum + count, 0);
+  if (gradeTotal !== value.audited_pair_count) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["grade_counts"], message: "grade counts must sum to audited pairs" });
+  }
+  if (value.relevant_pair_count !== value.grade_counts["2"] + value.grade_counts["3"]) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["relevant_pair_count"], message: "relevant means grade >= 2" });
+  }
+  if (Math.abs(value.audited_relevance_rate - value.relevant_pair_count / value.audited_pair_count) > 1e-12) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["audited_relevance_rate"], message: "rate must equal relevant/audited" });
+  }
+  const requiresRepool = value.audited_relevance_rate > value.materiality_threshold;
+  const expected = requiresRepool ? "repool_required" : "approved";
+  if (value.status !== expected || value.owner_review !== expected) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["status"], message: `status must be ${expected} at this rate/threshold` });
+  }
+  const expectedAssessment = requiresRepool ? "repool_required" : "acceptable_unjudged_rate";
+  if (value.pooling_assessment !== expectedAssessment) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["pooling_assessment"], message: `assessment must be ${expectedAssessment}` });
+  }
+});
+
 export type UnpooledAuditPack = z.infer<typeof UnpooledAuditPackSchema>;
 export type UnpooledAuditImport = z.infer<typeof UnpooledAuditImportSchema>;
 export type UnpooledAuditManifest = z.infer<typeof UnpooledAuditManifestSchema>;
 export type UnpooledAuditPendingReport = z.infer<typeof UnpooledAuditPendingReportSchema>;
+export type UnpooledAuditOwnerDecision = z.infer<typeof UnpooledAuditOwnerDecisionSchema>;
+export type UnpooledAuditFinalReport = z.infer<typeof UnpooledAuditFinalReportSchema>;
 
 export interface UnpooledAuditPrerequisites {
   dataset: V2Dataset;
@@ -218,6 +296,10 @@ export interface FinalizedUnpooledAudit {
 
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
+}
+
+export function unpooledArtifactHash(value: unknown): string {
+  return `sha256:${sha256(JSON.stringify(value))}`;
 }
 
 function pairKey(left: string, right: string): string {
@@ -313,6 +395,17 @@ export function parseUnpooledAuditPrerequisites(raw: {
   const systemPoolRunIds = new Set(pool.filter(record => record.origin === "system_pool").map(record => record.run_id));
   if (systemPoolRunIds.size !== 1) throw new Error("system pool must come from exactly one pool run_id");
   return { dataset, pool };
+}
+
+/** Recomputes the preparation hash from a final pool by excluding appended audit-origin rows. */
+export function currentUnpooledAuditSourceHash(raw: {
+  queries: readonly unknown[];
+  catalog: readonly unknown[];
+  sidecars: readonly unknown[];
+  pool: readonly unknown[];
+}): string {
+  const systemPool = raw.pool.filter(record => (record as { origin?: unknown }).origin !== "unpooled_audit");
+  return sourceHash(parseUnpooledAuditPrerequisites({ ...raw, pool: systemPool }));
 }
 
 function listing(catalog: CatalogRecord, sidecar: SidecarRecord): z.infer<typeof UnpooledAuditListingSchema> {
@@ -635,6 +728,97 @@ export function finalizeUnpooledAudit(
     pooling_assessment: "owner_review_required",
   });
   return { report, qrels, poolRecords };
+}
+
+/**
+ * Applies complete owner decisions without mutating the raw report/qrels. Rejected judgments are
+ * not silently dropped: they require a fresh replacement audit before this phase can succeed.
+ */
+export function applyUnpooledAuditOwnerReview(
+  rawPendingReport: unknown,
+  rawQrels: readonly unknown[],
+  rawOwnerDecision: unknown,
+): { report: UnpooledAuditFinalReport; reviewedQrels: QrelRecord[] } {
+  const pending = UnpooledAuditPendingReportSchema.parse(rawPendingReport);
+  const qrels = parseAll(QrelRecordSchema, rawQrels, "unpooled qrels");
+  const owner = UnpooledAuditOwnerDecisionSchema.parse(rawOwnerDecision);
+  if (owner.pipeline_run_id !== pending.pipeline_run_id || owner.source_hash !== pending.source_hash) {
+    throw new Error("owner decision does not match the pending audit run/source");
+  }
+  if (owner.raw_report_hash !== unpooledArtifactHash(pending)) {
+    throw new Error("owner decision raw_report_hash does not match the pending report");
+  }
+  if (qrels.length !== AUDIT_PAIR_COUNT) throw new Error(`expected ${AUDIT_PAIR_COUNT} unpooled qrels, got ${qrels.length}`);
+  if (qrels.some(record => record.judge !== "agent" || record.review_status !== "pending" || !record.eligible)) {
+    throw new Error("owner review accepts only pending eligible agent unpooled qrels");
+  }
+  const qrelKeys = qrels.map(record => pairKey(record.query_id, record.resource_id));
+  const decisionKeys = owner.pair_decisions.map(record => pairKey(record.query_id, record.resource_id));
+  if (new Set(qrelKeys).size !== qrelKeys.length || new Set(decisionKeys).size !== decisionKeys.length
+      || [...qrelKeys].sort().join("\n") !== [...decisionKeys].sort().join("\n")) {
+    throw new Error("owner pair decisions must cover every unpooled qrel exactly once");
+  }
+  if (owner.pair_decisions.some(decision => decision.decision === "rejected")) {
+    throw new Error("rejected unpooled judgments require a fresh replacement audit");
+  }
+  const decisions = new Map(owner.pair_decisions.map(record => [pairKey(record.query_id, record.resource_id), record]));
+  let corrected = 0;
+  const reviewedQrels = qrels.map(raw => {
+    const decision = decisions.get(pairKey(raw.query_id, raw.resource_id))!;
+    if (decision.decision === "approved" && decision.grade !== raw.grade) {
+      throw new Error(`${raw.query_id}/${raw.resource_id}: approved grade must equal raw grade`);
+    }
+    if (decision.decision === "corrected" && decision.grade === raw.grade) {
+      throw new Error(`${raw.query_id}/${raw.resource_id}: corrected grade must change`);
+    }
+    if (decision.decision === "corrected") corrected += 1;
+    const rationale = decision.rationale ?? raw.rationale;
+    return QrelRecordSchema.parse({
+      ...raw,
+      grade: decision.grade,
+      judge: "reviewed_agent",
+      ...(rationale === undefined ? {} : { rationale }),
+      review_status: decision.decision,
+      reviewed_at: decision.reviewed_at,
+      reviewed_by: decision.reviewer,
+      owner_note: decision.notes,
+    });
+  }).sort((left, right) => pairKey(left.query_id, left.resource_id).localeCompare(pairKey(right.query_id, right.resource_id)));
+  const gradeCounts = { "0": 0, "1": 0, "2": 0, "3": 0 };
+  for (const qrel of reviewedQrels) gradeCounts[String(qrel.grade) as keyof typeof gradeCounts] += 1;
+  const relevant = gradeCounts["2"] + gradeCounts["3"];
+  const rate = relevant / reviewedQrels.length;
+  const expectedDecision = rate > owner.materiality_threshold ? "repool_required" : "approved";
+  if (owner.pooling_decision !== expectedDecision) {
+    throw new Error(`owner pooling_decision must be ${expectedDecision} for rate ${rate} and threshold ${owner.materiality_threshold}`);
+  }
+  const report = UnpooledAuditFinalReportSchema.parse({
+    version: 1,
+    artifact: "unpooled-audit-v2",
+    status: expectedDecision,
+    owner_review: expectedDecision,
+    reviewed_at: owner.reviewed_at,
+    reviewed_by: owner.reviewer,
+    pipeline_run_id: pending.pipeline_run_id,
+    generated_at: pending.generated_at,
+    source_hash: pending.source_hash,
+    raw_report_hash: owner.raw_report_hash,
+    owner_decision_hash: unpooledArtifactHash(owner),
+    reviewed_qrels_hash: unpooledArtifactHash(reviewedQrels),
+    sampling_method: pending.sampling_method,
+    bm25_is_relevance_judgment: false,
+    batch_count: pending.batch_count,
+    query_count: pending.query_count,
+    audited_pair_count: AUDIT_PAIR_COUNT,
+    relevant_pair_count: relevant,
+    audited_relevance_rate: rate,
+    grade_counts: gradeCounts,
+    corrected_pair_count: corrected,
+    materiality_threshold: owner.materiality_threshold,
+    pooling_assessment: expectedDecision === "approved" ? "acceptable_unjudged_rate" : "repool_required",
+    owner_rationale: owner.rationale,
+  });
+  return { report, reviewedQrels };
 }
 
 export interface WrittenAuditPreparation {
