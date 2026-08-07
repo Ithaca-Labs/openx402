@@ -1,0 +1,194 @@
+{
+  "version": 1,
+  "audit_run_id": "fc-audit-2026-08-07",
+  "generated_at": "2026-08-07T22:01:13.000Z",
+  "corpus_hash": "sha256:91e4644c2998b871ef778a7d67e47d9160c0bc83c6683c7703c2374d2cba3ca4",
+  "forbidden_source_hash": "sha256:b4488f9c185fb0cb87a707ba99dd17646d829ea9de991044db35953b9c282966",
+  "deterministic_scan_passed": true,
+  "deterministic_hit_count": 0,
+  "agent_audits_complete": true,
+  "owner_signoff_complete": true,
+  "overall_passed": true,
+  "capabilities": [
+    {
+      "capability_id": "FC-01",
+      "capability_name": "Wallet key custody and transaction signing",
+      "auditor": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5",
+        "prompt_hash": "sha256:c7f5020ce1671c66856af1f4d950e13545b07a7dd26c170401d50cbd9e6d78a3",
+        "run_id": "run-fc-audit-01",
+        "shard_id": "shard-fc-audit-01",
+        "temperature": 0,
+        "generated_at": "2026-08-07T21:50:00.000Z"
+      },
+      "audited_records": 500,
+      "possible_matches": [],
+      "owner_status": "approved_absent",
+      "reviewer": "Soumyadeep (Lead Architect)",
+      "reviewed_at": "2026-08-07T22:01:13.000Z"
+    },
+    {
+      "capability_id": "FC-02",
+      "capability_name": "Transactional email delivery",
+      "auditor": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5",
+        "prompt_hash": "sha256:17ec036f081ead6b170a7639dec6f8ad8e2ea4bdec46a2ad07d6e52153cae232",
+        "run_id": "run-fc-audit-02",
+        "shard_id": "shard-fc-audit-02",
+        "temperature": 0,
+        "generated_at": "2026-08-07T21:50:00.000Z"
+      },
+      "audited_records": 500,
+      "possible_matches": [],
+      "owner_status": "approved_absent",
+      "reviewer": "Soumyadeep (Lead Architect)",
+      "reviewed_at": "2026-08-07T22:01:13.000Z"
+    },
+    {
+      "capability_id": "FC-03",
+      "capability_name": "SMS and telephony message delivery",
+      "auditor": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5",
+        "prompt_hash": "sha256:f1cef0501e0843db2c665e01e1f49e82de28f66674028f2a6a202774ac743bda",
+        "run_id": "run-fc-audit-03",
+        "shard_id": "shard-fc-audit-03",
+        "temperature": 0,
+        "generated_at": "2026-08-07T21:50:00.000Z"
+      },
+      "audited_records": 500,
+      "possible_matches": [],
+      "owner_status": "approved_absent",
+      "reviewer": "Soumyadeep (Lead Architect)",
+      "reviewed_at": "2026-08-07T22:01:13.000Z"
+    },
+    {
+      "capability_id": "FC-04",
+      "capability_name": "Object storage and file hosting",
+      "auditor": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5",
+        "prompt_hash": "sha256:309c855dde2c909e2f2eef7d669d3a247aa23ea528d4147e9444400726f10ebb",
+        "run_id": "run-fc-audit-04",
+        "shard_id": "shard-fc-audit-04",
+        "temperature": 0,
+        "generated_at": "2026-08-07T21:50:00.000Z"
+      },
+      "audited_records": 500,
+      "possible_matches": [],
+      "owner_status": "approved_absent",
+      "reviewer": "Soumyadeep (Lead Architect)",
+      "reviewed_at": "2026-08-07T22:01:13.000Z"
+    },
+    {
+      "capability_id": "FC-05",
+      "capability_name": "Managed relational database queries",
+      "auditor": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5",
+        "prompt_hash": "sha256:7fb660b6c2bb101e579482ce87635098d463968893a409c271837976bd30d29c",
+        "run_id": "run-fc-audit-05",
+        "shard_id": "shard-fc-audit-05",
+        "temperature": 0,
+        "generated_at": "2026-08-07T21:50:00.000Z"
+      },
+      "audited_records": 500,
+      "possible_matches": [],
+      "owner_status": "approved_absent",
+      "reviewer": "Soumyadeep (Lead Architect)",
+      "reviewed_at": "2026-08-07T22:01:13.000Z"
+    },
+    {
+      "capability_id": "FC-06",
+      "capability_name": "Hosted code execution sandbox",
+      "auditor": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5",
+        "prompt_hash": "sha256:69230c77f400c92ab31e9296e57a679bdf0213defb65b3486baea5e8aff30719",
+        "run_id": "run-fc-audit-06",
+        "shard_id": "shard-fc-audit-06",
+        "temperature": 0,
+        "generated_at": "2026-08-07T21:50:00.000Z"
+      },
+      "audited_records": 500,
+      "possible_matches": [],
+      "owner_status": "approved_absent",
+      "reviewer": "Soumyadeep (Lead Architect)",
+      "reviewed_at": "2026-08-07T22:01:13.000Z"
+    },
+    {
+      "capability_id": "FC-07",
+      "capability_name": "Generative image synthesis",
+      "auditor": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5",
+        "prompt_hash": "sha256:2c3cc997fea3d76c23bd4bf036324300d47a8b62ebaee086a063641a4c355279",
+        "run_id": "run-fc-audit-07",
+        "shard_id": "shard-fc-audit-07",
+        "temperature": 0,
+        "generated_at": "2026-08-07T21:50:00.000Z"
+      },
+      "audited_records": 500,
+      "possible_matches": [],
+      "owner_status": "approved_absent",
+      "reviewer": "Soumyadeep (Lead Architect)",
+      "reviewed_at": "2026-08-07T22:01:13.000Z"
+    },
+    {
+      "capability_id": "FC-08",
+      "capability_name": "Speech-to-text transcription",
+      "auditor": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5",
+        "prompt_hash": "sha256:474c3646635bcedae6360970df0e742181efb3d9fe3b2ba97cd8d8c67a133af1",
+        "run_id": "run-fc-audit-08",
+        "shard_id": "shard-fc-audit-08",
+        "temperature": 0,
+        "generated_at": "2026-08-07T21:50:00.000Z"
+      },
+      "audited_records": 500,
+      "possible_matches": [],
+      "owner_status": "approved_absent",
+      "reviewer": "Soumyadeep (Lead Architect)",
+      "reviewed_at": "2026-08-07T22:01:13.000Z"
+    },
+    {
+      "capability_id": "FC-09",
+      "capability_name": "Text-to-speech synthesis",
+      "auditor": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5",
+        "prompt_hash": "sha256:53893dc8678fcca8bd5806d4b0224b2005f5fc14b4c9a93b94c6c2bcc72b5181",
+        "run_id": "run-fc-audit-09",
+        "shard_id": "shard-fc-audit-09",
+        "temperature": 0,
+        "generated_at": "2026-08-07T21:50:00.000Z"
+      },
+      "audited_records": 500,
+      "possible_matches": [],
+      "owner_status": "approved_absent",
+      "reviewer": "Soumyadeep (Lead Architect)",
+      "reviewed_at": "2026-08-07T22:01:13.000Z"
+    },
+    {
+      "capability_id": "FC-10",
+      "capability_name": "Video transcoding and streaming packaging",
+      "auditor": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5",
+        "prompt_hash": "sha256:35abb8b332dc38fc47ae5ae227c7f03358027f91aa93e1d4c7e11347505b0913",
+        "run_id": "run-fc-audit-10",
+        "shard_id": "shard-fc-audit-10",
+        "temperature": 0,
+        "generated_at": "2026-08-07T21:50:00.000Z"
+      },
+      "audited_records": 500,
+      "possible_matches": [],
+      "owner_status": "approved_absent",
+      "reviewer": "Soumyadeep (Lead Architect)",
+      "reviewed_at": "2026-08-07T22:01:13.000Z"
+    }
+  ]
+}
