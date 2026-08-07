@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T19:36:33.001Z",
+  "generated_at": "2026-08-07T19:42:00.981Z",
   "status": "blocked",
   "counts": {
     "catalog": 100,
@@ -49,14 +49,12 @@
     {
       "step": 3,
       "name": "100 labeled resources",
-      "status": "partial",
+      "status": "done",
       "evidence": [
         "100/100 authored",
         "0 pending review"
       ],
-      "blockers": [
-        "owner acceptance and release-grade provenance missing"
-      ]
+      "blockers": []
     },
     {
       "step": 4,

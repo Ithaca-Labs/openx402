@@ -469,6 +469,8 @@ async function main(): Promise<void> {
   const provenanceComplete = authoredProvenanceComplete && qrelProvenanceComplete && calibrationProvenanceComplete;
   const ownerReviewedResources = sidecars.length === RELEASE_COUNTS.resources.total
     && sidecars.every(record => record.review_status === "approved" || record.review_status === "corrected");
+  const labeledOwnerReviewed = labeled.length === RELEASE_COUNTS.resources.labeled
+    && labeled.every(record => record.review_status === "approved" || record.review_status === "corrected");
   const ownerReviewedQueries = queries.length === RELEASE_COUNTS.queries.total
     && queries.every(record => record.review_status === "approved" || record.review_status === "corrected");
   const ownerReviewedDevelopmentQrels = qrels.length > 0 && qrels.every(record =>
@@ -617,7 +619,7 @@ async function main(): Promise<void> {
       `limitations ${limitationsReported ? "present" : "missing"}`),
   ];
 
-  const step3Done = labeled.length === 100 && ownerReviewedResources && resourceProvenanceComplete;
+  const step3Done = labeled.length === 100 && labeledOwnerReviewed && resourceProvenanceComplete;
   const step4Done = allResourcesPresent && ownerReviewedResources
     && parsedForbiddenAudit?.success === true
     && parsedForbiddenAudit.data.overall_passed;

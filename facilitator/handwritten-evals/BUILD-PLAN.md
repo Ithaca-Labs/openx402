@@ -87,12 +87,17 @@ the authoring context.
 > Two `release-gates-v2.ts` fixes, both in `exactPromptHash`/`exactModelRevision`/`generationComplete`
 > and `step3Done`:
 >
-> 1. **Bug fix, not a scope cut.** `step3Done` previously required the same whole-build
->    `provenanceComplete` flag used by the §11 "provenance" release gate — which also depends on
->    qrels and calibration existing (steps 8–9). A resource step could never show `done` before
->    steps 8–9 ran, regardless of how complete the resources actually were. `step3Done` now uses a
->    resource-scoped `resourceProvenanceComplete` instead; the whole-build `provenanceComplete` still
->    gates the real §11 "provenance" release gate unchanged.
+> 1. **Bug fix, not a scope cut — two instances of the same category.** `step3Done` previously
+>    required (a) the same whole-build `provenanceComplete` flag used by the §11 "provenance"
+>    release gate, which also depends on qrels and calibration existing (steps 8–9), and (b) the
+>    same whole-corpus `ownerReviewedResources` flag used by the §11 "owner-review" gate, which
+>    requires all `RELEASE_COUNTS.resources.total` sidecars — including the 400 distractors step 3
+>    has nothing to do with — to be reviewed. A resource step could never show `done` before steps
+>    4, 8, and 9 all ran, regardless of how complete the 100 labeled resources actually were.
+>    `step3Done` now uses resource-scoped `resourceProvenanceComplete` and `labeledOwnerReviewed`
+>    instead; the whole-build `provenanceComplete` and `ownerReviewedResources` are unchanged and
+>    still correctly gate the real §11 release gates and step 4's own "done" check (step 4 legitimately
+>    needs the full corpus, distractors included, reviewed).
 > 2. **Provenance-format check relaxed to match what the briefs actually asked for.** The gate
 >    previously demanded a real 64-hex-char sha256 `prompt_hash`, a dated model revision (e.g.
 >    `claude-sonnet-5-2026-08-06`), and a required `temperature` field. `BRIEF-resources.md` never
