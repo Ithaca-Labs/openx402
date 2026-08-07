@@ -13,7 +13,7 @@ buyer-use-case task pack; there are no placeholders to resolve elsewhere.
 
 - run_id: `run-queries-04`
 - shard_id: `shard-queries-04`
-- prompt_hash: `sha256:686ed0ab59b891ce650afbda16f632e15ca3ddaa1db6776a6fa19485b05ed0df`
+- prompt_hash: `sha256:cbc9320a2ef05ee76f4d9040da1fc6cee51c69df6ca2f2ef58260193244c0a55`
 - output: `handwritten-evals/staging/queries/run-queries-04/queries.jsonl`
 
 Use every table value exactly. `—` means omit that optional field. The capability cell is an
@@ -22,15 +22,15 @@ authoring brief, not query text. Never expose benchmark metadata in the query.
 | id | split | class | register | family | buyer capability | filters | evaluation_constraints | MCP subtype | MCP facts | forbidden id | forbidden_capability | trap |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | qry-031 | development | no_result | terse_agent | null | Object storage and file hosting | {} | {} | — | — | FC-04 | Object storage and file hosting | — |
-| qry-032 | development | capability | verbose_natural | F17 — Geocoding & mapping | forward_geocode | {} | {} | — | — | — | — | — |
-| qry-033 | development | semantic | keyword_only | F18 — Weather | current_conditions | {} | {} | — | — | — | — | — |
-| qry-034 | development | structured | terse_agent | F19 — Translation & language | text_translate | {"extensions":"bazaar"} | {} | — | — | — | — | — |
+| qry-032 | development | capability | verbose_natural | F9 — LLM inference | chat_completion | {} | {} | — | — | — | — | — |
+| qry-033 | development | semantic | keyword_only | F10 — Embeddings & vector ops | text_embedding | {} | {} | — | — | — | — | — |
+| qry-034 | development | structured | terse_agent | F19 — Translation & language | transliteration | {"scheme":"upto"} | {} | — | — | — | — | — |
 | qry-035 | development | mcp | verbose_natural | F5 — Compliance / sanctions screening | sanctions_name_screen | {"type":"mcp"} | {} | tuple_identity | server=sanctions-screen-mcp; tool=screen_name; transport=streamable-http; input_schema_shape=flat_scalars | — | — | — |
 | qry-036 | development | no_result | keyword_only | null | Managed relational database queries | {} | {} | — | — | FC-05 | Managed relational database queries | — |
-| qry-037 | development | capability | terse_agent | F20 — News & feeds | headline_feed | {} | {} | — | — | — | — | — |
-| qry-038 | development | semantic | verbose_natural | F1 — On-chain state / block data | block_header_stream | {} | {} | — | — | — | — | — |
-| qry-039 | development | structured | keyword_only | F2 — Token & market prices | ohlcv_candles | {"extensions":"bazaar"} | {} | — | — | — | — | — |
-| qry-040 | development | capability | terse_agent | F3 — DeFi / DEX analytics | swap_route_quote | {} | {} | — | — | — | — | — |
+| qry-037 | development | capability | terse_agent | F11 — Web search | web_search_results | {} | {} | — | — | — | — | — |
+| qry-038 | development | semantic | verbose_natural | F12 — Web scraping / extraction | page_to_markdown | {} | {} | — | — | — | — | — |
+| qry-039 | development | structured | keyword_only | F2 — Token & market prices | historical_price_series | {"type":"mcp"} | {} | — | — | — | — | — |
+| qry-040 | development | capability | terse_agent | F13 — Attested / signed feeds | signed_price_attestation | {} | {} | — | — | — | — | — |
 
 For every record use provider `anthropic`, the actual exact model/revision and timestamp,
 `generation_id: "run-queries-04"`, `review_status: "pending"`, `reviewed_at: null`, and

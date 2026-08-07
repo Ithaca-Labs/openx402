@@ -152,6 +152,8 @@ export interface BuildReportOptions {
   pilotJudgedAt10Threshold?: number;
   ownerRates?: OwnerRates;
   limitations: string[];
+  /** Resource ids whose sidecars carry a non-null adversarial_kind. */
+  plantedNegativeResourceIds: ReadonlySet<string>;
   significanceIterations?: number;
 }
 
@@ -332,7 +334,11 @@ export function buildEvaluationReport(
   const judgments = new Map<string, Array<{ resourceId: string; grade: number }>>();
   for (const qrel of selectedQrels) {
     const bucket = judgments.get(qrel.query_id) ?? [];
-    bucket.push({ resourceId: qrel.resource_id, grade: qrel.grade });
+    bucket.push({
+      resourceId: qrel.resource_id,
+      grade: qrel.grade,
+      isPlantedNegative: options.plantedNegativeResourceIds.has(qrel.resource_id),
+    });
     judgments.set(qrel.query_id, bucket);
   }
   const evalQueries = selected.map(query => ({

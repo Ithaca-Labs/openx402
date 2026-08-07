@@ -91,6 +91,9 @@ async function main(): Promise<void> {
     pilotThreshold = pilot.judged_at_10_threshold;
   }
   const pairRates = ownerReview.pairs;
+  const plantedNegativeResourceIds = new Set(dataset.sidecars
+    .filter(record => record.adversarial_kind !== null)
+    .map(record => record.resource_id));
   const report = buildEvaluationReport(dataset.queries, qrels, scoringRunsFromPoolRuns(poolRuns, selectedIds), {
     split,
     generatedAt: process.env.BENCHMARK_RUN_AT ?? new Date().toISOString(),
@@ -104,6 +107,7 @@ async function main(): Promise<void> {
       rejection_rate: pairRates.rejection_rate,
     },
     limitations: limitations.limitations,
+    plantedNegativeResourceIds,
   });
   const output = resolve(root, split === "release" ? "reports/final-v2.json" : "reports/development-v2.json");
   await mkdir(dirname(output), { recursive: true });

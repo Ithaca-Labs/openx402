@@ -46,6 +46,19 @@ describe("Step 5 frozen assignments", () => {
     expect(mcp).toHaveLength(9);
     expect(new Set(mcp.map(item => item.mcpSubtype))).toEqual(new Set(["tuple_identity", "tool_schema", "transport", "http_vs_mcp"]));
     expect(POOL_SYSTEMS).toContain("bm25");
+
+    const structured = QUERY_ASSIGNMENTS.filter(item => item.queryClass === "structured");
+    expect(structured).toHaveLength(14);
+    expect(structured.every(item => item.filters.extensions === undefined)).toBe(true);
+    expect(structured.some(item => item.filters.network !== undefined)).toBe(true);
+    expect(structured.some(item => item.filters.scheme !== undefined)).toBe(true);
+    expect(structured.some(item => item.filters.type !== undefined)).toBe(true);
+
+    const priceCaps = QUERY_ASSIGNMENTS.filter(item => item.queryClass === "price_category")
+      .map(item => item.evaluationConstraints.max_price_usd);
+    expect(priceCaps).toHaveLength(9);
+    expect(new Set(priceCaps).size).toBeGreaterThan(1);
+    expect(priceCaps.every(value => value !== undefined && value < 0.15)).toBe(true);
   });
 });
 
@@ -53,8 +66,19 @@ describe("pass-1 seed preparation", () => {
   it("creates ten blind seven-candidate packs and validates exact imports", () => {
     const prepared = preparePass1Seed(...Object.values(fixtures()) as [QueryRecord[], CatalogRecord[], SidecarRecord[]], now);
     expect(prepared.packs).toHaveLength(10);
+    expect(prepared.prompts).toHaveLength(10);
+    expect(prepared.prompts.every((prompt, index) => prompt.includes(`run-query-pass1-grader-${String(index + 1).padStart(2, "0")}`)
+      && prompt.includes(`query-pass1-seed-${String(index + 1).padStart(2, "0")}`)
+      && prompt.includes(`staging/query-pass1/imports/grader-${String(index + 1).padStart(2, "0")}.json`)
+      && !prompt.includes("<"))).toBe(true);
     expect(prepared.manifest.assignments).toHaveLength(700);
     expect(prepared.packs.every(pack => pack.tasks.length === 10 && pack.tasks.every(task => task.candidates.length === 7))).toBe(true);
+    for (const query of fixtures().queries) {
+      const anchor = QUERY_ASSIGNMENTS.find(item => item.queryId === query.query_id)!.anchorResourceId;
+      if (anchor !== null) {
+        expect(prepared.manifest.assignments.some(item => item.query_id === query.query_id && item.resource_id === anchor)).toBe(true);
+      }
+    }
     const pack = prepared.manifest.packs[0]!;
     const assignments = prepared.manifest.assignments.filter(item => item.grader_run_id === pack.grader_run_id);
     const imported = { version: 1, role: "pass1_seed_grader", pack_id: pack.pack_id,

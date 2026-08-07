@@ -42,11 +42,13 @@ type ManifestRecord = {
 };
 
 async function main(): Promise<void> {
-  const [brief, forbidden] = await Promise.all([
+  const [brief, forbidden, families, schema] = await Promise.all([
     readFile(BRIEF, "utf8"),
     readFile(FORBIDDEN, "utf8"),
+    readFile(resolve(ROOT, "spec/families.md"), "utf8"),
+    readFile(resolve(ROOT, "schema/schema-v2.ts"), "utf8"),
   ]);
-  const sharedPackHash = sha256(`${brief}\0${forbidden}`);
+  const sharedPackHash = sha256(`${brief}\0${forbidden}\0${families}\0${schema}`);
   const manifest: ManifestRecord[] = [];
 
   for (let wave = 1; wave <= DISTRACTOR_WAVES; wave++) {

@@ -72,6 +72,30 @@ const ADVERSARIAL_TARGETS = [
 
 const COLD_START_TARGETS = [[1, 4], [8, 3], [12, 2], [17, 2], [20, 5]] as const;
 
+/** Non-vacuous §6 filters. Every target itself satisfies its assigned filter. */
+const STRUCTURED_TARGETS = [
+  [3, 4, { scheme: "upto" }],
+  [7, 3, { type: "mcp" }],
+  [11, 5, { network: "stellar:pubnet", scheme: "upto" }],
+  [15, 4, { network: "stellar:testnet" }],
+  [19, 4, { scheme: "upto" }],
+  [2, 5, { type: "mcp" }],
+  [5, 4, { network: "stellar:pubnet", scheme: "upto" }],
+  [16, 2, { type: "mcp" }],
+  [20, 1, { type: "mcp", scheme: "upto" }],
+  [4, 5, { network: "stellar:testnet", scheme: "upto" }],
+  [8, 3, { network: "stellar:pubnet" }],
+  [12, 1, { type: "mcp" }],
+  [16, 4, { network: "stellar:testnet", scheme: "upto" }],
+  [19, 3, { network: "stellar:pubnet" }],
+] as const satisfies readonly (readonly [number, number, QueryRecord["filters"]])[];
+
+/** Price ceilings below the corpus-wide 0.15 maximum; each anchor is at or below its ceiling. */
+const PRICE_TARGETS = [
+  [4, 2, 0.005], [8, 1, 0.002], [12, 1, 0.005], [16, 5, 0.002], [17, 2, 0.003],
+  [1, 4, 0.003], [5, 3, 0.001], [9, 3, 0.003], [13, 1, 0.02],
+] as const;
+
 const SPLIT_CLASS_COUNTS = {
   development: { capability: 15, structured: 7, semantic: 7, price_category: 4, mcp: 5, adversarial: 4, no_result: 5, cold_start: 3 },
   release: { capability: 15, structured: 7, semantic: 7, price_category: 5, mcp: 4, adversarial: 5, no_result: 5, cold_start: 2 },
@@ -132,6 +156,8 @@ function buildAssignments(): QueryAssignment[] {
   let mcpIndex = 0;
   let adversarialIndex = 0;
   let coldIndex = 0;
+  let structuredIndex = 0;
+  let priceIndex = 0;
   const mcpSubtypeBySplit = {
     development: ["tuple_identity", "tool_schema", "transport", "http_vs_mcp", "tuple_identity"],
     release: ["tuple_identity", "tool_schema", "transport", "http_vs_mcp"],
@@ -150,8 +176,8 @@ function buildAssignments(): QueryAssignment[] {
       split,
       queryClass,
       phrasingRegister: (["terse_agent", "verbose_natural", "keyword_only"] as const)[index % 3]!,
-      filters: queryClass === "structured" ? { extensions: "bazaar" } : queryClass === "mcp" ? { type: "mcp" as const } : {},
-      evaluationConstraints: queryClass === "price_category" ? { max_price_usd: 0.15 } : {},
+      filters: queryClass === "mcp" ? { type: "mcp" as const } : {},
+      evaluationConstraints: {},
       expectsNoResult: queryClass === "no_result",
     };
 
@@ -176,6 +202,17 @@ function buildAssignments(): QueryAssignment[] {
     if (queryClass === "cold_start") {
       const target = COLD_START_TARGETS[coldIndex++]!;
       return { ...base, family: target[0], familyName: FAMILY_NAMES[target[0] - 1],
+        capability: FAMILY_CAPABILITIES[target[0] - 1]![target[1] - 1]!, anchorResourceId: resourceId(target[0], target[1]) };
+    }
+    if (queryClass === "structured") {
+      const target = STRUCTURED_TARGETS[structuredIndex++]!;
+      return { ...base, filters: target[2], family: target[0], familyName: FAMILY_NAMES[target[0] - 1],
+        capability: FAMILY_CAPABILITIES[target[0] - 1]![target[1] - 1]!, anchorResourceId: resourceId(target[0], target[1]) };
+    }
+    if (queryClass === "price_category") {
+      const target = PRICE_TARGETS[priceIndex++]!;
+      return { ...base, evaluationConstraints: { max_price_usd: target[2] },
+        family: target[0], familyName: FAMILY_NAMES[target[0] - 1],
         capability: FAMILY_CAPABILITIES[target[0] - 1]![target[1] - 1]!, anchorResourceId: resourceId(target[0], target[1]) };
     }
     const family = (generalIndex % 20) + 1;
@@ -204,6 +241,16 @@ function assertFrozenAssignments(): void {
   }
   if (QUERY_ASSIGNMENTS.filter(item => item.queryClass === "no_result").map(item => item.forbiddenId).join(",")
       !== FORBIDDEN_CAPABILITIES.map(item => item[0]).join(",")) throw new Error("FC-01..FC-10 mapping mismatch");
+  const structured = QUERY_ASSIGNMENTS.filter(item => item.queryClass === "structured");
+  for (const key of ["network", "scheme", "type"] as const) {
+    if (!structured.some(item => item.filters[key] !== undefined)) throw new Error(`structured assignments never exercise filters.${key}`);
+  }
+  if (structured.some(item => item.filters.extensions !== undefined)) throw new Error("structured filters.extensions is vacuous for this corpus");
+  const prices = QUERY_ASSIGNMENTS.filter(item => item.queryClass === "price_category")
+    .map(item => item.evaluationConstraints.max_price_usd!);
+  if (prices.some(value => value >= 0.15) || new Set(prices).size < 4) {
+    throw new Error("price_category ceilings must be varied and exclude the 0.15 corpus tier");
+  }
 }
 
 assertFrozenAssignments();

@@ -12,7 +12,7 @@ import {
   type CatalogRecord,
   type SidecarRecord,
 } from "../schema/schema-v2.js";
-import { matchesForbiddenSignature } from "./forbidden-scanner.js";
+import { assertExactSignatureSync, scanForbiddenRecords } from "./forbidden-scanner.js";
 
 const CAPABILITY_COUNT = 10;
 const OpaqueListingIdSchema = z.string().regex(/^listing-[a-f0-9]{16}$/);
@@ -143,7 +143,7 @@ function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function corpusHash(catalog: readonly CatalogRecord[], sidecars: readonly SidecarRecord[]): string {
+export function forbiddenCorpusHash(catalog: readonly CatalogRecord[], sidecars: readonly SidecarRecord[]): string {
   return `sha256:${sha256(JSON.stringify({ catalog, sidecars }))}`;
 }
 
@@ -178,9 +178,7 @@ export function parseForbiddenCapabilities(markdown: string): ForbiddenCapabilit
     const definition = section.match(/\*\*Definition\.\*\*\s*([^\n]+(?:\n(?!\*\*Boundary)[^\n]+)*)/)?.[1]?.replace(/\s+/g, " ").trim();
     const boundary = section.match(/\*\*Boundary basis\.\*\*\s*([^\n]+(?:\n(?!\*\*Scanner)[^\n]+)*)/)?.[1]?.replace(/\s+/g, " ").trim();
     if (!definition || !boundary) throw new Error(`${item.id}: definition or boundary basis missing`);
-    for (const signature of item.signatures) {
-      if (!matchesForbiddenSignature(section, signature)) throw new Error(`${item.id}: human section omits signature ${signature}`);
-    }
+    assertExactSignatureSync(section, item.signatures, item.id);
     return ForbiddenCapabilityDefinitionSchema.parse({ ...item, definition, boundary_basis: boundary });
   });
 }
@@ -201,24 +199,12 @@ function validateCorpus(rawCatalog: readonly unknown[], rawSidecars: readonly un
   return { catalog, sidecars };
 }
 
-function searchable(record: CatalogRecord): string[] {
-  const resource = record.wire.resource;
-  return [resource.serviceName, resource.description, resource.mimeType, ...(resource.tags ?? [])]
-    .filter((value): value is string => value !== undefined);
-}
-
 function deterministicHits(catalog: readonly CatalogRecord[], capabilities: readonly ForbiddenCapabilityDefinition[]) {
-  const hits: Array<{ resource_id: string; capability_id: string; signature: string }> = [];
-  for (const record of catalog) {
-    for (const capability of capabilities) {
-      for (const signature of capability.signatures) {
-        if (searchable(record).some(text => matchesForbiddenSignature(text, signature))) {
-          hits.push({ resource_id: record.resource_id, capability_id: capability.id, signature });
-        }
-      }
-    }
-  }
-  return hits;
+  return scanForbiddenRecords(catalog, capabilities).map(hit => ({
+    resource_id: hit.resourceId,
+    capability_id: hit.capabilityId,
+    signature: hit.signature,
+  }));
 }
 
 function shuffled<T>(values: readonly T[], seed: string, key: (value: T) => string): T[] {
@@ -303,7 +289,7 @@ export function prepareForbiddenCapabilityAudit(
       version: 1,
       audit_run_id: options.auditRunId,
       created_at: options.createdAt,
-      corpus_hash: corpusHash(catalog, sidecars),
+      corpus_hash: forbiddenCorpusHash(catalog, sidecars),
       forbidden_source_hash: `sha256:${sha256(forbiddenMarkdown)}`,
       deterministic_scan_passed: true,
       deterministic_hit_count: 0,
@@ -358,7 +344,7 @@ export function finalizeForbiddenCapabilityAudit(
   const hits = deterministicHits(catalog, capabilities);
   if (hits.length > 0) throw new Error(`deterministic forbidden scan failed with ${hits.length} hit(s)`);
   const manifest = ForbiddenAuditManifestSchema.parse(rawManifest);
-  if (manifest.corpus_hash !== corpusHash(catalog, sidecars)) throw new Error("audit manifest corpus hash mismatch");
+  if (manifest.corpus_hash !== forbiddenCorpusHash(catalog, sidecars)) throw new Error("audit manifest corpus hash mismatch");
   if (manifest.forbidden_source_hash !== `sha256:${sha256(forbiddenMarkdown)}`) throw new Error("audit manifest forbidden source hash mismatch");
   const imports = validateImports(rawImports, manifest);
   const owner = ForbiddenAuditOwnerSignoffSchema.parse(rawOwnerSignoff);

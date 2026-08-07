@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T23:02:27.238Z",
+  "generated_at": "2026-08-07T00:27:01.895Z",
   "status": "blocked",
   "counts": {
     "catalog": 100,
@@ -208,6 +208,7 @@
       "status": "blocked",
       "evidence": [
         "0/5 systems",
+        "exact coverage complete dataset and run artifacts are missing",
         "0 unjudged pooled pairs"
       ]
     },
@@ -232,7 +233,9 @@
       "requirement": "Forbidden capabilities scanned, independently audited, owner-approved",
       "status": "blocked",
       "evidence": [
-        "forbidden audit missing"
+        "0 current deterministic hit(s)",
+        "forbidden audit missing",
+        "corpus hash stale/missing"
       ]
     },
     {
@@ -292,6 +295,8 @@
       "evidence": [
         "resources reviewed 0/100",
         "queries reviewed 0/0",
+        "qrels reviewed 0/0",
+        "calibration reviewed 0/0",
         "owner decision report missing"
       ]
     },

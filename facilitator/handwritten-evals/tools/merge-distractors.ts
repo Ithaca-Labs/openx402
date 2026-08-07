@@ -29,7 +29,7 @@ import {
   type CatalogRecord,
   type SidecarRecord,
 } from "../schema/schema-v2.js";
-import { matchesForbiddenSignature } from "./forbidden-scanner.js";
+import { assertExactSignatureSync, scanForbiddenRecords } from "./forbidden-scanner.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const STAGING = resolve(ROOT, "staging/distractors");
@@ -126,11 +126,7 @@ async function loadForbiddenCapabilities(): Promise<ForbiddenCapability[]> {
     const end = next ? humanText.indexOf(`## ${next.id} — ${next.name}`) : humanText.length;
     if (start < 0 || end < 0) throw new Error(`${FORBIDDEN}: missing human section ${startMarker}`);
     const section = humanText.slice(start, end);
-    for (const signature of capability.signatures) {
-      if (!matchesForbiddenSignature(section, signature)) {
-        throw new Error(`${FORBIDDEN}: ${capability.id} human section omits scanner signature "${signature}"`);
-      }
-    }
+    assertExactSignatureSync(section, capability.signatures, `${FORBIDDEN}: ${capability.id}`);
   }
   return capabilities;
 }
@@ -139,32 +135,14 @@ function scanForbidden(
   records: readonly CatalogRecord[],
   capabilities: readonly ForbiddenCapability[],
 ): number {
-  let hitCount = 0;
-  for (const record of records) {
-    const searchable: Array<[string, string]> = [];
-    const resource = record.wire.resource;
-    if (resource.serviceName) searchable.push(["serviceName", resource.serviceName]);
-    if (resource.description) searchable.push(["description", resource.description]);
-    if (resource.mimeType) searchable.push(["mimeType", resource.mimeType]);
-    for (const [index, tag] of (resource.tags ?? []).entries()) {
-      searchable.push([`tags[${index}]`, tag]);
-    }
-
-    for (const [field, raw] of searchable) {
-      for (const capability of capabilities) {
-        for (const signature of capability.signatures) {
-          if (matchesForbiddenSignature(raw, signature)) {
-            fail(
-              `${record.resource_id} ${field}: forbidden ${capability.id} ${capability.name} ` +
-              `signature "${signature}"`,
-            );
-            hitCount += 1;
-          }
-        }
-      }
-    }
+  const hits = scanForbiddenRecords(records, capabilities);
+  for (const hit of hits) {
+    fail(
+      `${hit.resourceId} ${hit.field}: forbidden ${hit.capabilityId} ${hit.capabilityName} ` +
+      `signature "${hit.signature}"`,
+    );
   }
-  return hitCount;
+  return hits.length;
 }
 
 function resourceNumber(resourceId: string): number {

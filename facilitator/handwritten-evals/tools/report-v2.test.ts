@@ -83,6 +83,7 @@ const options = {
   ownerRates: { reviewed: 50, corrected: 5, rejected: 0, correction_rate: 0.1, rejection_rate: 0 },
   limitations: ["The corpus is synthetic and judgments are incomplete by construction."],
   significanceIterations: 100,
+  plantedNegativeResourceIds: new Set<string>(),
 };
 
 describe("v2 evaluation report", () => {

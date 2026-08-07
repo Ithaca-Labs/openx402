@@ -13,6 +13,10 @@ const STAGING = resolve(ROOT, "staging/queries");
 const PROMPT_MANIFEST = resolve(ROOT, "staging/query-prompts/manifest.jsonl");
 const OUTPUT = resolve(ROOT, "queries/queries-v2.jsonl");
 const PASS1 = resolve(ROOT, "staging/query-pass1");
+const mode = process.argv[2] ?? "--finalize";
+if (mode !== "--prepare" && mode !== "--finalize") {
+  throw new Error("usage: tsx tools/merge-queries.ts [--prepare|--finalize]");
+}
 const PromptSchema = z.object({ run_id: z.string(), shard_id: z.string(), prompt_hash: z.string(),
   query_ids: z.array(z.string()).length(10) }).passthrough();
 
@@ -87,20 +91,35 @@ async function main(): Promise<void> {
   const createdAt = process.env.BENCHMARK_RUN_AT ?? new Date().toISOString();
   const seed = preparePass1Seed(records, catalog, sidecars, createdAt);
 
+  const importDir = resolve(PASS1, "imports");
+  let importFiles: string[] = [];
+  try { importFiles = (await readdir(importDir)).filter(name => name.endsWith(".json")).sort(); }
+  catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
+  const importedPackIds: string[] = [];
+  for (const name of importFiles) {
+    const imported = JSON.parse(await readFile(resolve(importDir, name), "utf8")) as { pack_id?: string };
+    validatePass1SeedImport(imported, seed.manifest);
+    if (typeof imported.pack_id === "string") importedPackIds.push(imported.pack_id);
+  }
+  if (mode === "--finalize") {
+    const expectedPackIds = seed.manifest.packs.map(pack => pack.pack_id).sort();
+    const actualPackIds = [...importedPackIds].sort();
+    if (actualPackIds.length !== expectedPackIds.length
+        || new Set(actualPackIds).size !== actualPackIds.length
+        || actualPackIds.join("\n") !== expectedPackIds.join("\n")) {
+      throw new Error(`pass-1 finalization requires exactly one valid import for each of 10 packs; found ${actualPackIds.length}`);
+    }
+  }
+
   await mkdir(resolve(OUTPUT, ".."), { recursive: true });
   await mkdir(PASS1, { recursive: true });
   await Promise.all([
     writeFile(OUTPUT, `${records.map(record => JSON.stringify(record)).join("\n")}\n`),
     writeFile(resolve(PASS1, "manifest.json"), `${JSON.stringify(seed.manifest, null, 2)}\n`),
     ...seed.packs.map((pack, index) => writeFile(resolve(PASS1, `grader-${String(index + 1).padStart(2, "0")}.json`), `${JSON.stringify(pack, null, 2)}\n`)),
+    ...seed.prompts.map((prompt, index) => writeFile(resolve(PASS1, `grader-${String(index + 1).padStart(2, "0")}.md`), prompt)),
   ]);
-
-  const importDir = resolve(PASS1, "imports");
-  let importFiles: string[] = [];
-  try { importFiles = (await readdir(importDir)).filter(name => name.endsWith(".json")).sort(); }
-  catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
-  for (const name of importFiles) validatePass1SeedImport(JSON.parse(await readFile(resolve(importDir, name), "utf8")), seed.manifest);
-  console.log(`merged 100 queries; prepared ${seed.manifest.pair_count} blind pass-1 pairs in 10 packs; validated ${importFiles.length} imports`);
+  console.log(`merged 100 queries; prepared ${seed.manifest.pair_count} anchor-aware blind pass-1 pairs in 10 packs; validated ${importFiles.length} imports (${mode.slice(2)})`);
 }
 
 main().catch(error => { console.error(error); process.exit(1); });

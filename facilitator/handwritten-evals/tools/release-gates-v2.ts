@@ -38,6 +38,13 @@ import { DatasetManifestV2Schema } from "./manifest-v2.js";
 import { readReleaseRunLedger, verifyFrozenDataset } from "./release-run-ledger-v2.js";
 import { OwnerReviewReportSchema } from "./grading-pipeline.js";
 import { EvaluationReportV2Schema, PilotReportEvidenceSchema } from "./report-v2.js";
+import { loadSystemRuns, validateExactPoolCoverage, validateRunEligibility } from "./pool.js";
+import {
+  ForbiddenCapabilityAuditReportSchema,
+  forbiddenCorpusHash,
+  parseForbiddenCapabilities,
+} from "./forbidden-capability-audit.js";
+import { scanForbiddenRecords } from "./forbidden-scanner.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const REPORTS = resolve(ROOT, "reports");
@@ -135,6 +142,20 @@ function exactModelRevision(value: string): boolean {
   return /\d{4}[-_]\d{2}[-_]\d{2}|\d{8}|revision[:/_-][a-z0-9._-]+/i.test(value);
 }
 
+function generationComplete(value: {
+  model: string;
+  prompt_hash: string;
+  run_id: string;
+  shard_id: string;
+  temperature?: number;
+}): boolean {
+  return exactPromptHash(value.prompt_hash)
+    && exactModelRevision(value.model)
+    && value.run_id.length > 0
+    && value.shard_id.length > 0
+    && value.temperature !== undefined;
+}
+
 async function main(): Promise<void> {
   const [catalogResult, sidecarResult, queryResult, poolResult, developmentQrelResult,
     releaseQrelResult, calibrationResult] = await Promise.all([
@@ -224,9 +245,22 @@ async function main(): Promise<void> {
   const allMcpSubtypes = MCP_QUERY_SUBTYPES.every(subtype => mcpSubtypes.has(subtype));
 
   const systemsInPool = new Set(pool.flatMap(record => record.contributions.map(item => item.system)));
-  const fiveSystemPool = pool.length > 0
-    && POOL_SYSTEMS.every(system => systemsInPool.has(system))
-    && pool.every(record => record.pool_depth === 20 && record.contributions.every(item => item.rank <= 20));
+  let poolCoverageError: string | null = "complete dataset and run artifacts are missing";
+  if (catalog.length === RELEASE_COUNTS.resources.total
+      && sidecars.length === RELEASE_COUNTS.resources.total
+      && queries.length === RELEASE_COUNTS.queries.total) {
+    try {
+      const queryIds = new Set(queries.map(record => record.query_id));
+      const resourceIds = new Set(catalog.map(record => record.resource_id));
+      const runs = await loadSystemRuns(resolve(ROOT, "runs"), queryIds, resourceIds);
+      validateRunEligibility({ catalog, sidecars, queries }, runs);
+      validateExactPoolCoverage(pool, runs);
+      poolCoverageError = null;
+    } catch (error) {
+      poolCoverageError = (error as Error).message;
+    }
+  }
+  const fiveSystemPool = poolCoverageError === null;
   const unjudgedPool = unjudgedPooledPairs(pool, qrels);
 
   const archiveFiles = [
@@ -256,9 +290,16 @@ async function main(): Promise<void> {
     loadJson(resolve(REPORTS, "owner-review-v2.json")),
   ]);
   const ownerReview = ownerReviewRaw === null ? null : OwnerReviewReportSchema.safeParse(ownerReviewRaw);
+  const parsedForbiddenAudit = forbiddenAudit === null
+    ? null
+    : ForbiddenCapabilityAuditReportSchema.safeParse(forbiddenAudit);
   const parsedPilot = pilot === null ? null : PilotReportEvidenceSchema.safeParse(pilot);
   const parsedFinalReport = finalReport === null ? null : EvaluationReportV2Schema.safeParse(finalReport);
   const parsedManifest = manifest === null ? null : DatasetManifestV2Schema.safeParse(manifest);
+  const forbiddenMarkdown = await readFile(resolve(ROOT, "forbidden-capabilities.md"), "utf8");
+  const forbiddenDefinitions = parseForbiddenCapabilities(forbiddenMarkdown);
+  const deterministicForbiddenHits = scanForbiddenRecords(catalog, forbiddenDefinitions);
+  const currentForbiddenCorpusHash = forbiddenCorpusHash(catalog, sidecars);
   let frozenDatasetVerified = false;
   let frozenDatasetError: string | null = null;
   let releaseLedgerEntries = 0;
@@ -287,16 +328,27 @@ async function main(): Promise<void> {
     && distractors.length === RELEASE_COUNTS.resources.distractor;
   const allQueriesPresent = queries.length === RELEASE_COUNTS.queries.total
     && querySplitsCorrect && queryClassesCorrect;
-  const provenanceComplete = [...sidecars, ...queries].length > 0
-    && [...sidecars, ...queries].every(record =>
-      exactPromptHash(record.generation.prompt_hash)
-      && exactModelRevision(record.generation.model)
-      && record.generation.temperature !== undefined,
-    );
+  const authoredProvenanceComplete = [...sidecars, ...queries].length > 0
+    && [...sidecars, ...queries].every(record => generationComplete(record.generation));
+  const qrelProvenanceComplete = qrels.length > 0 && qrels.every(record =>
+    record.judge === "deterministic" ? record.generation === null : Boolean(record.generation && generationComplete(record.generation)));
+  const calibrationProvenanceComplete = calibrationResult.records.length > 0
+    && calibrationResult.records.every(record =>
+      generationComplete(record.grader_a)
+      && Boolean(record.grader_b && generationComplete(record.grader_b))
+      && (record.adjudicator === null || generationComplete(record.adjudicator)));
+  const provenanceComplete = authoredProvenanceComplete && qrelProvenanceComplete && calibrationProvenanceComplete;
   const ownerReviewedResources = sidecars.length === RELEASE_COUNTS.resources.total
     && sidecars.every(record => record.review_status === "approved" || record.review_status === "corrected");
   const ownerReviewedQueries = queries.length === RELEASE_COUNTS.queries.total
     && queries.every(record => record.review_status === "approved" || record.review_status === "corrected");
+  const ownerReviewedQrels = qrels.length > 0 && qrels.every(record =>
+    record.judge === "reviewed_agent"
+    && (record.review_status === "approved" || record.review_status === "corrected")
+    && record.reviewed_at !== null && record.reviewed_by !== null);
+  const ownerReviewedCalibration = calibrationResult.records.length > 0
+    && calibrationResult.records.every(record =>
+      record.owner_review === "approved" || record.owner_review === "corrected");
   const releaseIds = new Set(queries.filter(query => query.split === "release").map(query => query.query_id));
   const releaseQrels = qrels.filter(qrel => releaseIds.has(qrel.query_id));
   const releaseRationales = releaseIds.size === 50
@@ -334,7 +386,8 @@ async function main(): Promise<void> {
       queries.filter(query => query.query_class === "mcp").length === QUERY_CLASS_TARGETS.mcp && allMcpSubtypes,
       `${queries.filter(query => query.query_class === "mcp").length}/9 MCP queries`, `${mcpSubtypes.size}/4 subtypes`),
     gate("pool", "Pool covers top-20 of all five systems and every pooled pair is judged",
-      fiveSystemPool && unjudgedPool.length === 0, `${systemsInPool.size}/5 systems`, `${unjudgedPool.length} unjudged pooled pairs`),
+      fiveSystemPool && unjudgedPool.length === 0, `${systemsInPool.size}/5 systems`,
+      `exact coverage ${poolCoverageError ?? "verified"}`, `${unjudgedPool.length} unjudged pooled pairs`),
     gate("unpooled-audit", "Unpooled audit performed and relevance rate reported",
       evidenceApproved(unpooledAudit) && typeof unpooledAudit?.audited_relevance_rate === "number",
       `unpooled audit ${unpooledAudit ? "present" : "missing"}`),
@@ -342,8 +395,13 @@ async function main(): Promise<void> {
       pilotComplete && parsedFinalReport?.success === true && parsedFinalReport.data.judged_at_10_gate_passed,
       `pilot ${pilotComplete ? "complete" : "missing/incomplete"}`),
     gate("no-result", "Forbidden capabilities scanned, independently audited, owner-approved",
-      evidenceApproved(forbiddenAudit) && forbiddenAudit?.deterministic_scan_passed === true,
-      `forbidden audit ${forbiddenAudit ? "present" : "missing"}`),
+      deterministicForbiddenHits.length === 0
+        && parsedForbiddenAudit?.success === true
+        && parsedForbiddenAudit.data.overall_passed
+        && parsedForbiddenAudit.data.corpus_hash === currentForbiddenCorpusHash,
+      `${deterministicForbiddenHits.length} current deterministic hit(s)`,
+      `forbidden audit ${parsedForbiddenAudit?.success ? "strictly valid" : forbiddenAudit ? "invalid" : "missing"}`,
+      `corpus hash ${parsedForbiddenAudit?.success && parsedForbiddenAudit.data.corpus_hash === currentForbiddenCorpusHash ? "current" : "stale/missing"}`),
     gate("metric-contract", "Relevance thresholds and nDCG gains are stated",
       thresholdsReported,
       `expected thresholds ${JSON.stringify(RELEVANCE_THRESHOLDS)}`, `expected gains ${JSON.stringify(NDCG_GAINS)}`),
@@ -358,11 +416,14 @@ async function main(): Promise<void> {
     gate("rationales", "All release judgments carry rationales", releaseRationales,
       `${releaseIds.size}/50 release queries`, `${qrels.length} total qrels`),
     gate("owner-review", "Owner reviewed every resource, query, qrel, adjudication, and correction",
-      ownerReviewedResources && ownerReviewedQueries && ownerReview?.success === true
+      ownerReviewedResources && ownerReviewedQueries && ownerReviewedQrels && ownerReviewedCalibration
+        && ownerReview?.success === true
         && ownerReview.data.pairs.rejected === 0 && ownerReview.data.queries.rejected === 0
         && evidenceApproved(calibrationReport),
       `resources reviewed ${sidecars.filter(record => record.review_status !== "pending").length}/${sidecars.length}`,
       `queries reviewed ${queries.filter(record => record.review_status !== "pending").length}/${queries.length}`,
+      `qrels reviewed ${qrels.filter(record => record.review_status !== "pending").length}/${qrels.length}`,
+      `calibration reviewed ${calibrationResult.records.filter(record => record.owner_review !== "pending").length}/${calibrationResult.records.length}`,
       `owner decision report ${ownerReview?.success ? "valid" : ownerReviewRaw ? "invalid" : "missing"}`),
     gate("correction-rates", "Owner correction and rejection rates are reported; originals preserved",
       parsedFinalReport?.success === true && parsedFinalReport.data.owner_rates_reported

@@ -3,7 +3,7 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { GraderRefSchema, type CatalogRecord, type QueryRecord, type SidecarRecord } from "../schema/schema-v2.js";
-import { PASS1_CANDIDATES_PER_QUERY } from "../query-config.js";
+import { PASS1_CANDIDATES_PER_QUERY, queryAssignment } from "../query-config.js";
 import { BlindGradingPackSchema, JudgmentImportSchema } from "./grading-pipeline.js";
 import { deterministicEligibility } from "./pool.js";
 
@@ -70,6 +70,7 @@ export function preparePass1Seed(
   const assignments: z.infer<typeof Pass1SeedAssignmentSchema>[] = [];
   const packRows: Array<{ pack_id: string; grader_run_id: string; prompt_hash: string; query_ids: string[] }> = [];
   const packs: Array<z.infer<typeof BlindGradingPackSchema>> = [];
+  const prompts: string[] = [];
 
   for (let shard = 1; shard <= 10; shard += 1) {
     const shardQueries = queries.slice((shard - 1) * 10, shard * 10);
@@ -83,7 +84,23 @@ export function preparePass1Seed(
       }).sort((left, right) => sha256(`${sourceHash}\0${query.query_id}\0${left.resource_id}`)
         .localeCompare(sha256(`${sourceHash}\0${query.query_id}\0${right.resource_id}`)));
       if (eligible.length < PASS1_CANDIDATES_PER_QUERY) throw new Error(`${query.query_id}: fewer than seven hard-filter-eligible candidates`);
-      const selected = eligible.slice(0, PASS1_CANDIDATES_PER_QUERY);
+      const frozen = queryAssignment(query.query_id);
+      let selected: CatalogRecord[];
+      if (frozen.anchorResourceId === null) {
+        selected = eligible.slice(0, PASS1_CANDIDATES_PER_QUERY);
+      } else {
+        const anchor = catalogById.get(frozen.anchorResourceId);
+        if (!anchor || !eligible.some(record => record.resource_id === anchor.resource_id)) {
+          throw new Error(`${query.query_id}: frozen anchor ${frozen.anchorResourceId} does not satisfy its hard filters`);
+        }
+        const sameFamily = eligible.filter(record => {
+          const sidecar = sidecarById.get(record.resource_id)!;
+          return record.resource_id !== anchor.resource_id && sidecar.family === query.family;
+        }).slice(0, 2);
+        const already = new Set([anchor.resource_id, ...sameFamily.map(record => record.resource_id)]);
+        const background = eligible.filter(record => !already.has(record.resource_id));
+        selected = [anchor, ...sameFamily, ...background].slice(0, PASS1_CANDIDATES_PER_QUERY);
+      }
       const taskId = opaque("task", sourceHash, graderRunId, query.query_id);
       return {
         task_id: taskId,
@@ -104,11 +121,30 @@ export function preparePass1Seed(
     packs.push(pack);
     packRows.push({ pack_id: packId, grader_run_id: graderRunId, prompt_hash: promptHash,
       query_ids: shardQueries.map(query => query.query_id) });
+    prompts.push(`# Step 5 pass-1 seed grader ${String(shard).padStart(2, "0")}
+
+You are a fresh isolated grading context. Read only:
+
+1. \`handwritten-evals/staging/query-pass1/grader-${String(shard).padStart(2, "0")}.json\`
+2. BUILD-PLAN §7 (the 0–3 relevance rubric)
+
+Run id: \`${graderRunId}\`
+Pack id: \`${packId}\`
+Prompt/task-pack hash: \`${promptHash}\`
+Output: \`handwritten-evals/staging/query-pass1/imports/grader-${String(shard).padStart(2, "0")}.json\`
+
+Return one \`Pass1SeedImportSchema\` JSON object covering every opaque candidate exactly once.
+Use role \`pass1_seed_grader\`, the exact pack/run/hash above, provider \`anthropic\`, and actual
+model revision, shard id, sampling temperature, and generation timestamp. Grade only the visible
+buyer query and listing under §7. Do not access source mappings, query/resource authors, ids,
+families, catalog/sidecars, retrieval systems, ranks, scores, another grader, or sibling output.
+Include a concise rationale for every judgment. Stop after the one import file and discard context.
+`);
   }
   const manifest = Pass1SeedManifestSchema.parse({ version: 1, created_at: createdAt, source_hash: sourceHash,
     candidates_per_query: PASS1_CANDIDATES_PER_QUERY, query_count: 100,
     pair_count: 100 * PASS1_CANDIDATES_PER_QUERY, packs: packRows, assignments });
-  return { packs, manifest };
+  return { packs, prompts, manifest };
 }
 
 export function validatePass1SeedImport(raw: unknown, manifest: z.infer<typeof Pass1SeedManifestSchema>): void {

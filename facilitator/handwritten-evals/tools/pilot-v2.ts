@@ -6,7 +6,7 @@ import { CatalogRecordSchema, GraderRefSchema, QrelRecordSchema, QueryRecordSche
   type CatalogRecord, type QrelRecord, type QueryRecord, type SidecarRecord } from "../schema/schema-v2.js";
 import { PilotReportEvidenceSchema } from "./report-v2.js";
 import { BlindAdjudicationPackSchema, BlindGradingPackSchema, GraderImportSchema, AdjudicatorImportSchema } from "./grading-pipeline.js";
-import { matchesForbiddenSignature } from "./forbidden-scanner.js";
+import { scanForbiddenRecords } from "./forbidden-scanner.js";
 
 const signatures = ["transactional email", "email delivery", "send email", "email sending", "smtp relay", "mail delivery", "bulk email", "email api"];
 const sha = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -79,12 +79,11 @@ export function preparePilot(raw: { catalog: unknown[]; sidecars: unknown[]; que
       || !noResult.expects_no_result || noResult.forbidden_capability !== "Transactional email delivery") throw new Error("pilot no-result assignment mismatch");
 
   const scanStart = performance.now();
-  let scannerHits = 0;
-  for (const record of catalog) {
-    const resource = record.wire.resource;
-    const fields = [resource.serviceName, resource.description, resource.mimeType, ...(resource.tags ?? [])].filter((value): value is string => Boolean(value));
-    for (const field of fields) for (const signature of signatures) if (matchesForbiddenSignature(field, signature)) scannerHits += 1;
-  }
+  const scannerHits = scanForbiddenRecords(catalog, [{
+    id: "FC-02",
+    name: "Transactional email delivery",
+    signatures,
+  }]).length;
   const scannerWallClockSeconds = (performance.now() - scanStart) / 1_000;
   if (scannerHits) throw new Error(`pilot FC-02 deterministic scanner found ${scannerHits} hit(s)`);
 

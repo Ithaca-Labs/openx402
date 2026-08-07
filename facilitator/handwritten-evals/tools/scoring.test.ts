@@ -99,7 +99,7 @@ describe("nDCG", () => {
     const judgments = [
       { resourceId: "A", grade: 3 },
       { resourceId: "B", grade: 2 },
-      { resourceId: "T", grade: 0 },
+      { resourceId: "T", grade: 0, isPlantedNegative: true },
     ];
     const withTrap = score(judgments, ["A", "T", "B"], [3]);
     const withUnjudged = score(judgments, ["A", "U", "B"], [3]);
@@ -143,7 +143,7 @@ describe("judged@k — unjudged is a first-class state", () => {
 
   it("separates unjudged from explicit grade 0 in the counts", () => {
     const result = score(
-      [{ resourceId: "A", grade: 3 }, { resourceId: "T", grade: 0 }],
+      [{ resourceId: "A", grade: 3 }, { resourceId: "T", grade: 0, isPlantedNegative: true }],
       ["A", "T", "U1", "U2"],
       [4],
     );
@@ -266,8 +266,8 @@ describe("bpref (grade >= 2)", () => {
     const traps = [
       { resourceId: "A", grade: 3 },
       { resourceId: "B", grade: 2 },
-      { resourceId: "X", grade: 0 },
-      { resourceId: "Y", grade: 0 },
+      { resourceId: "X", grade: 0, isPlantedNegative: true },
+      { resourceId: "Y", grade: 0, isPlantedNegative: true },
     ];
     // Two UNJUDGED results at the head cost nothing: bpref skips them.
     const withUnjudged = score(traps, ["U1", "U2", "A", "B"], [20]);
@@ -312,16 +312,21 @@ describe("bpref (grade >= 2)", () => {
 });
 
 describe("violations@k", () => {
-  it("counts only explicitly judged grade-0 documents", () => {
+  it("counts only explicitly planted resources that were judged grade 0", () => {
     const result = score(
-      [{ resourceId: "T1", grade: 0 }, { resourceId: "T2", grade: 0 }, { resourceId: "A", grade: 3 }],
-      ["A", "T1", "U", "T2"],
+      [
+        { resourceId: "T1", grade: 0, isPlantedNegative: true },
+        { resourceId: "T2", grade: 0, isPlantedNegative: true },
+        { resourceId: "ordinary-zero", grade: 0 },
+        { resourceId: "A", grade: 3 },
+      ],
+      ["A", "T1", "ordinary-zero", "T2"],
       [1, 2, 4],
     );
     expect(result.violations[1]).toBe(0);
     expect(result.violations[2]).toBe(1);
     expect(result.violations[4]).toBe(2);
-    expect(result.violations).toEqual(result.explicitZero);
+    expect(result.explicitZero[4]).toBe(3);
   });
 
   it("never counts an unjudged result as a violation", () => {
@@ -407,7 +412,8 @@ describe("Qrels — absence means unjudged", () => {
       { cutoffs: [3] },
     );
     expect(result.judgedTotal).toBe(2);
-    expect(result.violations[3]).toBe(1);
+    expect(result.violations[3]).toBe(0);
+    expect(result.explicitZero[3]).toBe(1);
     expect(result.unjudged[3]).toBe(1);
   });
 });
@@ -447,7 +453,9 @@ describe("aggregation", () => {
     ),
     scoreQuery(
       // All judged non-relevant: contributes no nDCG/MRR/bpref value at all.
-      query({ queryId: "q3", queryClass: "adversarial", judgments: [{ resourceId: "T", grade: 0 }] }),
+      query({ queryId: "q3", queryClass: "adversarial", judgments: [
+        { resourceId: "T", grade: 0, isPlantedNegative: true },
+      ] }),
       { queryId: "q3", ranking: ["T", "U"], latencyMs: 20 },
       { cutoffs: [2] },
     ),

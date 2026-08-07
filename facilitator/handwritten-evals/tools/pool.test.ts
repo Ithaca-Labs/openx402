@@ -24,6 +24,7 @@ import {
   loadSystemRuns,
   validateDatasetCompleteness,
   validateRunEligibility,
+  validateExactPoolCoverage,
   type SystemRunRecord,
   type SystemRuns,
   type V2Dataset,
@@ -378,6 +379,23 @@ describe("BM25 run and five-system pool", () => {
       resource_id: "res-0002",
       contributions: [{ system: "semantic", rank: 1 }],
     });
+    expect(() => validateExactPoolCoverage(pool, runs)).not.toThrow();
+  });
+
+  it("rejects a pool that omits, invents, or changes any top-20 contribution", () => {
+    const dataset = makeDataset();
+    const runs = completeRuns(dataset);
+    const pool = buildPool(dataset, runs, { runId: "pool-run", pooledAt: GENERATED_AT });
+    expect(() => validateExactPoolCoverage(pool.slice(1), runs)).toThrow(/pair set differs/);
+    expect(() => validateExactPoolCoverage([
+      ...pool,
+      { ...pool[0]!, resource_id: "res-0002" },
+    ], runs)).toThrow(/extra=qry-001\/res-0002/);
+    expect(() => validateExactPoolCoverage([
+      { ...pool[0]!, contributions: pool[0]!.contributions.map(item =>
+        item.system === "semantic" ? { ...item, rank: 2 } : item) },
+      ...pool.slice(1),
+    ], runs)).toThrow(/semantic contribution expected 1, found 2/);
   });
 
   it("rejects incomplete system runs and hard-filter violations", () => {

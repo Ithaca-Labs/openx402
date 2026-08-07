@@ -11,8 +11,9 @@
  *
  * Consequences, per BUILD-PLAN §0.3 and §10:
  *
- *   - An explicit grade 0 means "a human read this and determined it
- *     irrelevant". It is a planted negative and counts as a `violations@k`.
+ *   - An explicit grade 0 means "a grader inspected this and determined it
+ *     irrelevant". Only grade-0 resources explicitly planted as adversarial
+ *     negatives count as `violations@k`.
  *   - An unjudged result is *not* a violation. It contributes 0 to DCG because
  *     there is no alternative, but it is counted and reported separately via
  *     `judged@k` and `unjudged@k`.
@@ -63,6 +64,8 @@ export interface QrelRecord {
 export interface Judgment {
   resourceId: string;
   grade: number;
+  /** True only for a labeled resource carrying a non-null adversarial_kind. */
+  isPlantedNegative?: boolean;
 }
 
 export interface EvalQuery {
@@ -171,7 +174,7 @@ export interface QueryScore {
   unjudged: Record<number, number>;
   /** Count of returned top-k explicitly judged grade 0. Distinct from `unjudged`. */
   explicitZero: Record<number, number>;
-  /** Alias of `explicitZero`: planted grade-0 documents surfaced in top-k (§10). */
+  /** Planted adversarial resources explicitly judged grade 0 and surfaced in top-k (§10). */
   violations: Record<number, number>;
 
   mrr: number | null;
@@ -237,11 +240,13 @@ export function scoreQuery(
 ): QueryScore {
   const cutoffs = options.cutoffs ?? DEFAULT_CUTOFFS;
   const graded = new Map<string, number>();
+  const plantedNegatives = new Set<string>();
   for (const judgment of query.judgments) {
     if (!Number.isInteger(judgment.grade) || judgment.grade < 0 || judgment.grade > 3) {
       throw new RangeError(`grade out of range 0..3 for ${query.queryId}/${judgment.resourceId}: ${judgment.grade}`);
     }
     graded.set(judgment.resourceId, judgment.grade);
+    if (judgment.isPlantedNegative) plantedNegatives.add(judgment.resourceId);
   }
   // Deduplicate the ranking defensively: a duplicated id would double-count.
   const ranking: string[] = [];
@@ -270,6 +275,7 @@ export function scoreQuery(
   const judged: Record<number, number | null> = {};
   const unjudged: Record<number, number> = {};
   const explicitZero: Record<number, number> = {};
+  const violations: Record<number, number> = {};
 
   for (const k of cutoffs) {
     const head = ranking.slice(0, k);
@@ -294,6 +300,8 @@ export function scoreQuery(
     judged[k] = denominator === 0 ? null : judgedHead / denominator;
     unjudged[k] = head.length - judgedHead;
     explicitZero[k] = head.filter(resourceId => graded.get(resourceId) === 0).length;
+    violations[k] = head.filter(resourceId =>
+      graded.get(resourceId) === 0 && plantedNegatives.has(resourceId)).length;
   }
 
   const firstRelevant = ranking.findIndex(resourceId => relevantKeys.has(resourceId));
@@ -313,7 +321,7 @@ export function scoreQuery(
     judged,
     unjudged,
     explicitZero,
-    violations: { ...explicitZero },
+    violations,
     mrr: relevantTotal === 0 ? null : firstRelevant === -1 ? 0 : 1 / (firstRelevant + 1),
     bpref: bprefOf(ranking, resourceId => graded.get(resourceId), relevantTotal, nonRelevantJudgedTotal),
     hasResult: ranking.length > 0,

@@ -443,6 +443,65 @@ export function buildPool(
   return records;
 }
 
+/** Proves that `pool-v2.jsonl` is exactly the union of every recorded system top-20. */
+export function validateExactPoolCoverage(
+  pool: readonly PoolRecord[],
+  runs: SystemRuns,
+): void {
+  const expected = new Map<string, Map<PoolSystem, number>>();
+  for (const system of POOL_SYSTEMS) {
+    for (const run of runs[system]) {
+      for (const result of run.results) {
+        const key = `${run.query_id}\u0000${result.resource_id}`;
+        const contributions = expected.get(key) ?? new Map<PoolSystem, number>();
+        contributions.set(system, result.rank);
+        expected.set(key, contributions);
+      }
+    }
+  }
+
+  const systemPool = pool.filter(record => record.origin === "system_pool");
+  const actual = new Map<string, PoolRecord>();
+  for (const [index, raw] of systemPool.entries()) {
+    const record = PoolRecordSchema.parse(raw);
+    if (record.pool_depth !== POOL_DEPTH) throw new Error(`pool record ${index + 1}: pool_depth must be ${POOL_DEPTH}`);
+    const key = `${record.query_id}\u0000${record.resource_id}`;
+    if (actual.has(key)) throw new Error(`duplicate system_pool pair ${record.query_id}/${record.resource_id}`);
+    actual.set(key, record);
+  }
+  if (new Set(systemPool.map(record => record.run_id)).size !== 1) {
+    throw new Error("system_pool rows must carry exactly one pool run_id");
+  }
+  if (new Set(systemPool.map(record => record.pooled_at)).size !== 1) {
+    throw new Error("system_pool rows must carry exactly one pooled_at timestamp");
+  }
+
+  const missing = [...expected.keys()].filter(key => !actual.has(key));
+  const extra = [...actual.keys()].filter(key => !expected.has(key));
+  if (missing.length > 0 || extra.length > 0) {
+    const display = (key: string) => key.replace("\u0000", "/");
+    throw new Error(
+      `pool pair set differs from five-system top-${POOL_DEPTH}: `
+      + `missing=${missing.slice(0, 5).map(display).join(",") || "none"}; `
+      + `extra=${extra.slice(0, 5).map(display).join(",") || "none"}`,
+    );
+  }
+  for (const [key, expectedContributions] of expected) {
+    const record = actual.get(key)!;
+    const actualContributions = new Map(record.contributions.map(item => [item.system, item.rank]));
+    for (const system of POOL_SYSTEMS) {
+      const expectedRank = expectedContributions.get(system);
+      const actualRank = actualContributions.get(system);
+      if (expectedRank !== actualRank) {
+        throw new Error(
+          `${key.replace("\u0000", "/")}: ${system} contribution expected ${expectedRank ?? "absent"}, `
+          + `found ${actualRank ?? "absent"}`,
+        );
+      }
+    }
+  }
+}
+
 export function encodeJsonl(records: readonly unknown[]): string {
   return records.length === 0 ? "" : `${records.map(record => JSON.stringify(record)).join("\n")}\n`;
 }
