@@ -1,0 +1,88 @@
+{
+  "dataset_version": "v2",
+  "contract": "stellar-bazaar-dataset-freeze-v2",
+  "status": "pass",
+  "frozen_at": "2026-08-07T23:49:17.816Z",
+  "counts": {
+    "resources": {
+      "labeled": 100,
+      "distractor": 400,
+      "total": 500
+    },
+    "labeled_resource_types": {
+      "http": 85,
+      "mcp": 15
+    },
+    "queries": {
+      "development": 50,
+      "release": 50,
+      "total": 100
+    },
+    "query_classes": {
+      "capability": 30,
+      "structured": 14,
+      "semantic": 14,
+      "price_category": 9,
+      "mcp": 9,
+      "adversarial": 9,
+      "no_result": 10,
+      "cold_start": 5
+    }
+  },
+  "hashes": {
+    "BUILD-PLAN.md": "1666e0b8e004457a13365c89338879a723139ae1aa6c6f63187d3784f46c8a2d",
+    "forbidden-capabilities.md": "b4488f9c185fb0cb87a707ba99dd17646d829ea9de991044db35953b9c282966",
+    "schema/schema-v2.ts": "e09517d74a748982caefb3f210fad8d291552983629aeb13c355ab414ec3c2c7",
+    "spec/axes.md": "ccc4ec4ce6dc4c71a804f8e55c6ae2005ec537cba5e893e9808c2caef99c55cc",
+    "spec/families.md": "38d4d775c312b597b6f78f7872f162b3cf3640b891ac48da8c32752108267c30",
+    "catalog/catalog-v2.jsonl": "c444bfc90f3d134a91df0ce79c012f013c5685b222765ba99200428097973672",
+    "catalog/sidecar-v2.jsonl": "2471c31feb21b8de1899c16ebae15137e1791c04cdaccaab638b8d639d62c87c",
+    "queries/queries-v2.jsonl": "4b28415d58094c7842e2e4d3a0395871666c39a9c225ef179d73454a9bf93498",
+    "manifests/release-queries-v2.json": "a38ae1f20abbcd00ad4fdebaed67b04d63b7aec78df10dcd5e336f49509c991e"
+  },
+  "artifacts": {
+    "BUILD-PLAN.md": {
+      "sha256": "1666e0b8e004457a13365c89338879a723139ae1aa6c6f63187d3784f46c8a2d",
+      "bytes": 47289
+    },
+    "forbidden-capabilities.md": {
+      "sha256": "b4488f9c185fb0cb87a707ba99dd17646d829ea9de991044db35953b9c282966",
+      "bytes": 7431
+    },
+    "schema/schema-v2.ts": {
+      "sha256": "e09517d74a748982caefb3f210fad8d291552983629aeb13c355ab414ec3c2c7",
+      "bytes": 43393
+    },
+    "spec/axes.md": {
+      "sha256": "ccc4ec4ce6dc4c71a804f8e55c6ae2005ec537cba5e893e9808c2caef99c55cc",
+      "bytes": 9453
+    },
+    "spec/families.md": {
+      "sha256": "38d4d775c312b597b6f78f7872f162b3cf3640b891ac48da8c32752108267c30",
+      "bytes": 53925
+    },
+    "catalog/catalog-v2.jsonl": {
+      "sha256": "c444bfc90f3d134a91df0ce79c012f013c5685b222765ba99200428097973672",
+      "bytes": 376652
+    },
+    "catalog/sidecar-v2.jsonl": {
+      "sha256": "2471c31feb21b8de1899c16ebae15137e1791c04cdaccaab638b8d639d62c87c",
+      "bytes": 640870
+    },
+    "queries/queries-v2.jsonl": {
+      "sha256": "4b28415d58094c7842e2e4d3a0395871666c39a9c225ef179d73454a9bf93498",
+      "bytes": 102101
+    },
+    "manifests/release-queries-v2.json": {
+      "sha256": "a38ae1f20abbcd00ad4fdebaed67b04d63b7aec78df10dcd5e336f49509c991e",
+      "bytes": 6456
+    }
+  },
+  "release_holdout": {
+    "query_index_path": "manifests/release-queries-v2.json",
+    "query_index_sha256": "a38ae1f20abbcd00ad4fdebaed67b04d63b7aec78df10dcd5e336f49509c991e",
+    "judgments_included": false,
+    "judgments_access": "sealed-from-normal-tuning",
+    "release_run_ledger_path": "manifests/release-runs-v2.jsonl"
+  }
+}

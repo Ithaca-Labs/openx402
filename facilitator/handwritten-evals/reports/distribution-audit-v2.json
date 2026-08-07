@@ -1,0 +1,404 @@
+{
+  "version": 1,
+  "artifact": "distribution-audit-v2",
+  "status": "pass",
+  "generated_at": "2026-08-07T23:52:26.000Z",
+  "source_hash": "sha256:396efd599d994ff3ec97c0ea1b2a92240140da3ebdee257a89164165bfd5d27d",
+  "scope": "100_labeled_resource_core_with_full_corpus_integrity_check",
+  "policy": {
+    "labeled_scope": 100,
+    "distractor_scope": 400,
+    "network_max_absolute_drift": 0.15,
+    "mcp_upto_share_max_absolute_drift": 0.05,
+    "association_max_cramers_v": 0.3,
+    "upto_min_price_tiers": 8,
+    "mcp_min_price_tiers": 8,
+    "adversarial_min_price_tiers": 6,
+    "sparse_min_price_tiers": 5,
+    "small_tag_max_per_price_tier": 2,
+    "upto_max_price_tier_share": 0.2,
+    "max_family_slot_share": 0.4,
+    "mcp_method_treatment": "structurally_not_testable"
+  },
+  "counts": {
+    "catalog": 500,
+    "sidecars": 500,
+    "labeled": 100,
+    "distractors": 400,
+    "distractor_upto_bearing": 4,
+    "distinct_providers": 120
+  },
+  "wire_error_count": 0,
+  "statistics": {
+    "resource_types": {
+      "http": 85,
+      "mcp": 15
+    },
+    "scheme_sets": {
+      "exact_only": 70,
+      "exact_and_upto": 22,
+      "upto_only": 8
+    },
+    "overall_network_mix": {
+      "testnet_only": 40,
+      "pubnet_only": 35,
+      "both": 25
+    },
+    "overall_upto_share": 0.3,
+    "mcp_upto_share": 0.3333333333333333,
+    "mcp_upto_share_absolute_drift": 0.033333333333333326,
+    "full_corpus_upto_share": 0.068,
+    "groups": {
+      "mcp": {
+        "count": 15,
+        "distinct_families": 15,
+        "distinct_price_tiers": 10,
+        "input_methods": [
+          "not_applicable"
+        ],
+        "resource_types": [
+          "mcp"
+        ],
+        "max_price_tier_count": 2,
+        "max_price_tier_share": 0.13333333333333333,
+        "max_family_slot_count": 3,
+        "max_family_slot_share": 0.2,
+        "network_mix": {
+          "testnet_only": 6,
+          "pubnet_only": 5,
+          "both": 4
+        },
+        "network_max_absolute_drift": 0.016666666666666663
+      },
+      "upto": {
+        "count": 30,
+        "distinct_families": 20,
+        "distinct_price_tiers": 10,
+        "input_methods": [
+          "GET",
+          "not_applicable",
+          "POST"
+        ],
+        "resource_types": [
+          "http",
+          "mcp"
+        ],
+        "max_price_tier_count": 5,
+        "max_price_tier_share": 0.16666666666666666,
+        "max_family_slot_count": 7,
+        "max_family_slot_share": 0.23333333333333334,
+        "network_mix": {
+          "testnet_only": 12,
+          "pubnet_only": 11,
+          "both": 7
+        },
+        "network_max_absolute_drift": 0.016666666666666663
+      },
+      "adversarial": {
+        "count": 15,
+        "distinct_families": 15,
+        "distinct_price_tiers": 9,
+        "input_methods": [
+          "GET",
+          "not_applicable",
+          "POST"
+        ],
+        "resource_types": [
+          "http",
+          "mcp"
+        ],
+        "max_price_tier_count": 2,
+        "max_price_tier_share": 0.13333333333333333,
+        "max_family_slot_count": 4,
+        "max_family_slot_share": 0.26666666666666666,
+        "network_mix": {
+          "testnet_only": 6,
+          "pubnet_only": 5,
+          "both": 4
+        },
+        "network_max_absolute_drift": 0.016666666666666663
+      },
+      "sparse": {
+        "count": 10,
+        "distinct_families": 10,
+        "distinct_price_tiers": 7,
+        "input_methods": [
+          "GET",
+          "not_applicable",
+          "POST"
+        ],
+        "resource_types": [
+          "http",
+          "mcp"
+        ],
+        "max_price_tier_count": 2,
+        "max_price_tier_share": 0.2,
+        "max_family_slot_count": 4,
+        "max_family_slot_share": 0.4,
+        "network_mix": {
+          "testnet_only": 4,
+          "pubnet_only": 4,
+          "both": 2
+        },
+        "network_max_absolute_drift": 0.050000000000000044
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "corpus-counts",
+      "requirement": "Audit the complete shipped 1,000-record corpus and 100-record labeled core",
+      "passed": true,
+      "observed": "catalog=500, sidecars=500, labeled=100, distractors=400"
+    },
+    {
+      "id": "provider-count",
+      "requirement": "The shipped corpus uses the pinned 120-provider budget",
+      "passed": true,
+      "observed": "120/120"
+    },
+    {
+      "id": "catalog-sidecar-wire",
+      "requirement": "Catalog and sidecar IDs are one-to-one and every sidecar agrees with its wire record",
+      "passed": true,
+      "observed": "0 error(s)"
+    },
+    {
+      "id": "distractor-scheme-budget",
+      "requirement": "At most 1% of the 900 distractors carry an upto option",
+      "passed": true,
+      "observed": "4/400"
+    },
+    {
+      "id": "distractor-resource-type-target",
+      "requirement": "Distractors use the selected HTTP-only transport policy",
+      "passed": true,
+      "observed": "http=400, mcp=0"
+    },
+    {
+      "id": "resource-type-target",
+      "requirement": "Labeled core contains exactly 85 HTTP and 15 MCP resources",
+      "passed": true,
+      "observed": "http=85, mcp=15"
+    },
+    {
+      "id": "scheme-target",
+      "requirement": "Labeled core uses the pinned 70 exact-only / 22 exact+upto / 8 upto-only split",
+      "passed": true,
+      "observed": "exact_only=70, exact_and_upto=22, upto_only=8"
+    },
+    {
+      "id": "adversarial-target",
+      "requirement": "Labeled core carries exactly 15 adversarial resources",
+      "passed": true,
+      "observed": "15"
+    },
+    {
+      "id": "sparse-target",
+      "requirement": "Labeled core carries exactly 10 sparse resources",
+      "passed": true,
+      "observed": "10"
+    },
+    {
+      "id": "upto-family-spread",
+      "requirement": "upto-bearing resources appear in all 20 families",
+      "passed": true,
+      "observed": "20/20"
+    },
+    {
+      "id": "upto-price-spread",
+      "requirement": "upto-bearing resources appear at at least 8 price tiers",
+      "passed": true,
+      "observed": "10/10"
+    },
+    {
+      "id": "upto-http-method-spread",
+      "requirement": "upto-bearing HTTP resources include both GET and POST",
+      "passed": true,
+      "observed": "GET,not_applicable,POST"
+    },
+    {
+      "id": "upto-resource-type-spread",
+      "requirement": "upto-bearing resources include HTTP and MCP",
+      "passed": true,
+      "observed": "http,mcp"
+    },
+    {
+      "id": "mcp-upto-share",
+      "requirement": "MCP upto-bearing share stays within 5 percentage points of the labeled-core share",
+      "passed": true,
+      "observed": "overall=0.300000, mcp=0.333333, drift=0.033333"
+    },
+    {
+      "id": "mcp-family-spread",
+      "requirement": "MCP appears in at least 8 families",
+      "passed": true,
+      "observed": "15/20"
+    },
+    {
+      "id": "mcp-price-spread",
+      "requirement": "MCP appears at at least 8 price tiers",
+      "passed": true,
+      "observed": "10/10"
+    },
+    {
+      "id": "adversarial-price-spread",
+      "requirement": "Adversarial resources appear at at least 6 price tiers",
+      "passed": true,
+      "observed": "9/10"
+    },
+    {
+      "id": "sparse-price-spread",
+      "requirement": "Sparse resources appear at at least 5 price tiers",
+      "passed": true,
+      "observed": "7/10"
+    },
+    {
+      "id": "mcp-network-drift",
+      "requirement": "mcp network mix stays within 15 percentage points of the labeled-core mix",
+      "passed": true,
+      "observed": "0.016667"
+    },
+    {
+      "id": "upto-network-drift",
+      "requirement": "upto network mix stays within 15 percentage points of the labeled-core mix",
+      "passed": true,
+      "observed": "0.016667"
+    },
+    {
+      "id": "adversarial-network-drift",
+      "requirement": "adversarial network mix stays within 15 percentage points of the labeled-core mix",
+      "passed": true,
+      "observed": "0.016667"
+    },
+    {
+      "id": "sparse-network-drift",
+      "requirement": "sparse network mix stays within 15 percentage points of the labeled-core mix",
+      "passed": true,
+      "observed": "0.050000"
+    },
+    {
+      "id": "mcp-price-concentration",
+      "requirement": "mcp places at most 2 resources at one price tier",
+      "passed": true,
+      "observed": "2"
+    },
+    {
+      "id": "adversarial-price-concentration",
+      "requirement": "adversarial places at most 2 resources at one price tier",
+      "passed": true,
+      "observed": "2"
+    },
+    {
+      "id": "sparse-price-concentration",
+      "requirement": "sparse places at most 2 resources at one price tier",
+      "passed": true,
+      "observed": "2"
+    },
+    {
+      "id": "upto-price-concentration",
+      "requirement": "No price tier contains more than 20% of upto-bearing resources",
+      "passed": true,
+      "observed": "0.166667"
+    },
+    {
+      "id": "mcp-slot-concentration",
+      "requirement": "mcp places at most 40% of its resources in one family slot",
+      "passed": true,
+      "observed": "0.200000"
+    },
+    {
+      "id": "upto-slot-concentration",
+      "requirement": "upto places at most 40% of its resources in one family slot",
+      "passed": true,
+      "observed": "0.233333"
+    },
+    {
+      "id": "adversarial-slot-concentration",
+      "requirement": "adversarial places at most 40% of its resources in one family slot",
+      "passed": true,
+      "observed": "0.266667"
+    },
+    {
+      "id": "sparse-slot-concentration",
+      "requirement": "sparse places at most 40% of its resources in one family slot",
+      "passed": true,
+      "observed": "0.400000"
+    }
+  ],
+  "associations": [
+    {
+      "id": "upto-family",
+      "left": "upto",
+      "right": "family",
+      "sample_size": 100,
+      "cramers_v": 0.21821789023599236,
+      "maximum_allowed": 0.3,
+      "passed": true
+    },
+    {
+      "id": "upto-price-tier",
+      "left": "upto",
+      "right": "price_tier",
+      "sample_size": 100,
+      "cramers_v": 0.27602622373694163,
+      "maximum_allowed": 0.3,
+      "passed": true
+    },
+    {
+      "id": "upto-input-method",
+      "left": "upto",
+      "right": "input_method",
+      "sample_size": 100,
+      "cramers_v": 0.049160514400834694,
+      "maximum_allowed": 0.3,
+      "passed": true
+    },
+    {
+      "id": "mcp-family",
+      "left": "mcp",
+      "right": "family",
+      "sample_size": 100,
+      "cramers_v": 0.24253562503633294,
+      "maximum_allowed": 0.3,
+      "passed": true
+    },
+    {
+      "id": "mcp-price-tier",
+      "left": "mcp",
+      "right": "price_tier",
+      "sample_size": 100,
+      "cramers_v": 0.140028008402801,
+      "maximum_allowed": 0.3,
+      "passed": true
+    },
+    {
+      "id": "network-family",
+      "left": "network",
+      "right": "family",
+      "sample_size": 100,
+      "cramers_v": 0.1603567451474546,
+      "maximum_allowed": 0.3,
+      "passed": true
+    },
+    {
+      "id": "network-price-tier",
+      "left": "network",
+      "right": "price_tier",
+      "sample_size": 100,
+      "cramers_v": 0.277102353446726,
+      "maximum_allowed": 0.3,
+      "passed": true
+    },
+    {
+      "id": "network-input-method",
+      "left": "network",
+      "right": "input_method",
+      "sample_size": 100,
+      "cramers_v": 0.03875062800502856,
+      "maximum_allowed": 0.3,
+      "passed": true
+    }
+  ],
+  "all_checks_passed": true
+}

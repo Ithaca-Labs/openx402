@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-07T22:02:28.389Z",
+  "generated_at": "2026-08-07T23:52:34.784Z",
   "status": "blocked",
   "counts": {
     "catalog": 500,
     "sidecars": 500,
     "labeled": 100,
     "distractors": 400,
-    "queries": 0,
+    "queries": 100,
     "pool": 0,
     "qrels": 0,
     "calibration": 0
@@ -68,25 +68,23 @@
     {
       "step": 5,
       "name": "100 queries and pass-1 grading",
-      "status": "not_started",
+      "status": "partial",
       "evidence": [
-        "0/100 queries",
+        "100/100 queries",
         "pass-1 missing/stale"
       ],
       "blockers": [
-        "Step 4 and query authoring not complete"
+        "pass-1 grading or owner query review incomplete"
       ]
     },
     {
       "step": 6,
       "name": "freeze split and manifest",
-      "status": "not_started",
+      "status": "done",
       "evidence": [
-        "manifest missing"
+        "manifest verified"
       ],
-      "blockers": [
-        "dataset incomplete or frozen hashes do not verify"
-      ]
+      "blockers": []
     },
     {
       "step": 7,
@@ -151,11 +149,11 @@
     {
       "id": "counts",
       "requirement": "100 labeled resources, 400 distractors, 100 queries, frozen split and hashes",
-      "status": "blocked",
+      "status": "pass",
       "evidence": [
         "resources 500/500",
-        "queries 0/100",
-        "frozen manifest missing"
+        "queries 100/100",
+        "frozen manifest verified"
       ]
     },
     {
@@ -179,10 +177,10 @@
     {
       "id": "anti-correlation",
       "requirement": "upto, mcp, and network show no prohibited correlation",
-      "status": "blocked",
+      "status": "pass",
       "evidence": [
-        "distribution audit missing",
-        "current inputs stale/missing"
+        "distribution audit pass",
+        "current inputs verified"
       ]
     },
     {
@@ -196,10 +194,10 @@
     {
       "id": "mcp-queries",
       "requirement": "All four MCP query subtypes are covered",
-      "status": "blocked",
+      "status": "pass",
       "evidence": [
-        "0/9 MCP queries",
-        "0/4 subtypes"
+        "9/9 MCP queries",
+        "4/4 subtypes"
       ]
     },
     {
@@ -217,8 +215,8 @@
       "status": "blocked",
       "evidence": [
         "0/5 systems",
-        "exact coverage complete dataset and run artifacts are missing",
-        "pool snapshot missing",
+        "exact coverage cannot read /home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/runs/bm25-v2.jsonl: ENOENT: no such file or directory, open '/home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/runs/bm25-v2.jsonl'",
+        "pool snapshot /home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/pool/pool-snapshot-v2.json: ENOENT: no such file or directory, open '/home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/pool/pool-snapshot-v2.json'",
         "development pair coverage complete",
         "sealed release pair coverage incomplete"
       ]
@@ -230,7 +228,7 @@
       "evidence": [
         "unpooled audit missing",
         "0 audit pool pair(s)",
-        "source unavailable"
+        "source pool-v2 is empty"
       ]
     },
     {
@@ -308,7 +306,7 @@
       "requirement": "All release judgments carry rationales",
       "status": "blocked",
       "evidence": [
-        "0/50 release queries",
+        "50/50 release queries",
         "0 total qrels"
       ]
     },
@@ -318,7 +316,7 @@
       "status": "blocked",
       "evidence": [
         "resources reviewed 500/500",
-        "queries reviewed 0/0",
+        "queries reviewed 100/100",
         "development qrels reviewed 0/0",
         "sealed release qrels 0",
         "calibration reviewed 0",
@@ -359,10 +357,7 @@
     }
   ],
   "blockers": [
-    "counts",
     "holdout-ledger",
-    "anti-correlation",
-    "mcp-queries",
     "pass1-seed",
     "pool",
     "unpooled-audit",
