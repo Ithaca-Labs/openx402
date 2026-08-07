@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { POOL_SYSTEMS, type QrelRecord, type QueryRecord } from "../schema/schema-v2.js";
+import { SCORED_SYSTEMS, type QrelRecord, type QueryRecord } from "../schema/schema-v2.js";
 import {
   buildEvaluationReport,
   EvaluationReportDraftV2Schema,
@@ -73,7 +73,7 @@ function releaseQrels(queries: readonly QueryRecord[]): QrelRecord[] {
 }
 
 function runs(queries: readonly QueryRecord[]): SystemRun[] {
-  return POOL_SYSTEMS.map(system => ({
+  return SCORED_SYSTEMS.map(system => ({
     system,
     results: queries.map(query => ({
       queryId: query.query_id,
@@ -103,7 +103,7 @@ describe("v2 evaluation report", () => {
   });
 
   it("preserves canonical per-query latency when adapting pool runs", () => {
-    const canonical = Object.fromEntries(POOL_SYSTEMS.map((system, systemIndex) => [system, [{
+    const canonical = Object.fromEntries(SCORED_SYSTEMS.map((system, systemIndex) => [system, [{
       system,
       query_id: "qry-001",
       run_id: `run-${system}`,
@@ -115,7 +115,7 @@ describe("v2 evaluation report", () => {
     }]])) as SystemRuns;
 
     const adapted = scoringRunsFromPoolRuns(canonical, new Set(["qry-001"]));
-    expect(adapted.map(run => run.results[0]!.latencyMs)).toEqual([12.5, 13.5, 14.5, 15.5, 16.5]);
+    expect(adapted.map(run => run.results[0]!.latencyMs)).toEqual([12.5, 13.5, 14.5, 15.5]);
   });
 
   it("reports every required system, metric contract, coverage, and significance", () => {
@@ -123,13 +123,13 @@ describe("v2 evaluation report", () => {
     const report = buildEvaluationReport(queries, releaseQrels(queries), runs(queries), options);
 
     expect(EvaluationReportDraftV2Schema.parse(report)).toEqual(report);
-    expect(Object.keys(report.systems)).toEqual(POOL_SYSTEMS);
+    expect(Object.keys(report.systems)).toEqual(SCORED_SYSTEMS);
     expect(report.ndcg_gains).toEqual([0, 1, 3, 7]);
     expect(report.relevance_thresholds).toMatchObject({ mrr: 2, recall_at_k: 2, bpref: 2 });
     expect(report.systems.lexical.primary.ndcg_at_10.value).toBe(1);
     expect(report.systems.lexical.primary.judged_at_10.value).toBe(0.5);
     expect(report.judged_at_10_gate_passed).toBe(true);
-    expect(report.significance.reranked!.ndcg_at_10!.summary).toContain("NOT significant");
+    expect(report.significance.semantic!.ndcg_at_10!.summary).toContain("NOT significant");
     expect(report.bm25_baseline).toBe(true);
     expect(report.owner_rates_reported).toBe(true);
     expect(report.input_hashes).toEqual(evaluationInputHashes(queries, releaseQrels(queries), runs(queries), "release"));

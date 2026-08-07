@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  POOL_SYSTEMS,
+  POOL_BUILD_SYSTEMS,
   PoolRecordSchema,
   PUBNET_USDC,
   QrelRecordSchema,
@@ -162,7 +162,7 @@ function pooled(queryIndex: number) {
     query_id: `qry-${String(queryIndex).padStart(3, "0")}`,
     resource_id: "res-0001",
     origin: "system_pool",
-    contributions: POOL_SYSTEMS.map(system => ({ system, rank: 1 })),
+    contributions: POOL_BUILD_SYSTEMS.map(system => ({ system, rank: 1 })),
     best_rank: 1,
     pool_depth: 20,
     blinded: true,
@@ -267,7 +267,7 @@ describe("Pass 2b preparation", () => {
     }
   });
 
-  it("refuses incomplete corpora and five-system pools", () => {
+  it("refuses incomplete corpora and pool-builder pools", () => {
     const partial = sources();
     partial.catalog.pop();
     expect(() => prepare(partial)).toThrow(new RegExp(
@@ -278,7 +278,7 @@ describe("Pass 2b preparation", () => {
       ...incompletePool.pool[0],
       contributions: incompletePool.pool[0]!.contributions.filter(item => item.system !== "bm25"),
     });
-    expect(() => prepare(incompletePool)).toThrow(/incomplete five-system pool; missing bm25/);
+    expect(() => prepare(incompletePool)).toThrow(/incomplete pool; missing bm25/);
   });
 
   it("refuses an author or reused grader as an audit agent", () => {

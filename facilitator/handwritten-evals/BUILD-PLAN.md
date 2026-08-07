@@ -107,6 +107,35 @@ the authoring context.
 >    non-trivial model identifier string. All 100 already-authored resources satisfy this without
 >    modification — nothing about their recorded provenance changed, only the format the release
 >    gate accepts.
+>
+> **Ninth revision — pool construction separated from system scoring; `reranked` out of MVP scope.**
+> Two related architecture changes to §8/§10/§11 (§9 step 7 is not yet implemented, so no data
+> migration is involved — this changes the target design, not existing artifacts):
+>
+> 1. **The pool is built from three exact, non-production methods** — `bm25` (unchanged), `exact_dense`
+>    (brute-force cosine similarity, ANN index bypassed), and `hybrid_exact` (RRF fusion of the two,
+>    still exact). Production `lexical`/`semantic`/`hybrid` are no longer pool contributors; they're
+>    scored against the qrels this pool produces, the same role `bm25` already had as comparability
+>    baseline. Reason: pgvector's own documentation states plain search gives perfect recall while
+>    HNSW trades recall for speed, and a restrictive filter combined with an HNSW scan can silently
+>    return fewer than top-k because filtering is applied after an already-approximate candidate scan
+>    (`hnsw.iterative_scan = strict_order` helps but still stops at `hnsw.max_scan_tuples`, so it is
+>    not exhaustive). Building the pool from production HNSW risked a resource missed by ANN
+>    approximation never entering the pool at all — a permanent gap invisible to `judged@k`, since
+>    that figure only describes what *did* get pooled. Building from exact methods removes that risk;
+>    production HNSW is then *evaluated against* the resulting pool exactly as an ANN system should be,
+>    with ANN recall loss surfaced in the report (`exact_dense` vs production `semantic`,
+>    nDCG/Recall/latency) rather than hidden inside the ground truth.
+> 2. **`reranked` is cut from MVP scope.** It needs a configured, healthy reranker provider to stand
+>    up — one more moving piece than MVP needs — and production reranking already degrades gracefully
+>    to plain hybrid when unavailable, so its absence isn't a rigor gap. Adding it later is exactly the
+>    scenario §12.3's re-pool-on-change rule already describes: a new profile added, existing pool
+>    candidates unaffected, new candidates re-pooled and graded. MVP scored systems: `lexical`,
+>    `semantic`, `hybrid`, plus `bm25` in its baseline role.
+>
+> Both changes are implemented in `schema/schema-v2.ts` as a split: `POOL_BUILD_SYSTEMS` (3, gates
+> `pool-v2.jsonl` contributions) and `SCORED_SYSTEMS` (4, gates the final report) replace the single
+> `POOL_SYSTEMS` list that previously conflated the two roles.
 
 ---
 
@@ -538,11 +567,22 @@ agent that wrote the query.
 
 ### Pass 2 — pooled adjudication (~28 candidates/query)
 
-1. Run **five** systems: lexical, semantic, hybrid, reranked, **and BM25** (§10)
-2. Union the top-20 from each, dedupe
+**Pool construction and system scoring are separate concerns (ninth revision — see note above §0).**
+The pool is built from three **exact, non-production** retrieval methods chosen to maximize recall
+into the judgment set; production systems are scored *against* that pool afterward, never used to
+build it.
+
+1. Run the three pool-building methods (§10): **BM25**, **exact dense** (brute-force cosine, no ANN
+   index), and **hybrid-exact** (RRF fusion of the two, still exact — no HNSW anywhere in this step)
+2. Union the top-20 from each of these three, dedupe
 3. **Strip profile attribution and shuffle** — grading must be blind
 4. Grade every pooled candidate twice with independent fresh-context grading agents
-5. Record the pool in `pool-v2.jsonl` with contributing systems
+5. Record the pool in `pool-v2.jsonl` with contributing systems (`bm25`, `exact_dense`, `hybrid_exact`
+   only — production systems never appear as pool contributors)
+6. Separately, run the **production** systems — lexical (`ts_rank_cd`), semantic (HNSW), hybrid
+   (production RRF) — against the frozen queries and score them against the qrels this pool
+   produces. This is where ANN approximation loss actually gets measured, instead of silently
+   shaping what the ground truth contains. (`reranked` is out of MVP scope — see §10.)
 
 Family triage keeps this tractable: candidates from a non-target family are usually quick 0s, but
 the assigned family is hidden from graders when it would reveal the intended answer.
@@ -661,7 +701,47 @@ Add a real BM25 run as a comparability baseline.
 
 - Use a permissively licensed, **evaluation-only** implementation
 - **Do not** add a production extension or datastore for the baseline
-- BM25 participates in pooling (§8) but is not a deployment target
+- BM25 participates in pooling (§8) **and** is reported as a scored comparability baseline —
+  it plays both roles, unlike the other pool-building methods
+- BM25 is not a deployment target
+
+### Pool construction: exact methods only, never production ANN
+
+**Why exact, not the production HNSW config.** TREC-style pooling exists to build a candidate set
+broad enough that judgment coverage is trustworthy — the goal is to expose every plausibly relevant
+resource to a grader, not to reproduce one particular retrieval implementation's behavior. HNSW is
+approximate by design: pgvector's own documentation states plain (non-indexed) search gives perfect
+recall, while an HNSW index trades recall for speed, and a restrictive filter combined with an HNSW
+scan can silently return fewer than the requested top-k because the index applies filters after an
+already-approximate candidate scan. If the pool itself were built from production HNSW, a resource
+missed by ANN approximation would never enter the pool at all — a permanent, silent gap that no
+downstream `judged@k` figure would ever reveal, because that figure only describes what *did* get
+pooled.
+
+The pool is therefore built from three methods, none of which touch the production HNSW index:
+
+| pool-building method | what it is |
+|---|---|
+| `bm25` | the evaluation-only BM25 baseline above |
+| `exact_dense` | brute-force cosine similarity over the same embeddings, index scan disabled (pgvector's own documented pattern for measuring ANN recall: `BEGIN; SET LOCAL enable_indexscan = off; ...; COMMIT;`) — perfect recall by construction |
+| `hybrid_exact` | RRF fusion of `bm25` and `exact_dense` — still no ANN anywhere in the fusion |
+
+At the benchmark's scale (500 resources), `exact_dense` costs nothing extra — pgvector notes a plain
+sequential scan can be faster than an ANN index at small table sizes, so there is no performance
+reason to prefer HNSW for pool construction even setting the recall argument aside.
+
+**Production systems — `lexical` (`ts_rank_cd`), `semantic` (HNSW), `hybrid` (production RRF) — are
+never pool contributors.** They are scored *against* the qrels this pool produces, exactly like BM25
+is, so that ANN approximation loss is something the report measures (nDCG/Recall/latency, `exact_dense`
+vs production `semantic`) rather than something baked invisibly into the ground truth.
+
+**`reranked` is out of MVP scope** — it requires a configured, healthy reranker provider to stand up,
+which is one more moving piece than MVP needs, and reranking already degrades gracefully to plain
+hybrid in production when unavailable (`"used" | "disabled" | "unavailable" | "timeout" | "error" |
+"skipped"`), so its absence here isn't a gap in rigor. Adding it later is exactly the scenario §12.3's
+re-pool-on-change rule describes — a new profile added, existing pool candidates unaffected, new
+candidates re-pooled and graded. Scored systems for MVP: `lexical`, `semantic`, `hybrid`, plus `bm25`
+in its comparability-baseline role.
 
 ---
 
@@ -675,7 +755,9 @@ Extend `reports/release-gates-v1.json` → `release-gates-v2.json`:
 - [ ] `upto`, `mcp`, and `network` show no correlation with family, price tier, or method
 - [ ] ≥6 distinct `adversarial_kind` values present
 - [ ] ≥4 MCP query sub-types covered (tuple, schema, transport, disambiguation)
-- [ ] Pool covers top-20 of all five systems; `pool-v2.jsonl` complete
+- [ ] Pool covers top-20 of all three pool-building methods (`bm25`, `exact_dense`, `hybrid_exact`);
+      `pool-v2.jsonl` complete; production systems (`lexical`, `semantic`, `hybrid`) and `bm25` in its
+      baseline role are separately scored against the resulting qrels
 - [ ] Unpooled audit performed; audited relevance rate reported
 - [ ] `judged@10` meets a stated threshold, derived from actual §8 grading/pooling data (pilot-derived
       if a pilot was run, otherwise derived from the real Pass 1/Pass 2 grading pass); the figure is

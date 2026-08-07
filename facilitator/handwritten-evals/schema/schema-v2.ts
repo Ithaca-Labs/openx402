@@ -763,13 +763,37 @@ export const QrelRecordSchema = z.object({
 });
 
 /**
+ * §8/§10 (ninth revision) — pool construction and system scoring are separate roles.
+ *
+ * `POOL_BUILD_SYSTEMS`: the three exact, non-production methods that build `pool-v2.jsonl`.
+ * Production systems are never pool contributors — building the pool from approximate HNSW risks a
+ * resource ANN misses never entering the pool at all, a gap invisible to `judged@k`. `bm25` is exact
+ * by construction (no ANN involved), so it belongs in both lists.
+ */
+export const POOL_BUILD_SYSTEMS = ["bm25", "exact_dense", "hybrid_exact"] as const;
+
+/**
+ * `SCORED_SYSTEMS`: what the final report scores against the qrels the pool produces. Production
+ * `lexical`/`semantic`/`hybrid` plus `bm25` in its comparability-baseline role. `reranked` is out of
+ * MVP scope (ninth revision) — needs a configured, healthy reranker provider to stand up.
+ */
+export const SCORED_SYSTEMS = ["lexical", "semantic", "hybrid", "bm25"] as const;
+
+/**
+ * Every distinct system that produces a run file — the union of `POOL_BUILD_SYSTEMS` and
+ * `SCORED_SYSTEMS` (`bm25` counted once). Used wherever code has to handle "any system with a run
+ * file" generically: loading run files, and the pool-freshness snapshot, which must bind *all* run
+ * files (pool-building and scored) since a stale production run makes the final report stale even
+ * when the pool itself is still fresh.
+ */
+export const ALL_RUN_SYSTEMS = ["bm25", "exact_dense", "hybrid_exact", "lexical", "semantic", "hybrid"] as const;
+
+/**
  * §0.3 — `pool-v2.jsonl`: exactly which pairs entered the pool, and from which systems.
  * Everything pooled must be judged; this file is the completeness audit trail.
  */
-export const POOL_SYSTEMS = ["lexical", "semantic", "hybrid", "reranked", "bm25"] as const;
-
 export const POOL_ORIGINS = [
-  /** §8 pass 2 — union of the top-k of the five systems. */
+  /** §8 pass 2 — union of the top-k of the three pool-building methods. */
   "system_pool",
   /** §8 pass 1 — named during authoring from corpus knowledge. */
   "authoring_pass1",
@@ -783,7 +807,7 @@ export const PoolRecordSchema = z.object({
   origin: z.enum(POOL_ORIGINS),
   /** Which systems returned this pair, and at what rank. Empty only for non-system origins. */
   contributions: z.array(z.object({
-    system: z.enum(POOL_SYSTEMS),
+    system: z.enum(POOL_BUILD_SYSTEMS),
     rank: z.number().int().min(1),
   }).strict()),
   /** Best rank across contributing systems; null when no system returned it. */
@@ -973,7 +997,9 @@ export type Scheme = (typeof SCHEMES)[number];
 export type ResourceType = (typeof RESOURCE_TYPES)[number];
 export type AdversarialKind = (typeof ADVERSARIAL_KINDS)[number];
 export type QueryClass = (typeof QUERY_CLASSES)[number];
-export type PoolSystem = (typeof POOL_SYSTEMS)[number];
+export type PoolBuildSystem = (typeof POOL_BUILD_SYSTEMS)[number];
+export type ScoredSystem = (typeof SCORED_SYSTEMS)[number];
+export type RunSystem = (typeof ALL_RUN_SYSTEMS)[number];
 export type PriceTier = (typeof PRICE_TIERS)[number];
 export type SchemeSet = (typeof SCHEME_SETS)[number];
 

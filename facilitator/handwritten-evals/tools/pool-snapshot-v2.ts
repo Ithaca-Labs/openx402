@@ -4,10 +4,10 @@ import { readFile } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import { z } from "zod";
 import {
-  POOL_SYSTEMS,
+  ALL_RUN_SYSTEMS,
   PoolRecordSchema,
   type PoolRecord,
-  type PoolSystem,
+  type RunSystem,
 } from "../schema/schema-v2.js";
 import {
   DATASET_MANIFEST_PATH,
@@ -36,7 +36,7 @@ const ArtifactHashSchema = z.object({
 const ParameterSchema = z.union([z.string(), z.number().finite(), z.boolean()]);
 
 export const RetrievalProfileV2Schema = z.object({
-  system: z.enum(POOL_SYSTEMS),
+  system: z.enum(ALL_RUN_SYSTEMS),
   profile_id: z.string().regex(/^[a-z0-9][a-z0-9._-]+$/),
   runner: z.string().min(1),
   parameters: z.record(z.string().min(1), ParameterSchema),
@@ -55,10 +55,10 @@ export const RetrievalProfilesV2Schema = z.object({
     reason: z.string().min(1),
   }).strict(),
   implementation_inputs: z.array(z.string().min(1)).min(1),
-  profiles: z.array(RetrievalProfileV2Schema).length(POOL_SYSTEMS.length),
+  profiles: z.array(RetrievalProfileV2Schema).length(ALL_RUN_SYSTEMS.length),
 }).strict().superRefine((value, context) => {
   const systems = value.profiles.map(profile => profile.system);
-  for (const system of POOL_SYSTEMS) {
+  for (const system of ALL_RUN_SYSTEMS) {
     if (systems.filter(candidate => candidate === system).length !== 1) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
@@ -87,8 +87,8 @@ const SystemRunBindingSchema = z.object({
 }).strict();
 
 const systemRunBindingsShape = Object.fromEntries(
-  POOL_SYSTEMS.map(system => [system, SystemRunBindingSchema]),
-) as { [K in PoolSystem]: typeof SystemRunBindingSchema };
+  ALL_RUN_SYSTEMS.map(system => [system, SystemRunBindingSchema]),
+) as { [K in RunSystem]: typeof SystemRunBindingSchema };
 
 export const PoolSnapshotBindingV2Schema = z.object({
   dataset: z.object({
@@ -170,7 +170,7 @@ async function readPool(path: string): Promise<PoolRecord[]> {
   });
 }
 
-function oneValue(records: readonly SystemRunRecord[], key: "run_id" | "generated_at", system: PoolSystem): string {
+function oneValue(records: readonly SystemRunRecord[], key: "run_id" | "generated_at", system: RunSystem): string {
   const values = new Set(records.map(record => record[key]));
   if (values.size !== 1) throw new Error(`${system}: records must carry exactly one ${key}`);
   return [...values][0]!;
@@ -181,7 +181,7 @@ async function systemRunBinding(
   runs: SystemRuns,
   profiles: RetrievalProfilesV2,
 ): Promise<PoolSnapshotBindingV2["system_runs"]> {
-  const entries = await Promise.all(POOL_SYSTEMS.map(async system => {
+  const entries = await Promise.all(ALL_RUN_SYSTEMS.map(async system => {
     const path = `runs/${SYSTEM_RUN_FILENAMES[system]}`;
     const profile = profiles.profiles.find(candidate => candidate.system === system)!;
     const records = runs[system];
@@ -253,7 +253,7 @@ export function poolBindingDifferences(
   compare("frozen dataset", expected.dataset, actual.dataset);
   compare("retrieval profile contract", expected.retrieval_profiles, actual.retrieval_profiles);
   compare("retrieval implementation inputs", expected.implementation_inputs, actual.implementation_inputs);
-  for (const system of POOL_SYSTEMS) {
+  for (const system of ALL_RUN_SYSTEMS) {
     compare(`${system} system run`, expected.system_runs[system], actual.system_runs[system]);
   }
   compare("pool artifact", expected.pool, actual.pool);

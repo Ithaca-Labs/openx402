@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FORBIDDEN_CAPABILITIES, QUERY_ASSIGNMENTS } from "../query-config.js";
-import { POOL_SYSTEMS, RELEASE_COUNTS, TESTNET_USDC, type CatalogRecord, type QueryRecord, type SidecarRecord } from "../schema/schema-v2.js";
+import { POOL_BUILD_SYSTEMS, RELEASE_COUNTS, TESTNET_USDC, type CatalogRecord, type QueryRecord, type SidecarRecord } from "../schema/schema-v2.js";
 import { finalizePass1Seed, Pass1SeedReportSchema, preparePass1Seed, validatePass1SeedImport } from "./query-pass1.js";
 
 const now = "2026-08-07T00:00:00.000Z";
@@ -45,7 +45,7 @@ describe("Step 5 frozen assignments", () => {
     const mcp = QUERY_ASSIGNMENTS.filter(item => item.queryClass === "mcp");
     expect(mcp).toHaveLength(9);
     expect(new Set(mcp.map(item => item.mcpSubtype))).toEqual(new Set(["tuple_identity", "tool_schema", "transport", "http_vs_mcp"]));
-    expect(POOL_SYSTEMS).toContain("bm25");
+    expect(POOL_BUILD_SYSTEMS).toContain("bm25");
 
     const structured = QUERY_ASSIGNMENTS.filter(item => item.queryClass === "structured");
     expect(structured).toHaveLength(14);

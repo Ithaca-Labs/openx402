@@ -12,7 +12,7 @@ import { z } from "zod";
 import {
   CatalogRecordSchema,
   GraderRefSchema,
-  POOL_SYSTEMS,
+  POOL_BUILD_SYSTEMS,
   PoolRecordSchema,
   QrelRecordSchema,
   QueryRecordSchema,
@@ -381,9 +381,9 @@ export function parseUnpooledAuditPrerequisites(raw: {
   for (const query of dataset.queries) {
     const systemRows = pool.filter(record => record.query_id === query.query_id && record.origin === "system_pool");
     const systems = new Set(systemRows.flatMap(record => record.contributions.map(item => item.system)));
-    const missing = POOL_SYSTEMS.filter(system => !systems.has(system));
-    if (missing.length > 0) throw new Error(`${query.query_id}: incomplete five-system pool; missing ${missing.join(", ")}`);
-    for (const system of POOL_SYSTEMS) {
+    const missing = POOL_BUILD_SYSTEMS.filter(system => !systems.has(system));
+    if (missing.length > 0) throw new Error(`${query.query_id}: incomplete pool; missing ${missing.join(", ")}`);
+    for (const system of POOL_BUILD_SYSTEMS) {
       const ranks = systemRows.flatMap(record => record.contributions
         .filter(item => item.system === system).map(item => item.rank)).sort((left, right) => left - right);
       if (new Set(ranks).size !== ranks.length) throw new Error(`${query.query_id}/${system}: duplicate pooled rank`);

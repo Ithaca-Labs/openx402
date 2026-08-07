@@ -4,11 +4,12 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import {
   NDCG_GAINS,
-  POOL_SYSTEMS,
   QUERY_CLASSES,
   RELEVANCE_THRESHOLDS,
+  SCORED_SYSTEMS,
   type QrelRecord,
   type QueryRecord,
+  type ScoredSystem,
 } from "../schema/schema-v2.js";
 import {
   metricSelectors,
@@ -21,8 +22,6 @@ import {
 } from "./scoring.js";
 import { compareRuns, type ComparisonReport } from "./significance.js";
 import type { SystemRuns } from "./pool.js";
-
-export type PoolSystem = typeof POOL_SYSTEMS[number];
 
 export const REQUIRED_LIMITATIONS = [
   "Synthetic corpus: resources and queries are agent-authored and human-reviewed, not live listings.",
@@ -171,13 +170,13 @@ const EvaluationReportCoreV2Schema = z.object({
   dataset_manifest_sha256: z.string().regex(/^[a-f0-9]{64}$/),
   input_hashes: z.object({
     qrels: Sha256Schema,
-    system_runs: z.object(Object.fromEntries(POOL_SYSTEMS.map(system => [system, Sha256Schema])) as {
-      [K in PoolSystem]: typeof Sha256Schema;
+    system_runs: z.object(Object.fromEntries(SCORED_SYSTEMS.map(system => [system, Sha256Schema])) as {
+      [K in ScoredSystem]: typeof Sha256Schema;
     }).strict(),
   }).strict(),
   query_count: z.literal(50),
   qrel_count: z.number().int().nonnegative(),
-  baseline: z.enum(POOL_SYSTEMS),
+  baseline: z.enum(SCORED_SYSTEMS),
   relevance_thresholds: z.object({
     mrr: z.literal(RELEVANCE_THRESHOLDS.mrr),
     recall_at_k: z.literal(RELEVANCE_THRESHOLDS.recall_at_k),
@@ -188,8 +187,8 @@ const EvaluationReportCoreV2Schema = z.object({
     z.literal(NDCG_GAINS[0]), z.literal(NDCG_GAINS[1]),
     z.literal(NDCG_GAINS[2]), z.literal(NDCG_GAINS[3]),
   ]),
-  systems: z.object(Object.fromEntries(POOL_SYSTEMS.map(system => [system, ReportedSystemSchema])) as {
-    [K in PoolSystem]: typeof ReportedSystemSchema;
+  systems: z.object(Object.fromEntries(SCORED_SYSTEMS.map(system => [system, ReportedSystemSchema])) as {
+    [K in ScoredSystem]: typeof ReportedSystemSchema;
   }).strict(),
   significance: z.record(MetricComparisonsSchema),
   significance_reported: z.literal(true),
@@ -207,7 +206,7 @@ const EvaluationReportCoreV2Schema = z.object({
 
 function validateReportContract(value: {
   split: "development" | "release";
-  baseline: PoolSystem;
+  baseline: ScoredSystem;
   qrel_count: number;
   systems: Record<string, z.infer<typeof ReportedSystemSchema>>;
   significance: Record<string, z.infer<typeof MetricComparisonsSchema>>;
@@ -220,7 +219,7 @@ function validateReportContract(value: {
   if (value.split === "release" && value.qrel_count === 0) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["qrel_count"], message: "release report requires judged pairs" });
   }
-  const expectedComparisons = POOL_SYSTEMS.filter(system => system !== value.baseline).sort();
+  const expectedComparisons = SCORED_SYSTEMS.filter(system => system !== value.baseline).sort();
   if (Object.keys(value.significance).sort().join("\n") !== expectedComparisons.join("\n")) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["significance"], message: "must compare every non-baseline system exactly once" });
   }
@@ -260,7 +259,7 @@ export const EvaluationReportV2Schema = EvaluationReportCoreV2Schema.extend({
 }).strict().superRefine(validateReportContract);
 
 export interface SystemRun {
-  system: PoolSystem;
+  system: ScoredSystem;
   results: RunResult[];
 }
 
@@ -269,7 +268,7 @@ export function scoringRunsFromPoolRuns(
   runs: SystemRuns,
   queryIds: ReadonlySet<string>,
 ): SystemRun[] {
-  return POOL_SYSTEMS.map(system => ({
+  return SCORED_SYSTEMS.map(system => ({
     system,
     results: runs[system]
       .filter(record => queryIds.has(record.query_id))
@@ -296,7 +295,7 @@ export interface BuildReportOptions {
   split: "development" | "release";
   generatedAt: string;
   datasetManifestSha256: string;
-  baseline?: PoolSystem;
+  baseline?: ScoredSystem;
   judgedAt10Threshold?: number;
   ownerRates?: OwnerRates;
   limitations: string[];
@@ -330,14 +329,14 @@ export interface EvaluationReportDraftV2 {
   dataset_manifest_sha256: string;
   input_hashes: {
     qrels: string;
-    system_runs: Record<PoolSystem, string>;
+    system_runs: Record<ScoredSystem, string>;
   };
   query_count: number;
   qrel_count: number;
-  baseline: PoolSystem;
+  baseline: ScoredSystem;
   relevance_thresholds: typeof RELEVANCE_THRESHOLDS;
   ndcg_gains: typeof NDCG_GAINS;
-  systems: Record<PoolSystem, ReportedSystem>;
+  systems: Record<ScoredSystem, ReportedSystem>;
   significance: Record<string, Record<string, ComparisonReport>>;
   significance_reported: true;
   bm25_baseline: true;
@@ -381,12 +380,12 @@ export function evaluationInputHashes(
   const selectedIds = new Set(queries.filter(query => query.split === split).map(query => query.query_id));
   const selectedQrels = qrels.filter(qrel => selectedIds.has(qrel.query_id))
     .sort((left, right) => `${left.query_id}\0${left.resource_id}`.localeCompare(`${right.query_id}\0${right.resource_id}`));
-  const systemRuns = Object.fromEntries(POOL_SYSTEMS.map(system => {
+  const systemRuns = Object.fromEntries(SCORED_SYSTEMS.map(system => {
     const run = runs.find(value => value.system === system);
     const results = (run?.results ?? []).filter(result => selectedIds.has(result.queryId))
       .sort((left, right) => left.queryId.localeCompare(right.queryId));
     return [system, reportArtifactHash(results)];
-  })) as Record<PoolSystem, string>;
+  })) as Record<ScoredSystem, string>;
   return { qrels: reportArtifactHash(selectedQrels), system_runs: systemRuns };
 }
 
@@ -455,9 +454,9 @@ function validateInputs(
   const selectedIds = new Set(queryIds);
 
   const systems = runs.map(run => run.system);
-  if (systems.length !== POOL_SYSTEMS.length || new Set(systems).size !== POOL_SYSTEMS.length
-    || POOL_SYSTEMS.some(system => !systems.includes(system))) {
-    throw new Error(`runs must contain each system exactly once: ${POOL_SYSTEMS.join(", ")}`);
+  if (systems.length !== SCORED_SYSTEMS.length || new Set(systems).size !== SCORED_SYSTEMS.length
+    || SCORED_SYSTEMS.some(system => !systems.includes(system))) {
+    throw new Error(`runs must contain each system exactly once: ${SCORED_SYSTEMS.join(", ")}`);
   }
   for (const run of runs) {
     const ids = run.results.map(result => result.queryId);
@@ -554,17 +553,17 @@ export function buildEvaluationReport(
     judgments: judgments.get(query.query_id) ?? [],
   }));
 
-  const scored = new Map<PoolSystem, ReturnType<typeof scoreRun>>();
+  const scored = new Map<ScoredSystem, ReturnType<typeof scoreRun>>();
   for (const run of runs) scored.set(run.system, scoreRun(evalQueries, run.results));
-  const systems = Object.fromEntries(POOL_SYSTEMS.map(system => [
+  const systems = Object.fromEntries(SCORED_SYSTEMS.map(system => [
     system,
     reportSystem(scored.get(system)!.metrics),
-  ])) as Record<PoolSystem, ReportedSystem>;
+  ])) as Record<ScoredSystem, ReportedSystem>;
 
   const baseline = options.baseline ?? "lexical";
   const baselineScores = scored.get(baseline)?.perQuery;
   if (!baselineScores) throw new Error(`baseline system is absent: ${baseline}`);
-  const significance = Object.fromEntries(POOL_SYSTEMS
+  const significance = Object.fromEntries(SCORED_SYSTEMS
     .filter(system => system !== baseline)
     .map(system => [system, significanceFor(
       baselineScores,
@@ -573,7 +572,7 @@ export function buildEvaluationReport(
       options.significanceIterations ?? 10_000,
     )]));
 
-  const observed = POOL_SYSTEMS
+  const observed = SCORED_SYSTEMS
     .map(system => systems[system].primary.judged_at_10.value)
     .filter((value): value is number => value !== null);
   const minimumObserved = observed.length === 0 ? null : Math.min(...observed);

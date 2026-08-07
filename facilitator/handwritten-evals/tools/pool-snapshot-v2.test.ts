@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { POOL_SYSTEMS, type PoolSystem } from "../schema/schema-v2.js";
+import { ALL_RUN_SYSTEMS, type RunSystem } from "../schema/schema-v2.js";
 import {
   PoolSnapshotBindingV2Schema,
   RetrievalProfilesV2Schema,
@@ -11,7 +11,7 @@ const A = "a".repeat(64);
 const B = "b".repeat(64);
 
 function binding(): PoolSnapshotBindingV2 {
-  const systemRuns = Object.fromEntries(POOL_SYSTEMS.map(system => [system, {
+  const systemRuns = Object.fromEntries(ALL_RUN_SYSTEMS.map(system => [system, {
     path: `runs/${system}-v2.jsonl`,
     artifact: { sha256: A, bytes: 100 },
     profile_id: `${system}-v2`,
@@ -19,7 +19,7 @@ function binding(): PoolSnapshotBindingV2 {
     generated_at: "2026-08-07T00:00:00.000Z",
     query_count: 100,
     requested_depth: 20,
-  }])) as Record<PoolSystem, unknown>;
+  }])) as Record<RunSystem, unknown>;
   return PoolSnapshotBindingV2Schema.parse({
     dataset: {
       manifest_path: "manifests/dataset-v2.json",
@@ -64,7 +64,7 @@ describe("pool snapshot freshness", () => {
     ]);
   });
 
-  it("requires exactly one committed definition for all five systems", () => {
+  it("requires exactly one committed definition for all six systems", () => {
     const raw = {
       schema_version: "2.0.0",
       contract: "stellar-bazaar-retrieval-profiles-v2",
@@ -78,7 +78,7 @@ describe("pool snapshot freshness", () => {
         reason: "test",
       },
       implementation_inputs: ["tools/pool.ts"],
-      profiles: POOL_SYSTEMS.map(system => ({
+      profiles: ALL_RUN_SYSTEMS.map(system => ({
         system,
         profile_id: `${system}-v2`,
         runner: "test",

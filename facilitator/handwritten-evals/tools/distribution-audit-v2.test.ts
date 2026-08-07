@@ -26,22 +26,20 @@ async function currentCore(): Promise<{ catalog: unknown[]; sidecars: unknown[] 
 }
 
 describe("distribution audit v2", () => {
-  it("audits the actual labeled core and blocks only because the 900 distractors are not authored yet", async () => {
+  it("audits the complete released 500-record corpus and passes every check", async () => {
     const input = await currentCore();
     const report = buildDistributionAuditV2(input.catalog, input.sidecars, generatedAt);
 
-    expect(report.status).toBe("blocked");
+    expect(report.status).toBe("pass");
     expect(report.counts).toEqual({
-      catalog: 100, sidecars: 100, labeled: 100, distractors: 0, distractor_upto_bearing: 0,
-      distinct_providers: 99,
+      catalog: 500, sidecars: 500, labeled: 100, distractors: 400, distractor_upto_bearing: 4,
+      distinct_providers: 120,
     });
     expect(report.checks.map(check => check.id)).toEqual(DISTRIBUTION_CHECK_IDS);
     expect(report.associations.map(value => value.id)).toEqual(ASSOCIATION_IDS);
-    expect(report.checks.find(check => check.id === "corpus-counts")?.passed).toBe(false);
-    // The exact-ID cross-check also blocks until res-0101..res-1000 exist.
-    expect(report.checks.filter(check => !["corpus-counts", "provider-count", "catalog-sidecar-wire"].includes(check.id))
-      .every(check => check.passed)).toBe(true);
+    expect(report.checks.every(check => check.passed)).toBe(true);
     expect(report.associations.every(value => value.passed)).toBe(true);
+    expect(report.all_checks_passed).toBe(true);
     expect(report.statistics.scheme_sets).toEqual({ exact_only: 70, exact_and_upto: 22, upto_only: 8 });
     expect(report.statistics.groups.upto.distinct_families).toBe(20);
     expect(report.statistics.mcp_upto_share_absolute_drift).toBeLessThanOrEqual(
@@ -65,11 +63,14 @@ describe("distribution audit v2", () => {
   it("blocks a family-correlated upto assignment even before semantic review", async () => {
     const input = await currentCore();
     const sidecars = structuredClone(input.sidecars) as Array<Record<string, unknown>>;
-    sidecars.forEach((record, index) => {
+    let labeledIndex = 0;
+    sidecars.forEach(record => {
+      if (record.is_distractor === true) return;
       record.axes = {
         ...(record.axes as Record<string, unknown>),
-        scheme_set: index < 30 ? "exact_and_upto" : "exact_only",
+        scheme_set: labeledIndex < 30 ? "exact_and_upto" : "exact_only",
       };
+      labeledIndex += 1;
     });
     const report = buildDistributionAuditV2(input.catalog, sidecars, generatedAt);
     const association = report.associations.find(value => value.id === "upto-family");
@@ -89,8 +90,9 @@ describe("distribution audit v2", () => {
   it("rejects a report whose status or pass summary contradicts its checks", async () => {
     const input = await currentCore();
     const report = buildDistributionAuditV2(input.catalog, input.sidecars, generatedAt);
-    expect(DistributionAuditV2Schema.safeParse({ ...report, status: "pass" }).success).toBe(false);
-    expect(DistributionAuditV2Schema.safeParse({ ...report, all_checks_passed: true }).success).toBe(false);
+    const wrongStatus = report.status === "pass" ? "blocked" : "pass";
+    expect(DistributionAuditV2Schema.safeParse({ ...report, status: wrongStatus }).success).toBe(false);
+    expect(DistributionAuditV2Schema.safeParse({ ...report, all_checks_passed: !report.all_checks_passed }).success).toBe(false);
     expect(DistributionAuditV2Schema.safeParse({ ...report, checks: [...report.checks].reverse() }).success).toBe(false);
   });
 

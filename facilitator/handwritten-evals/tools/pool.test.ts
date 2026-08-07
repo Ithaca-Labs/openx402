@@ -3,14 +3,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  POOL_SYSTEMS,
+  ALL_RUN_SYSTEMS,
+  POOL_BUILD_SYSTEMS,
   PUBNET_USDC,
   QUERY_CLASS_TARGETS,
   RELEASE_COUNTS,
   TESTNET_USDC,
   type CatalogRecord,
-  type PoolSystem,
   type QueryRecord,
+  type RunSystem,
   type SidecarRecord,
 } from "../schema/schema-v2.js";
 import {
@@ -185,7 +186,7 @@ function makeDataset(): V2Dataset {
 }
 
 function runRecord(
-  system: PoolSystem,
+  system: RunSystem,
   queryId: string,
   resourceIds: string[] = ["res-0001"],
 ): SystemRunRecord {
@@ -202,7 +203,7 @@ function runRecord(
 }
 
 function completeRuns(dataset: V2Dataset, resourceIds = ["res-0001"]): SystemRuns {
-  return Object.fromEntries(POOL_SYSTEMS.map(system => [
+  return Object.fromEntries(ALL_RUN_SYSTEMS.map(system => [
     system,
     dataset.queries.map(query => runRecord(system, query.query_id, resourceIds)),
   ])) as SystemRuns;
@@ -249,12 +250,12 @@ describe("run JSONL ingestion", () => {
     )).rejects.toThrow("expected system semantic");
   });
 
-  it("requires all five fixed filenames", async () => {
+  it("requires all fixed filenames (three pool-building, three scored)", async () => {
     const root = await mkdtemp(join(tmpdir(), "pool-runs-"));
     temporary.push(root);
     const queries = new Set(["qry-001"]);
     const resources = new Set(["res-0001"]);
-    for (const system of POOL_SYSTEMS.filter(system => system !== "bm25")) {
+    for (const system of ALL_RUN_SYSTEMS.filter(system => system !== "bm25")) {
       await writeFile(join(root, SYSTEM_RUN_FILENAMES[system]), encodeJsonl([runRecord(system, "qry-001")]));
     }
     await expect(loadSystemRuns(root, queries, resources)).rejects.toThrow("bm25-v2.jsonl");
@@ -333,7 +334,7 @@ describe("deterministic hard filters", () => {
   });
 });
 
-describe("BM25 run and five-system pool", () => {
+describe("BM25 run and three-pool-builder pool", () => {
   it("produces a complete filter-aware BM25 run", () => {
     const dataset = makeDataset();
     dataset.queries[0] = {
@@ -361,7 +362,7 @@ describe("BM25 run and five-system pool", () => {
   it("deduplicates pairs and retains every system/rank contribution", () => {
     const dataset = makeDataset();
     const runs = completeRuns(dataset);
-    runs.semantic[0] = runRecord("semantic", "qry-001", ["res-0002", "res-0001"]);
+    runs.exact_dense[0] = runRecord("exact_dense", "qry-001", ["res-0002", "res-0001"]);
     const pool = buildPool(dataset, runs, { runId: "pool-run", pooledAt: GENERATED_AT });
     expect(pool).toHaveLength(101);
     expect(pool[0]).toMatchObject({
@@ -371,14 +372,14 @@ describe("BM25 run and five-system pool", () => {
       pool_depth: 20,
       run_id: "pool-run",
     });
-    expect(pool[0]!.contributions).toEqual(POOL_SYSTEMS.map(system => ({
+    expect(pool[0]!.contributions).toEqual(POOL_BUILD_SYSTEMS.map(system => ({
       system,
-      rank: system === "semantic" ? 2 : 1,
+      rank: system === "exact_dense" ? 2 : 1,
     })));
     expect(pool[1]).toMatchObject({
       query_id: "qry-001",
       resource_id: "res-0002",
-      contributions: [{ system: "semantic", rank: 1 }],
+      contributions: [{ system: "exact_dense", rank: 1 }],
     });
     expect(() => validateExactPoolCoverage(pool, runs)).not.toThrow();
   });
@@ -394,17 +395,17 @@ describe("BM25 run and five-system pool", () => {
     ], runs)).toThrow(/extra=qry-001\/res-0002/);
     expect(() => validateExactPoolCoverage([
       { ...pool[0]!, contributions: pool[0]!.contributions.map(item =>
-        item.system === "semantic" ? { ...item, rank: 2 } : item) },
+        item.system === "exact_dense" ? { ...item, rank: 2 } : item) },
       ...pool.slice(1),
-    ], runs)).toThrow(/semantic contribution expected 1, found 2/);
+    ], runs)).toThrow(/exact_dense contribution expected 1, found 2/);
   });
 
   it("rejects incomplete system runs and hard-filter violations", () => {
     const dataset = makeDataset();
     const incomplete = completeRuns(dataset);
-    incomplete.lexical = incomplete.lexical.slice(1);
+    incomplete.bm25 = incomplete.bm25.slice(1);
     expect(() => buildPool(dataset, incomplete, { runId: "pool-run", pooledAt: GENERATED_AT }))
-      .toThrow("lexical run id set is incomplete");
+      .toThrow("bm25 run id set is incomplete");
 
     const filteredDataset = makeDataset();
     filteredDataset.queries[0] = { ...filteredDataset.queries[0]!, filters: { type: "mcp" } };

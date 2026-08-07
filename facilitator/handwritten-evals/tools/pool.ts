@@ -1,5 +1,11 @@
 /**
- * Deterministic five-system pooling for BUILD-PLAN §8 / §9 step 7.
+ * Deterministic pooling for BUILD-PLAN §8 / §9 step 7 (ninth revision).
+ *
+ * Pool construction and system scoring are separate roles. The pool is built from
+ * `POOL_BUILD_SYSTEMS` (three exact, non-production methods: bm25, exact_dense, hybrid_exact).
+ * Production systems (`SCORED_SYSTEMS`) are never pool contributors — they are scored against the
+ * qrels the pool produces. `ALL_RUN_SYSTEMS` is the union; run-file loading operates over all of it
+ * since a stale production run must fail freshness checks too, even though it never touches the pool.
  *
  * This module validates retrieval output and hard filters only. It never creates
  * or infers relevance judgments.
@@ -10,9 +16,10 @@ import { resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { z } from "zod";
 import {
+  ALL_RUN_SYSTEMS,
   CatalogRecordSchema,
   checkSidecarAgainstWire,
-  POOL_SYSTEMS,
+  POOL_BUILD_SYSTEMS,
   PoolRecordSchema,
   QUERY_CLASS_TARGETS,
   QueryIdSchema,
@@ -21,21 +28,23 @@ import {
   ResourceIdSchema,
   SidecarRecordSchema,
   type CatalogRecord,
+  type PoolBuildSystem,
   type PoolRecord,
-  type PoolSystem,
   type QueryRecord,
+  type RunSystem,
   type SidecarRecord,
 } from "../schema/schema-v2.js";
 import { buildCatalogIndex } from "./bm25.js";
 
 export const POOL_DEPTH = 20;
 
-export const SYSTEM_RUN_FILENAMES: Readonly<Record<PoolSystem, string>> = {
+export const SYSTEM_RUN_FILENAMES: Readonly<Record<RunSystem, string>> = {
+  bm25: "bm25-v2.jsonl",
+  exact_dense: "exact-dense-v2.jsonl",
+  hybrid_exact: "hybrid-exact-v2.jsonl",
   lexical: "lexical-v2.jsonl",
   semantic: "semantic-v2.jsonl",
   hybrid: "hybrid-v2.jsonl",
-  reranked: "reranked-v2.jsonl",
-  bm25: "bm25-v2.jsonl",
 };
 
 export const SystemRunResultSchema = z.object({
@@ -45,7 +54,7 @@ export const SystemRunResultSchema = z.object({
 }).strict();
 
 export const SystemRunRecordSchema = z.object({
-  system: z.enum(POOL_SYSTEMS),
+  system: z.enum(ALL_RUN_SYSTEMS),
   query_id: QueryIdSchema,
   run_id: z.string().min(1),
   generated_at: z.string().datetime(),
@@ -83,7 +92,7 @@ export const SystemRunRecordSchema = z.object({
 
 export type SystemRunResult = z.infer<typeof SystemRunResultSchema>;
 export type SystemRunRecord = z.infer<typeof SystemRunRecordSchema>;
-export type SystemRuns = Record<PoolSystem, SystemRunRecord[]>;
+export type SystemRuns = Record<RunSystem, SystemRunRecord[]>;
 
 export interface V2Dataset {
   catalog: CatalogRecord[];
@@ -213,7 +222,7 @@ export async function loadV2Dataset(root: string): Promise<V2Dataset> {
 /** Loads one named system run and proves complete per-query top-20 coverage. */
 export async function loadSystemRunJsonl(
   path: string,
-  expectedSystem: PoolSystem,
+  expectedSystem: RunSystem,
   queryIds: ReadonlySet<string>,
   resourceIds: ReadonlySet<string>,
 ): Promise<SystemRunRecord[]> {
@@ -242,7 +251,7 @@ export async function loadSystemRuns(
   resourceIds: ReadonlySet<string>,
   overrides: Partial<SystemRuns> = {},
 ): Promise<SystemRuns> {
-  const entries = await Promise.all(POOL_SYSTEMS.map(async system => {
+  const entries = await Promise.all(ALL_RUN_SYSTEMS.map(async system => {
     const override = overrides[system];
     const records = override ?? await loadSystemRunJsonl(
       resolve(runDirectory, SYSTEM_RUN_FILENAMES[system]), system, queryIds, resourceIds,
@@ -255,7 +264,7 @@ export async function loadSystemRuns(
 
 export function validateSystemRunRecords(
   records: readonly SystemRunRecord[],
-  expectedSystem: PoolSystem,
+  expectedSystem: RunSystem,
   queryIds: ReadonlySet<string>,
   resourceIds: ReadonlySet<string>,
 ): void {
@@ -336,7 +345,7 @@ export interface RunMetadata {
   now?: () => number;
 }
 
-/** Produces the fifth-system BM25 top-20 run without semantic judgments. */
+/** Produces the BM25 pool-building run (top-20, no semantic judgments); one of the three exact methods. */
 export function generateBm25Run(dataset: V2Dataset, metadata: RunMetadata): SystemRunRecord[] {
   validateDatasetCompleteness(dataset);
   const index = buildCatalogIndex(dataset.catalog);
@@ -373,12 +382,12 @@ export function generateBm25Run(dataset: V2Dataset, metadata: RunMetadata): Syst
     });
 }
 
-/** Ensures all five systems respected the dataset's deterministic filters. */
+/** Ensures every run — pool-building and scored alike — respected the dataset's deterministic filters. */
 export function validateRunEligibility(dataset: V2Dataset, runs: SystemRuns): void {
   const catalogById = new Map(dataset.catalog.map(record => [record.resource_id, record]));
   const sidecarById = new Map(dataset.sidecars.map(record => [record.resource_id, record]));
   const queryById = new Map(dataset.queries.map(record => [record.query_id, record]));
-  for (const system of POOL_SYSTEMS) {
+  for (const system of ALL_RUN_SYSTEMS) {
     for (const record of runs[system]) {
       const query = queryById.get(record.query_id)!;
       for (const result of record.results) {
@@ -400,7 +409,7 @@ export interface PoolMetadata {
   pooledAt: string;
 }
 
-/** Deduplicates the five top-20s while preserving every contributing system/rank. */
+/** Deduplicates the three pool-building top-20s while preserving every contributing system/rank. */
 export function buildPool(
   dataset: V2Dataset,
   runs: SystemRuns,
@@ -409,15 +418,15 @@ export function buildPool(
   validateDatasetCompleteness(dataset);
   const queryIds = new Set(dataset.queries.map(query => query.query_id));
   const resourceIds = new Set(dataset.catalog.map(record => record.resource_id));
-  for (const system of POOL_SYSTEMS) {
+  for (const system of POOL_BUILD_SYSTEMS) {
     validateSystemRunRecords(runs[system], system, queryIds, resourceIds);
   }
   validateRunEligibility(dataset, runs);
 
   const records: PoolRecord[] = [];
   for (const query of [...dataset.queries].sort((a, b) => a.query_id.localeCompare(b.query_id))) {
-    const pairs = new Map<string, Array<{ system: PoolSystem; rank: number }>>();
-    for (const system of POOL_SYSTEMS) {
+    const pairs = new Map<string, Array<{ system: PoolBuildSystem; rank: number }>>();
+    for (const system of POOL_BUILD_SYSTEMS) {
       const run = runs[system].find(record => record.query_id === query.query_id)!;
       for (const result of run.results) {
         const contributions = pairs.get(result.resource_id) ?? [];
@@ -443,17 +452,17 @@ export function buildPool(
   return records;
 }
 
-/** Proves that `pool-v2.jsonl` is exactly the union of every recorded system top-20. */
+/** Proves that `pool-v2.jsonl` is exactly the union of the three pool-building system top-20s. */
 export function validateExactPoolCoverage(
   pool: readonly PoolRecord[],
   runs: SystemRuns,
 ): void {
-  const expected = new Map<string, Map<PoolSystem, number>>();
-  for (const system of POOL_SYSTEMS) {
+  const expected = new Map<string, Map<PoolBuildSystem, number>>();
+  for (const system of POOL_BUILD_SYSTEMS) {
     for (const run of runs[system]) {
       for (const result of run.results) {
         const key = `${run.query_id}\u0000${result.resource_id}`;
-        const contributions = expected.get(key) ?? new Map<PoolSystem, number>();
+        const contributions = expected.get(key) ?? new Map<PoolBuildSystem, number>();
         contributions.set(system, result.rank);
         expected.set(key, contributions);
       }
@@ -481,7 +490,7 @@ export function validateExactPoolCoverage(
   if (missing.length > 0 || extra.length > 0) {
     const display = (key: string) => key.replace("\u0000", "/");
     throw new Error(
-      `pool pair set differs from five-system top-${POOL_DEPTH}: `
+      `pool pair set differs from three-pool-builder top-${POOL_DEPTH}: `
       + `missing=${missing.slice(0, 5).map(display).join(",") || "none"}; `
       + `extra=${extra.slice(0, 5).map(display).join(",") || "none"}`,
     );
@@ -489,7 +498,7 @@ export function validateExactPoolCoverage(
   for (const [key, expectedContributions] of expected) {
     const record = actual.get(key)!;
     const actualContributions = new Map(record.contributions.map(item => [item.system, item.rank]));
-    for (const system of POOL_SYSTEMS) {
+    for (const system of POOL_BUILD_SYSTEMS) {
       const expectedRank = expectedContributions.get(system);
       const actualRank = actualContributions.get(system);
       if (expectedRank !== actualRank) {

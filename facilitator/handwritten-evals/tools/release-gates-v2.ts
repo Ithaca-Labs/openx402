@@ -18,7 +18,6 @@ import {
   FAMILY_COUNT,
   MCP_QUERY_SUBTYPES,
   NDCG_GAINS,
-  POOL_SYSTEMS,
   PoolRecordSchema,
   QrelRecordSchema,
   QUERY_CLASS_TARGETS,
