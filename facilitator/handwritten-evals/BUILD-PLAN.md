@@ -27,6 +27,24 @@ the authoring context.
 > writes only to its assigned staging shard. Separate critic and grading agents review merged
 > outputs. The project owner performs the final review and accepts or rejects every artifact. This
 > is reported as **agent-authored, human-reviewed**, never as human-authored ground truth.
+>
+> **Fourth revision — MVP scope cut on the holdout ledger.** The hash-chained,
+> lock-serialized release-run ledger (§12.1) is deferred past MVP. It defends against a
+> multi-team, real-release-set-in-active-use problem this project doesn't have yet — right
+> now there are 0 queries and 0 distractors, so there is no release set to protect. For MVP,
+> `freeze-manifest-v2.ts` stays (cheap, one script, one file, and it gives the guarantee that
+> actually matters now: proof the dataset didn't silently change between runs). The
+> hash-chained ledger is replaced by a single append-only log line — timestamp, actor, reason
+> — recorded on every release-set run. Revisit the hardened ledger once multiple teams are
+> actually running release evals against a real, frozen dataset.
+>
+> **Fifth revision — Step 1 pilot is no longer a mandatory gate.** §9 previously blocked all
+> authoring at scale (steps 2–10) on a formal end-to-end pilot run with measured cost/timing
+> evidence. That gate is removed. Steps 2–10 may proceed without a completed pilot. The
+> `pilot/` package (protocol, frozen prompts, `tools/run-pilot-v2.ts`) is left in place and may
+> still be run informally or for spot-checking the isolation protocol, but nothing downstream
+> is blocked on it, and no `judged@k` threshold or forbidden-capability-audit cost figure is
+> required to be pilot-derived before proceeding (§9, §11).
 
 ---
 
@@ -502,31 +520,25 @@ Required on **release** judgments only.
 | # | Step | Output | Est. |
 |---|---|---|---|
 | 0 | Complete v2 schema + archive v1 (§0) | valid schema | 2 h |
-| 1 | **Pilot: 1 family, 5 resources, 10 distractors (1 shard) authored against a pilot `forbidden-capabilities.md`, 5 capability queries + 1 `no_result` query, two graders and one adjudicator, end to end — including all three §6 exclusion steps (brief, deterministic scan, per-capability agent audit) at pilot scale** | validated isolation, measured agent cost/rate, **empirical `judged@k` threshold**, **measured §6 forbidden-capability audit cost (scanner + agent audit), per-capability and projected to 1,000×10** | 1 agent wave + owner review |
+| 1 | *(optional, non-blocking)* Pilot: 1 family, 5 resources, 10 distractors (1 shard), 5 capability queries + 1 `no_result` query, two graders and one adjudicator, end to end — see fifth revision note above. Not required before step 2. | if run: validated isolation, measured agent cost/rate | optional |
 | 2 | Define 20 families + axis assignments | family spec | 2 h |
 | 3 | Ten isolated agents author 100 resources (10 each; 85 HTTP / 15 MCP) | catalog + sidecar | 10 agent runs + owner review |
 | 4 | Nine waves of ten fresh agents author ~900 distractors (10 each), then critics validate uniqueness and no-result exclusion | corpus at 1,000 | 90 agent runs + owner review |
 | 5 | Ten separate agents author 100 queries (10 each); independent agents perform pass-1 grading | queries file | 20+ agent runs + owner review |
 | 6 | **Freeze release split, hash into manifest** | frozen | 30 min |
 | 7 | Run 5 systems, build pool | `pool-v2.jsonl` | script |
-| 8 | Two-way blind agent grading + unpooled audit | `qrels-v2.jsonl` | measured in pilot |
-| 9 | Independent agent adjudication + owner review + stratified κ | calibration report | measured in pilot |
+| 8 | Two-way blind agent grading + unpooled audit | `qrels-v2.jsonl` | estimate; refine once step 8 actually runs |
+| 9 | Independent agent adjudication + owner review + stratified κ | calibration report | estimate; refine once step 9 actually runs |
 | 10 | Score, significance, report | final report | script |
 
-Do not estimate this experiment in person-hours before the pilot. Report agent runs, input/output
-tokens, wall-clock time, API cost, rejection rate, regeneration rate, owner-review time, and the
-number of owner corrections — **including the §6 forbidden-capability audit as its own line item**:
-agent runs and tokens per audited capability, wall-clock time to audit the pilot-scale catalog
-(15 records × 1 capability), and the owner-review time to sign off the exclusion report. Project the
-full-scale audit cost (1,000 records × 10 capabilities) from this rate rather than assuming it is
-free because the scan step is. Ten-way concurrency reduces elapsed time but not review burden or
+Report agent runs, input/output tokens, wall-clock time, API cost, rejection rate, regeneration
+rate, owner-review time, and the number of owner corrections as each step actually runs —
+**including the §6 forbidden-capability audit as its own line item**: agent runs and tokens per
+audited capability, wall-clock time to audit the catalog, and the owner-review time to sign off the
+exclusion report. Ten-way concurrency reduces elapsed time but not review burden or
 model-correlated error.
 
-**The pilot must measure actual generation, grading, owner-review, and forbidden-capability-audit
-cost** and the remaining estimates must be re-derived from it. Steps 6, 7, and 10 are deterministic;
-authoring is never described as mechanical.
-
-**Do the pilot.** Scaling a broken process to 100 is how v1 produced 30,000 unusable judgments.
+Steps 6, 7, and 10 are deterministic; authoring is never described as mechanical.
 
 ---
 
@@ -603,8 +615,9 @@ Extend `reports/release-gates-v1.json` → `release-gates-v2.json`:
 - [ ] ≥4 MCP query sub-types covered (tuple, schema, transport, disambiguation)
 - [ ] Pool covers top-20 of all five systems; `pool-v2.jsonl` complete
 - [ ] Unpooled audit performed; audited relevance rate reported
-- [ ] `judged@10` meets the **pilot-derived** threshold (§9 step 1); the figure is reported with its
-      derivation, never presented as a universal constant
+- [ ] `judged@10` meets a stated threshold, derived from actual §8 grading/pooling data (pilot-derived
+      if a pilot was run, otherwise derived from the real Pass 1/Pass 2 grading pass); the figure is
+      reported with its derivation, never presented as a universal constant
 - [ ] `no_result` capability exclusion validated deterministically, independently agent-audited, and
       approved by the owner (§6)
 - [ ] Relevance thresholds and nDCG gain values stated in the report (§10)
@@ -639,6 +652,14 @@ sufficient.
 Running the release set on every commit leaks the holdout — developers inevitably tune against
 whatever they see. Keep release judgments **inaccessible to normal tuning code**; expose only the
 generated final report. Treat any release-set run as a recorded event.
+
+**MVP scope (see fourth revision note above).** "Recorded event" for MVP means a one-line,
+append-only log entry — timestamp, actor, reason — written on every release-set run. It does
+**not** require a hash-chained ledger, exclusive-lock serialization, or an env-var
+confirmation gate at this stage; that machinery is worth building once multiple teams are
+actually running release evals against a real, frozen dataset, not before. Keep
+`freeze-manifest-v2.ts` as-is — it is cheap and gives the guarantee MVP actually needs: proof
+the dataset didn't silently change between runs.
 
 ### 12.2 Production query logging
 

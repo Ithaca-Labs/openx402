@@ -24,47 +24,6 @@ import type { SystemRuns } from "./pool.js";
 
 export type PoolSystem = typeof POOL_SYSTEMS[number];
 
-const MeasuredAgentCostSchema = z.object({
-  agent_runs: z.number().int().positive(),
-  input_tokens: z.number().int().nonnegative(),
-  output_tokens: z.number().int().nonnegative(),
-  wall_clock_seconds: z.number().nonnegative(),
-  api_cost_usd: z.number().nonnegative(),
-}).strict();
-
-export const PilotReportEvidenceSchema = z.object({
-  status: z.enum(["approved", "pass"]),
-  pilot_scope: z.object({
-    resources: z.literal(5),
-    distractors: z.literal(10),
-    capability_queries: z.literal(5),
-    no_result_queries: z.literal(1),
-    graders: z.literal(2),
-    adjudicators: z.literal(1),
-  }).strict(),
-  judged_at_10_threshold: z.number().min(0).max(1),
-  generation_grading_cost: MeasuredAgentCostSchema.extend({
-    rejection_count: z.number().int().nonnegative(),
-    regeneration_count: z.number().int().nonnegative(),
-    owner_review_seconds: z.number().nonnegative(),
-    owner_corrections: z.number().int().nonnegative(),
-  }).strict(),
-  forbidden_audit_cost: z.object({
-    scanner_wall_clock_seconds: z.number().nonnegative(),
-    agent_audit: MeasuredAgentCostSchema,
-    owner_review_seconds: z.number().nonnegative(),
-    projection: z.object({
-      catalog_records: z.literal(1_000),
-      capabilities: z.literal(10),
-      agent_runs: z.number().int().positive(),
-      input_tokens: z.number().int().nonnegative(),
-      output_tokens: z.number().int().nonnegative(),
-      api_cost_usd: z.number().nonnegative(),
-      owner_review_seconds: z.number().nonnegative(),
-    }).strict(),
-  }).strict(),
-}).strict();
-
 export const REQUIRED_LIMITATIONS = [
   "Synthetic corpus: resources and queries are agent-authored and human-reviewed, not live listings.",
   "Shared-model limitation: most authors, graders, critics, and adjudicators may share one model family; fresh contexts do not eliminate correlated model bias or create independent human ground truth.",
@@ -236,7 +195,7 @@ const EvaluationReportCoreV2Schema = z.object({
   significance_reported: z.literal(true),
   bm25_baseline: z.literal(true),
   judged_at_10: z.object({
-    pilot_derived_threshold: z.number().min(0).max(1).nullable(),
+    threshold: z.number().min(0).max(1).nullable(),
     minimum_observed: z.number().min(0).max(1).nullable(),
     gate_passed: z.boolean(),
   }).strict(),
@@ -252,11 +211,11 @@ function validateReportContract(value: {
   qrel_count: number;
   systems: Record<string, z.infer<typeof ReportedSystemSchema>>;
   significance: Record<string, z.infer<typeof MetricComparisonsSchema>>;
-  judged_at_10: { pilot_derived_threshold: number | null; minimum_observed: number | null; gate_passed: boolean };
+  judged_at_10: { threshold: number | null; minimum_observed: number | null; gate_passed: boolean };
   judged_at_10_gate_passed: boolean;
 }, context: z.RefinementCtx): void {
-  if (value.split === "release" && value.judged_at_10.pilot_derived_threshold === null) {
-    context.addIssue({ code: z.ZodIssueCode.custom, path: ["judged_at_10", "pilot_derived_threshold"], message: "release report requires pilot threshold" });
+  if (value.split === "release" && value.judged_at_10.threshold === null) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["judged_at_10", "threshold"], message: "release report requires a judged@10 threshold" });
   }
   if (value.split === "release" && value.qrel_count === 0) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["qrel_count"], message: "release report requires judged pairs" });
@@ -272,11 +231,11 @@ function validateReportContract(value: {
       }
     }
   }
-  const expected = value.judged_at_10.pilot_derived_threshold !== null
+  const expected = value.judged_at_10.threshold !== null
     && value.judged_at_10.minimum_observed !== null
-    && value.judged_at_10.minimum_observed >= value.judged_at_10.pilot_derived_threshold;
+    && value.judged_at_10.minimum_observed >= value.judged_at_10.threshold;
   if (value.judged_at_10.gate_passed !== expected || value.judged_at_10_gate_passed !== expected) {
-    context.addIssue({ code: z.ZodIssueCode.custom, path: ["judged_at_10_gate_passed"], message: "judged@10 gate must be derived from minimum and pilot threshold" });
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["judged_at_10_gate_passed"], message: "judged@10 gate must be derived from minimum and threshold" });
   }
 }
 
@@ -338,7 +297,7 @@ export interface BuildReportOptions {
   generatedAt: string;
   datasetManifestSha256: string;
   baseline?: PoolSystem;
-  pilotJudgedAt10Threshold?: number;
+  judgedAt10Threshold?: number;
   ownerRates?: OwnerRates;
   limitations: string[];
   /** Resource ids whose sidecars carry a non-null adversarial_kind. */
@@ -383,7 +342,7 @@ export interface EvaluationReportDraftV2 {
   significance_reported: true;
   bm25_baseline: true;
   judged_at_10: {
-    pilot_derived_threshold: number | null;
+    threshold: number | null;
     minimum_observed: number | null;
     gate_passed: boolean;
   };
@@ -479,10 +438,10 @@ function validateInputs(
   if (options.limitations.length === 0 || options.limitations.some(value => value.trim().length === 0)) {
     throw new Error("at least one non-empty limitation is required");
   }
-  if (options.pilotJudgedAt10Threshold !== undefined
-    && (!Number.isFinite(options.pilotJudgedAt10Threshold)
-      || options.pilotJudgedAt10Threshold < 0 || options.pilotJudgedAt10Threshold > 1)) {
-    throw new Error("pilotJudgedAt10Threshold must be in [0,1]");
+  if (options.judgedAt10Threshold !== undefined
+    && (!Number.isFinite(options.judgedAt10Threshold)
+      || options.judgedAt10Threshold < 0 || options.judgedAt10Threshold > 1)) {
+    throw new Error("judgedAt10Threshold must be in [0,1]");
   }
   if (options.ownerRates) assertOwnerRates(options.ownerRates);
 
@@ -523,7 +482,7 @@ function validateInputs(
     }
   }
   if (options.split === "release") {
-    if (options.pilotJudgedAt10Threshold === undefined) throw new Error("release report requires the pilot-derived judged@10 threshold");
+    if (options.judgedAt10Threshold === undefined) throw new Error("release report requires a judged@10 threshold");
     if (!options.ownerRates || options.ownerRates.reviewed === 0) throw new Error("release report requires non-empty owner review rates");
   }
   return selected;
@@ -618,7 +577,7 @@ export function buildEvaluationReport(
     .map(system => systems[system].primary.judged_at_10.value)
     .filter((value): value is number => value !== null);
   const minimumObserved = observed.length === 0 ? null : Math.min(...observed);
-  const threshold = options.pilotJudgedAt10Threshold ?? null;
+  const threshold = options.judgedAt10Threshold ?? null;
   const judgedGatePassed = threshold !== null && minimumObserved !== null && minimumObserved >= threshold;
 
   const report: EvaluationReportDraftV2 = {
@@ -638,7 +597,7 @@ export function buildEvaluationReport(
     significance_reported: true,
     bm25_baseline: true,
     judged_at_10: {
-      pilot_derived_threshold: threshold,
+      threshold,
       minimum_observed: minimumObserved,
       gate_passed: judgedGatePassed,
     },
