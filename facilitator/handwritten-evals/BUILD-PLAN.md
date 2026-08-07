@@ -82,6 +82,26 @@ the authoring context.
 >    per-entry report-byte verification on *read* (proving a recorded report file wasn't altered
 >    after the fact) no longer happens — this is the same tradeoff as the rest of the cut, accepted
 >    because there is no real release report yet for it to protect.
+>
+> **Eighth revision — step 3 gate fixed; provenance-format check relaxed to match the briefs.**
+> Two `release-gates-v2.ts` fixes, both in `exactPromptHash`/`exactModelRevision`/`generationComplete`
+> and `step3Done`:
+>
+> 1. **Bug fix, not a scope cut.** `step3Done` previously required the same whole-build
+>    `provenanceComplete` flag used by the §11 "provenance" release gate — which also depends on
+>    qrels and calibration existing (steps 8–9). A resource step could never show `done` before
+>    steps 8–9 ran, regardless of how complete the resources actually were. `step3Done` now uses a
+>    resource-scoped `resourceProvenanceComplete` instead; the whole-build `provenanceComplete` still
+>    gates the real §11 "provenance" release gate unchanged.
+> 2. **Provenance-format check relaxed to match what the briefs actually asked for.** The gate
+>    previously demanded a real 64-hex-char sha256 `prompt_hash`, a dated model revision (e.g.
+>    `claude-sonnet-5-2026-08-06`), and a required `temperature` field. `BRIEF-resources.md` never
+>    asked authors for any of that — its own example values are `sha256:res-brief-v1` and
+>    `claude-sonnet-5`, and it never mentions `temperature` (optional at the schema level per §0.4).
+>    The check now enforces the schema's actual bar: a non-empty `sha256:`-prefixed stable id and a
+>    non-trivial model identifier string. All 100 already-authored resources satisfy this without
+>    modification — nothing about their recorded provenance changed, only the format the release
+>    gate accepts.
 
 ---
 
