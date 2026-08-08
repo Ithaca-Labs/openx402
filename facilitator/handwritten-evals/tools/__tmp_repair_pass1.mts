@@ -6,11 +6,11 @@
  * sidecars content, so changing review_status on the queries file reshuffles which candidates
  * are selected per query, not just the opaque ids -- remapping old judgments 1:1 is not possible.
  * This just regenerates fresh packs; grading is redone from scratch against the new pack content. */
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { z } from "zod";
 import { CatalogRecordSchema, QueryRecordSchema, RELEASE_COUNTS, SidecarRecordSchema } from "../schema/schema-v2.js";
-import { preparePass1Seed } from "./query-pass1.js";
+import { finalizePass1Seed, preparePass1Seed, validatePass1SeedImport } from "./query-pass1.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const SEALED = "/home/soumy/.claude/jobs/6e0348e9/tmp/pass1-sealed";
@@ -43,6 +43,19 @@ async function main(): Promise<void> {
     ...seed.prompts.map((prompt, index) => writeFile(resolve(PASS1_STAGING, `grader-${String(index + 1).padStart(2, "0")}.md`), prompt)),
   ]);
   console.log(`prepared fresh pass-1 packs against the owner-reviewed queries file: ${seed.manifest.pair_count} pairs in 10 packs`);
+
+  if (process.argv[2] !== "--finalize") return;
+
+  const importFiles = (await readdir(NEW_IMPORTS_DIR)).filter(name => name.endsWith(".json")).sort();
+  const rawImports = await Promise.all(importFiles.map(async name => {
+    const parsed = JSON.parse(await readFile(resolve(NEW_IMPORTS_DIR, name), "utf8"));
+    validatePass1SeedImport(parsed, seed.manifest);
+    return parsed;
+  }));
+  const finalized = finalizePass1Seed(rawImports, seed.manifest, createdAt);
+  await writeFile(resolve(SEALED, "raw-qrels.jsonl"), `${finalized.qrels.map(r => JSON.stringify(r)).join("\n")}\n`);
+  await writeFile(resolve(PASS1_STAGING, "report-v2.json"), `${JSON.stringify(finalized.report, null, 2)}\n`);
+  console.log(`finalized pass-1: ${finalized.qrels.length} qrels, report status ${finalized.report.status}`);
 }
 
 main().catch(error => { console.error(error); process.exitCode = 1; });

@@ -1,0 +1,213 @@
+{
+  "version": 1,
+  "pipeline_run_id": "grading-release-06",
+  "generated_at": "2026-08-08T00:00:00.000Z",
+  "pair_count": 142,
+  "disagreement_count": 0,
+  "adjudicated_count": 0,
+  "agreement": {
+    "pairs": 142,
+    "queries": 5,
+    "exactAgreement": 1,
+    "confusionMatrix": [
+      [
+        123,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        14,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        3,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        2
+      ]
+    ],
+    "overall": {
+      "name": "all-pooled",
+      "description": "Every pooled candidate both annotators graded.",
+      "n": 142,
+      "share": 1,
+      "exactAgreement": 1,
+      "withinOneAgreement": 1,
+      "severeDisagreementRate": 0,
+      "kappaQuadratic": {
+        "weighting": "quadratic",
+        "kappa": 1,
+        "n": 142,
+        "observedDisagreement": 0,
+        "expectedDisagreement": 0.06140756904494259
+      },
+      "kappaLinear": {
+        "weighting": "linear",
+        "kappa": 1,
+        "n": 142,
+        "observedDisagreement": 0,
+        "expectedDisagreement": 0.10917146068901673
+      },
+      "confusionMatrix": [
+        [
+          123,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          14,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          2
+        ]
+      ]
+    },
+    "relevantFamily": {
+      "name": "relevant-family",
+      "description": "Candidates whose query and resource share the frozen family label in the withheld grading manifest.",
+      "n": 9,
+      "share": 0.06338028169014084,
+      "exactAgreement": 1,
+      "withinOneAgreement": 1,
+      "severeDisagreementRate": 0,
+      "kappaQuadratic": {
+        "weighting": "quadratic",
+        "kappa": 1,
+        "n": 9,
+        "observedDisagreement": 0,
+        "expectedDisagreement": 0.2962962962962962
+      },
+      "kappaLinear": {
+        "weighting": "linear",
+        "kappa": 1,
+        "n": 9,
+        "observedDisagreement": 0,
+        "expectedDisagreement": 0.42798353909465014
+      },
+      "confusionMatrix": [
+        [
+          3,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          2
+        ]
+      ]
+    },
+    "nonRelevantFamily": {
+      "name": "non-relevant-family",
+      "description": "Candidates whose query and resource have different frozen family labels (including distractors).",
+      "n": 133,
+      "share": 0.9366197183098591,
+      "exactAgreement": 1,
+      "withinOneAgreement": 1,
+      "severeDisagreementRate": 0,
+      "kappaQuadratic": {
+        "weighting": "quadratic",
+        "kappa": 1,
+        "n": 133,
+        "observedDisagreement": 0,
+        "expectedDisagreement": 0.024271204326605983
+      },
+      "kappaLinear": {
+        "weighting": "linear",
+        "kappa": 1,
+        "n": 133,
+        "observedDisagreement": 0,
+        "expectedDisagreement": 0.06376844366555486
+      },
+      "confusionMatrix": [
+        [
+          120,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          12,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    "boundary": {
+      "n": 5,
+      "disagreements": 0,
+      "disagreementRate": 0,
+      "twoVsThree": {
+        "n": 0,
+        "aTwoBThree": 0,
+        "aThreeBTwo": 0
+      },
+      "relevantVsNotRelevant": 0
+    },
+    "inflation": 0,
+    "target": {
+      "kappa": 0.6,
+      "stratum": "relevant-family"
+    },
+    "passes": true,
+    "summary": [
+      "Pooled pairs double-graded: 142 across 5 queries.",
+      "Weighted kappa (quadratic), all pooled candidates: 1.000 (n=142).",
+      "Weighted kappa (quadratic), relevant-family candidates: 1.000 (n=9) — this is the figure that matters, target >= 0.6.",
+      "Exact agreement, all pooled: 1.000; relevant-family: 1.000.",
+      "Boundary stratum (either annotator gave 2 or 3): n=5, disagreement rate 0.000, of which 0 are 2-vs-3 and 0 cross the relevance cutoff.",
+      "Kappa inflation from the easy stratum: 0.000 (93.7% of the pool is unanimous grade 0).",
+      "PASS: relevant-family kappa 1.000 >= 0.6."
+    ]
+  },
+  "confusion_matrix_text": "  A\\B    0    1    2    3total\n    0  123    0    0    0  123\n    1    0   14    0    0   14\n    2    0    0    3    0    3\n    3    0    0    0    2    2\ntotal  123   14    3    2  142"
+}

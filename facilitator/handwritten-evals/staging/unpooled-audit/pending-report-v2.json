@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "artifact": "unpooled-audit-v2",
+  "status": "pending_owner_review",
+  "owner_review": "pending",
+  "reviewed_at": null,
+  "pipeline_run_id": "unpooled-audit-v2",
+  "generated_at": "2026-08-08T00:00:00.000Z",
+  "source_hash": "sha256:9cd5b1a3210cc416c45e334c19bded83f7fe70f7ef548fd40fdd026466e2a0f7",
+  "sampling_method": "stratified_bm25_dense_random_residual_sample",
+  "bm25_is_relevance_judgment": false,
+  "dense_is_relevance_judgment": false,
+  "batch_count": 10,
+  "query_count": 100,
+  "target_audited_pair_count": 200,
+  "audited_pair_count": 164,
+  "population_exhausted_query_count": 18,
+  "source_counts": {
+    "bm25_residual": 143,
+    "dense_residual": 21,
+    "random_eligible": 0
+  },
+  "relevant_pair_count": 0,
+  "audited_relevance_rate": 0,
+  "grade_counts": {
+    "0": 159,
+    "1": 5,
+    "2": 0,
+    "3": 0
+  },
+  "auditors": [
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "prompt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "run_id": "run-unpooled-audit-01",
+      "shard_id": "shard-unpooled-audit-01",
+      "generated_at": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "prompt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000001",
+      "run_id": "run-unpooled-audit-02",
+      "shard_id": "shard-unpooled-audit-02",
+      "generated_at": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "prompt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000002",
+      "run_id": "run-unpooled-audit-03",
+      "shard_id": "shard-unpooled-audit-03",
+      "generated_at": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "prompt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000003",
+      "run_id": "run-unpooled-audit-04",
+      "shard_id": "shard-unpooled-audit-04",
+      "generated_at": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "prompt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000004",
+      "run_id": "run-unpooled-audit-05",
+      "shard_id": "shard-unpooled-audit-05",
+      "generated_at": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "prompt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000005",
+      "run_id": "run-unpooled-audit-06",
+      "shard_id": "shard-unpooled-audit-06",
+      "generated_at": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "prompt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000006",
+      "run_id": "run-unpooled-audit-07",
+      "shard_id": "shard-unpooled-audit-07",
+      "generated_at": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "prompt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000007",
+      "run_id": "run-unpooled-audit-08",
+      "shard_id": "shard-unpooled-audit-08",
+      "generated_at": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "prompt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000008",
+      "run_id": "run-unpooled-audit-09",
+      "shard_id": "shard-unpooled-audit-09",
+      "generated_at": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "prompt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000009",
+      "run_id": "run-unpooled-audit-10",
+      "shard_id": "shard-unpooled-audit-10",
+      "generated_at": "2026-08-08T00:00:00.000Z"
+    }
+  ],
+  "materiality_threshold": null,
+  "pooling_assessment": "owner_review_required"
+}

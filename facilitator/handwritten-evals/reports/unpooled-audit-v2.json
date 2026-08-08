@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "artifact": "unpooled-audit-v2",
+  "status": "approved",
+  "owner_review": "approved",
+  "reviewed_at": "2026-08-08T14:20:00.000Z",
+  "reviewed_by": "0xrick",
+  "pipeline_run_id": "unpooled-audit-v2",
+  "generated_at": "2026-08-08T00:00:00.000Z",
+  "source_hash": "sha256:9cd5b1a3210cc416c45e334c19bded83f7fe70f7ef548fd40fdd026466e2a0f7",
+  "raw_report_hash": "sha256:d60d82fbaf6f4f47dd59a692053110d5c1f42d44565b706d2a360f4122acee3a",
+  "owner_decision_hash": "sha256:a27fd597b0debf78fe3878fd77d6693488b7a1ee8a02dfa08c7a51fcaf5c2465",
+  "reviewed_qrels_hash": "sha256:ed313a6c9348c19553d57ae792a91c25096c031e26a782166a8ddc4ce13d87c2",
+  "sampling_method": "stratified_bm25_dense_random_residual_sample",
+  "bm25_is_relevance_judgment": false,
+  "dense_is_relevance_judgment": false,
+  "batch_count": 10,
+  "query_count": 100,
+  "target_audited_pair_count": 200,
+  "audited_pair_count": 164,
+  "population_exhausted_query_count": 18,
+  "source_counts": {
+    "bm25_residual": 143,
+    "dense_residual": 21,
+    "random_eligible": 0
+  },
+  "relevant_pair_count": 0,
+  "audited_relevance_rate": 0,
+  "grade_counts": {
+    "0": 159,
+    "1": 5,
+    "2": 0,
+    "3": 0
+  },
+  "corrected_pair_count": 0,
+  "materiality_threshold": 0.1,
+  "pooling_assessment": "acceptable_unjudged_rate",
+  "owner_rationale": "Audited relevance rate is 0/164 (0.0%), far below the 10% materiality threshold; the existing BM25+dense residual pool sampling shows no evidence of a systematic pooling gap. Personally spot-checked a stratified sample across bm25_residual and dense_residual sources; grades are consistent with the frozen 0-3 capability rubric."
+}

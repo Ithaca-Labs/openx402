@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "artifact": "grading-process-audit-v2",
+  "status": "pass",
+  "pipeline_run_id": "grading-release-01",
+  "generated_at": "2026-08-08T00:00:00.000Z",
+  "source_hash": "sha256:9441f0a3962948a0283f19ad3e1701fd9cc2f3452bc7b53a73ff6a58bb5d54f5",
+  "input_hashes": {
+    "grading_manifest": "sha256:3200c367c104b925a5bc5634bfbda9ceb5bafda9a4ebb697a68a8009567c686a",
+    "grader_a_pack": "sha256:42132ea57d9f3f3285916e81f2ccb965f6dafb6b56ff50ff48016ad36c39bafc",
+    "grader_b_pack": "sha256:739280de1954f5fc4dc94db132deb0650e1cb0eb07c0ad92cf14b893b71e85f1",
+    "grader_a_import": "sha256:250a0468f0b2a5a2b744ce69fed820479540f2498a66cedf74de64e436052bce",
+    "grader_b_import": "sha256:803ec574509d3b187699f572b3f0c245414abf6541aacadc4c947557de38eff5",
+    "adjudication_manifest": null,
+    "adjudication_pack": null,
+    "adjudicator_import": null
+  },
+  "run_ids": {
+    "author": [
+      "run-distractors-w01-a01",
+      "run-distractors-w01-a02",
+      "run-distractors-w01-a03",
+      "run-distractors-w01-a04",
+      "run-queries-03",
+      "run-resources-01",
+      "run-resources-02",
+      "run-resources-03",
+      "run-resources-04",
+      "run-resources-05",
+      "run-resources-06",
+      "run-resources-07",
+      "run-resources-08",
+      "run-resources-09",
+      "run-resources-10"
+    ],
+    "grader_a": "run-grading-release-01-a",
+    "grader_b": "run-grading-release-01-b",
+    "adjudicator": null
+  },
+  "agent_provenance": {
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "prompt_hash": "sha256:grading-rubric-v1-release-01-a",
+      "run_id": "run-grading-release-01-a",
+      "shard_id": "shard-grading-release-01-a",
+      "generated_at": "2026-08-08T00:00:00.000Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "prompt_hash": "sha256:grading-rubric-v1-release-01-b",
+      "run_id": "run-grading-release-01-b",
+      "shard_id": "shard-grading-release-01-b",
+      "generated_at": "2026-08-08T00:00:00.000Z"
+    },
+    "adjudicator": null
+  },
+  "counts": {
+    "pairs": 131,
+    "grader_a_judgments": 131,
+    "grader_b_judgments": 131,
+    "disagreements": 0,
+    "adjudications": 0
+  },
+  "checks": {
+    "source_current": true,
+    "packs_match_withheld_manifest": true,
+    "packs_contain_no_provenance_or_ranking_leakage": true,
+    "graders_are_distinct_fresh_contexts": true,
+    "double_grading_complete": true,
+    "adjudication_is_third_context_and_disagreement_only": true
+  }
+}

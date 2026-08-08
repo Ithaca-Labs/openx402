@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "artifact": "owner-review-public-summary-v2",
+  "generated_at": "2026-08-08T14:05:00.000Z",
+  "full_report_hash": "sha256:31fce49b74aed25c041185ad87e6dcb09d104043cf56fff226eff4bea6152d41",
+  "source_hashes": {
+    "queries": "sha256:c1bb73cb9e889adc77ab8b43e17d87df55258922972a6b839aa1f01f7b24b2b6",
+    "raw_qrels": "sha256:adafe512680340dd65d0a5c4d7db2f1b7947584f18e7f0cb3e4762295c937c0d",
+    "raw_calibration": "sha256:92251338d5d0eb66b25b35261fb18fad63aff544d125e90dec461f03e34e780a",
+    "owner_decisions": "sha256:2895328d01800abcf10bdffefa8d7fdd197abcccfe55aaaf68e14aaa8f24e7b2"
+  },
+  "reviewers": [
+    "0xrick"
+  ],
+  "development": {
+    "query_count": 50,
+    "qrel_count": 1442,
+    "qrels_hash": "sha256:5ded8c5d82bf02792dee5e524414a3a10b887414a47abf7df8e4bd64e20f7a95",
+    "pair_set_hash": "sha256:73e82d59a92eb35b1a20593270dcdb3b62c68ff18263b0d0689d916b14337933",
+    "all_qrels_reviewed": true,
+    "all_release_rationales_present": true,
+    "pairs": {
+      "total": 1442,
+      "approved": 1442,
+      "corrected": 0,
+      "rejected": 0,
+      "correction_rate": 0,
+      "rejection_rate": 0
+    },
+    "queries": {
+      "total": 50,
+      "approved": 50,
+      "corrected": 0,
+      "rejected": 0,
+      "correction_rate": 0,
+      "rejection_rate": 0
+    }
+  },
+  "release": {
+    "query_count": 50,
+    "qrel_count": 1449,
+    "qrels_hash": "sha256:21efbdf622364bcc55c5ebfe8293764a744fd3b3614a8d784563a9df8b016a3f",
+    "pair_set_hash": "sha256:3150be48b8112bf7b5612901ec338e61e82a8d6832f546aa0770eda7d695b0bf",
+    "all_qrels_reviewed": true,
+    "all_release_rationales_present": true,
+    "pairs": {
+      "total": 1449,
+      "approved": 1449,
+      "corrected": 0,
+      "rejected": 0,
+      "correction_rate": 0,
+      "rejection_rate": 0
+    },
+    "queries": {
+      "total": 50,
+      "approved": 50,
+      "corrected": 0,
+      "rejected": 0,
+      "correction_rate": 0,
+      "rejection_rate": 0
+    }
+  },
+  "reviewed_calibration": {
+    "count": 2891,
+    "artifact_hash": "sha256:aa37cdc14899bb72b36dc255f73863abfc3907cb108acd2428b970ea3434e6ab",
+    "all_rows_reviewed": true
+  }
+}

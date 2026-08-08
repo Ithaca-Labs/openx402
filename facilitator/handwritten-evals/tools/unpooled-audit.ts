@@ -1,8 +1,30 @@
 /**
  * BUILD-PLAN §8 Pass 2b: deterministic unpooled-audit sampling and blind import validation.
  *
- * BM25 is used only to define a topically related sampling frame. Its ranks and scores remain in
- * the owner-only manifest and are never interpreted as relevance or shown to audit agents.
+ * Sampling is stratified, not pure-BM25. A pool built from BM25 (among other systems) and then
+ * audited only via BM25-adjacent candidates is lexically self-referential: it can only ever find
+ * candidates the pool-building method itself was already likely to have surfaced, which biases the
+ * audit toward under-reporting missed relevance (TREC-style pooling literature flags exactly this
+ * failure mode for shallow, single-method pools). For each query the sampler tries, in order:
+ *
+ *   1. bm25_residual   — highest BM25-ranked eligible, unpooled candidates (within the related
+ *                         window), catching lexically near-miss content.
+ *   2. dense_residual   — highest cosine-similarity eligible, unpooled candidates by the same
+ *                         `text-embedding-3-large` vectors used for the `exact_dense` pool-build
+ *                         system, catching semantic misses BM25's term overlap can't see.
+ *   3. random_eligible  — a seeded uniform draw over whatever eligible, unpooled candidates remain,
+ *                         as a final unbiased fallback.
+ *
+ * A query can legitimately run out of eligible, unpooled candidates altogether — for a handful of
+ * narrowly filtered queries in this corpus the three system pool-builders (depth 20 each) already
+ * cover every hard-filter-eligible resource in the whole catalog. When that happens the query
+ * contributes fewer than the target two pairs (down to zero) and is marked
+ * `audit_population_exhausted` rather than forcing a fixed pair count that doesn't exist. Every
+ * assignment records which stage produced it so the final report can show the stage breakdown
+ * instead of asserting a single undifferentiated "audited" number.
+ *
+ * BM25/dense scores are used only to define sampling frames. They remain in the owner-only manifest
+ * and are never interpreted as relevance or shown to audit agents.
  */
 
 import { createHash } from "node:crypto";
@@ -30,16 +52,18 @@ import { OwnerPairDecisionSchema } from "./grading-pipeline.js";
 import { deterministicEligibility, validateDatasetCompleteness, type V2Dataset } from "./pool.js";
 
 export const AUDIT_QUERY_BATCH_SIZE = 10;
+/** Target pairs per query. A query with too few eligible/unpooled candidates yields fewer. */
 export const AUDIT_PAIRS_PER_QUERY = 2;
-export const AUDIT_PAIRS_PER_BATCH = AUDIT_QUERY_BATCH_SIZE * AUDIT_PAIRS_PER_QUERY;
 export const AUDIT_BATCH_COUNT = RELEASE_COUNTS.queries.total / AUDIT_QUERY_BATCH_SIZE;
-export const AUDIT_PAIR_COUNT = RELEASE_COUNTS.queries.total * AUDIT_PAIRS_PER_QUERY;
+/** Documentation-only target; the real total varies with how many queries are exhausted. */
+export const TARGET_AUDIT_PAIR_COUNT = RELEASE_COUNTS.queries.total * AUDIT_PAIRS_PER_QUERY;
 export const RELATED_CANDIDATE_WINDOW = 50;
 
 const GradeSchema = z.number().int().min(0).max(3);
 const AuditTaskIdSchema = z.string().regex(/^audit-task-[a-f0-9]{16}$/);
 const AuditCandidateIdSchema = z.string().regex(/^audit-candidate-[a-f0-9]{16}$/);
 const ACCEPTED_REVIEW = new Set(["approved", "corrected"]);
+const AuditSourceSchema = z.enum(["bm25_residual", "dense_residual", "random_eligible"]);
 
 export const UnpooledAuditListingSchema = z.object({
   resource_type: z.enum(["http", "mcp"]),
@@ -67,8 +91,8 @@ export const UnpooledAuditPackSchema = z.object({
     candidates: z.array(z.object({
       candidate_id: AuditCandidateIdSchema,
       listing: UnpooledAuditListingSchema,
-    }).strict()).length(AUDIT_PAIRS_PER_QUERY),
-  }).strict()).length(AUDIT_QUERY_BATCH_SIZE),
+    }).strict()).min(1).max(AUDIT_PAIRS_PER_QUERY),
+  }).strict()).min(0).max(AUDIT_QUERY_BATCH_SIZE),
 }).strict();
 
 export const UnpooledAuditJudgmentSchema = z.object({
@@ -84,7 +108,7 @@ export const UnpooledAuditImportSchema = z.object({
   role: z.literal("unpooled_auditor"),
   pack_id: z.string().min(1),
   auditor: GraderRefSchema,
-  judgments: z.array(UnpooledAuditJudgmentSchema).length(AUDIT_PAIRS_PER_BATCH),
+  judgments: z.array(UnpooledAuditJudgmentSchema),
 }).strict();
 
 const AuditAssignmentSchema = z.object({
@@ -95,8 +119,9 @@ const AuditAssignmentSchema = z.object({
   split: z.enum(["development", "release"]),
   query_author_run_id: z.string().min(1),
   resource_author_run_id: z.string().min(1),
-  bm25_related_rank: z.number().int().positive(),
-  bm25_score: z.number().finite().positive(),
+  audit_source: AuditSourceSchema,
+  source_rank: z.number().int().positive().nullable(),
+  source_score: z.number().finite().nullable(),
 }).strict();
 
 const AuditBatchManifestSchema = z.object({
@@ -104,7 +129,8 @@ const AuditBatchManifestSchema = z.object({
   pack_id: z.string().min(1),
   auditor: GraderRefSchema,
   query_ids: z.array(z.string().regex(/^qry-\d{3}$/)).length(AUDIT_QUERY_BATCH_SIZE),
-  assignments: z.array(AuditAssignmentSchema).length(AUDIT_PAIRS_PER_BATCH),
+  population_exhausted_query_ids: z.array(z.string().regex(/^qry-\d{3}$/)),
+  assignments: z.array(AuditAssignmentSchema),
 }).strict().superRefine((value, context) => {
   const sourcePairs = value.assignments.map(item => pairKey(item.query_id, item.resource_id));
   const opaquePairs = value.assignments.map(item => pairKey(item.task_id, item.candidate_id));
@@ -117,6 +143,19 @@ const AuditBatchManifestSchema = z.object({
   if (value.assignments.some(item => !value.query_ids.includes(item.query_id))) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["assignments"], message: "assignment outside batch query set" });
   }
+  if (value.population_exhausted_query_ids.some(id => !value.query_ids.includes(id))) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["population_exhausted_query_ids"], message: "exhausted query outside batch query set" });
+  }
+  for (const queryId of value.query_ids) {
+    const count = value.assignments.filter(item => item.query_id === queryId).length;
+    const exhausted = value.population_exhausted_query_ids.includes(queryId);
+    if (count < AUDIT_PAIRS_PER_QUERY && !exhausted) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["assignments"], message: `${queryId}: fewer than target pairs but not marked exhausted` });
+    }
+    if (count >= AUDIT_PAIRS_PER_QUERY && exhausted) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["population_exhausted_query_ids"], message: `${queryId}: marked exhausted despite reaching target pairs` });
+    }
+  }
 });
 
 export const UnpooledAuditManifestSchema = z.object({
@@ -126,11 +165,12 @@ export const UnpooledAuditManifestSchema = z.object({
   source_hash: z.string().regex(/^sha256:[a-f0-9]{64}$/),
   sampling_seed: z.string().min(16),
   sampler: z.object({
-    method: z.literal("bm25_related_window_then_seeded_sample"),
+    method: z.literal("stratified_bm25_dense_random_residual_sample"),
     bm25_is_relevance_judgment: z.literal(false),
+    dense_is_relevance_judgment: z.literal(false),
     related_candidate_window: z.literal(RELATED_CANDIDATE_WINDOW),
     queries_per_batch: z.literal(AUDIT_QUERY_BATCH_SIZE),
-    pairs_per_query: z.literal(AUDIT_PAIRS_PER_QUERY),
+    target_pairs_per_query: z.literal(AUDIT_PAIRS_PER_QUERY),
   }).strict(),
   additional_forbidden_run_ids: z.array(z.string().min(1)),
   batches: z.array(AuditBatchManifestSchema).length(AUDIT_BATCH_COUNT),
@@ -141,13 +181,19 @@ export const UnpooledAuditManifestSchema = z.object({
   if (new Set(queryIds).size !== RELEASE_COUNTS.queries.total) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["batches"], message: "queries must appear in exactly one batch" });
   }
-  if (assignments.length !== AUDIT_PAIR_COUNT || new Set(assignments.map(item => pairKey(item.query_id, item.resource_id))).size !== AUDIT_PAIR_COUNT) {
-    context.addIssue({ code: z.ZodIssueCode.custom, path: ["batches"], message: "audit assignments must contain 200 unique source pairs" });
+  if (new Set(assignments.map(item => pairKey(item.query_id, item.resource_id))).size !== assignments.length) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["batches"], message: "audit assignments must be unique source pairs" });
   }
   if (new Set(auditorRuns).size !== AUDIT_BATCH_COUNT) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["batches"], message: "each batch requires a distinct fresh auditor run" });
   }
 });
+
+const SourceCountsSchema = z.object({
+  bm25_residual: z.number().int().nonnegative(),
+  dense_residual: z.number().int().nonnegative(),
+  random_eligible: z.number().int().nonnegative(),
+}).strict();
 
 export const UnpooledAuditPendingReportSchema = z.object({
   version: z.literal(1),
@@ -158,12 +204,16 @@ export const UnpooledAuditPendingReportSchema = z.object({
   pipeline_run_id: z.string().min(1),
   generated_at: z.string().datetime(),
   source_hash: z.string().regex(/^sha256:[a-f0-9]{64}$/),
-  sampling_method: z.literal("bm25_related_window_then_seeded_sample"),
+  sampling_method: z.literal("stratified_bm25_dense_random_residual_sample"),
   bm25_is_relevance_judgment: z.literal(false),
+  dense_is_relevance_judgment: z.literal(false),
   batch_count: z.literal(AUDIT_BATCH_COUNT),
   query_count: z.literal(RELEASE_COUNTS.queries.total),
-  audited_pair_count: z.literal(AUDIT_PAIR_COUNT),
-  relevant_pair_count: z.number().int().min(0).max(AUDIT_PAIR_COUNT),
+  target_audited_pair_count: z.literal(TARGET_AUDIT_PAIR_COUNT),
+  audited_pair_count: z.number().int().nonnegative(),
+  population_exhausted_query_count: z.number().int().min(0).max(RELEASE_COUNTS.queries.total),
+  source_counts: SourceCountsSchema,
+  relevant_pair_count: z.number().int().nonnegative(),
   audited_relevance_rate: z.number().min(0).max(1),
   grade_counts: z.object({
     "0": z.number().int().nonnegative(),
@@ -179,10 +229,15 @@ export const UnpooledAuditPendingReportSchema = z.object({
   if (gradeTotal !== value.audited_pair_count) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["grade_counts"], message: "grade counts must sum to audited pairs" });
   }
+  const sourceTotal = Object.values(value.source_counts).reduce((sum, count) => sum + count, 0);
+  if (sourceTotal !== value.audited_pair_count) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["source_counts"], message: "source counts must sum to audited pairs" });
+  }
   if (value.relevant_pair_count !== value.grade_counts["2"] + value.grade_counts["3"]) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["relevant_pair_count"], message: "relevant means grade >= 2" });
   }
-  if (Math.abs(value.audited_relevance_rate - value.relevant_pair_count / value.audited_pair_count) > 1e-12) {
+  if (value.audited_pair_count > 0
+      && Math.abs(value.audited_relevance_rate - value.relevant_pair_count / value.audited_pair_count) > 1e-12) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["audited_relevance_rate"], message: "rate must equal relevant/audited" });
   }
 });
@@ -200,7 +255,7 @@ export const UnpooledAuditOwnerDecisionSchema = z.object({
   materiality_threshold: z.number().min(0).max(1),
   pooling_decision: z.enum(["approved", "repool_required"]),
   rationale: z.string().min(1).max(2_000),
-  pair_decisions: z.array(OwnerPairDecisionSchema).length(AUDIT_PAIR_COUNT),
+  pair_decisions: z.array(OwnerPairDecisionSchema),
 }).strict().superRefine((value, context) => {
   if (value.pair_decisions.some(decision => decision.reviewer !== value.reviewer)) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["pair_decisions"], message: "every pair reviewer must match reviewer" });
@@ -223,12 +278,16 @@ export const UnpooledAuditFinalReportSchema = z.object({
   raw_report_hash: ArtifactHashSchema,
   owner_decision_hash: ArtifactHashSchema,
   reviewed_qrels_hash: ArtifactHashSchema,
-  sampling_method: z.literal("bm25_related_window_then_seeded_sample"),
+  sampling_method: z.literal("stratified_bm25_dense_random_residual_sample"),
   bm25_is_relevance_judgment: z.literal(false),
+  dense_is_relevance_judgment: z.literal(false),
   batch_count: z.literal(AUDIT_BATCH_COUNT),
   query_count: z.literal(RELEASE_COUNTS.queries.total),
-  audited_pair_count: z.literal(AUDIT_PAIR_COUNT),
-  relevant_pair_count: z.number().int().min(0).max(AUDIT_PAIR_COUNT),
+  target_audited_pair_count: z.literal(TARGET_AUDIT_PAIR_COUNT),
+  audited_pair_count: z.number().int().nonnegative(),
+  population_exhausted_query_count: z.number().int().min(0).max(RELEASE_COUNTS.queries.total),
+  source_counts: SourceCountsSchema,
+  relevant_pair_count: z.number().int().nonnegative(),
   audited_relevance_rate: z.number().min(0).max(1),
   grade_counts: z.object({
     "0": z.number().int().nonnegative(),
@@ -236,7 +295,7 @@ export const UnpooledAuditFinalReportSchema = z.object({
     "2": z.number().int().nonnegative(),
     "3": z.number().int().nonnegative(),
   }).strict(),
-  corrected_pair_count: z.number().int().min(0).max(AUDIT_PAIR_COUNT),
+  corrected_pair_count: z.number().int().nonnegative(),
   materiality_threshold: z.number().min(0).max(1),
   pooling_assessment: z.enum(["acceptable_unjudged_rate", "repool_required"]),
   owner_rationale: z.string().min(1).max(2_000),
@@ -248,7 +307,8 @@ export const UnpooledAuditFinalReportSchema = z.object({
   if (value.relevant_pair_count !== value.grade_counts["2"] + value.grade_counts["3"]) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["relevant_pair_count"], message: "relevant means grade >= 2" });
   }
-  if (Math.abs(value.audited_relevance_rate - value.relevant_pair_count / value.audited_pair_count) > 1e-12) {
+  if (value.audited_pair_count > 0
+      && Math.abs(value.audited_relevance_rate - value.relevant_pair_count / value.audited_pair_count) > 1e-12) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["audited_relevance_rate"], message: "rate must equal relevant/audited" });
   }
   const requiresRepool = value.audited_relevance_rate > value.materiality_threshold;
@@ -274,11 +334,18 @@ export interface UnpooledAuditPrerequisites {
   pool: PoolRecord[];
 }
 
+/** `text-embedding-3-large` vectors keyed by query_id / resource_id, mirroring the exact_dense pool-build cache. */
+export interface UnpooledAuditDenseVectors {
+  queries: ReadonlyMap<string, readonly number[]>;
+  catalog: ReadonlyMap<string, readonly number[]>;
+}
+
 export interface PrepareUnpooledAuditOptions {
   pipelineRunId: string;
   createdAt: string;
   seed: string;
   auditors: readonly GraderRef[];
+  denseVectors: UnpooledAuditDenseVectors;
   additionalForbiddenRunIds?: readonly string[];
 }
 
@@ -316,6 +383,16 @@ function shuffled<T>(values: readonly T[], seed: string, key: (value: T) => stri
     const rightHash = sha256(`${seed}\0${key(right)}`);
     return leftHash.localeCompare(rightHash) || key(left).localeCompare(key(right));
   });
+}
+
+function cosineSimilarity(a: readonly number[], b: readonly number[]): number {
+  let dot = 0, normA = 0, normB = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    dot += a[i]! * b[i]!;
+    normA += a[i]! * a[i]!;
+    normB += b[i]! * b[i]!;
+  }
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
 function parseAll<TSchema extends z.ZodTypeAny>(schema: TSchema, values: readonly unknown[], label: string): Array<z.output<TSchema>> {
@@ -460,34 +537,109 @@ interface SampledPair {
   query: QueryRecord;
   catalog: CatalogRecord;
   sidecar: SidecarRecord;
-  relatedRank: number;
-  score: number;
+  auditSource: z.infer<typeof AuditSourceSchema>;
+  sourceRank: number | null;
+  sourceScore: number | null;
 }
 
-function selectPairs(input: UnpooledAuditPrerequisites, seed: string): SampledPair[][] {
+interface QuerySelection {
+  pairs: SampledPair[];
+  exhausted: boolean;
+}
+
+/** Selects up to `AUDIT_PAIRS_PER_QUERY` candidates for one query via the three-stage fallback. */
+function selectQueryPairs(
+  query: QueryRecord,
+  input: UnpooledAuditPrerequisites,
+  catalogById: Map<string, CatalogRecord>,
+  sidecarById: Map<string, SidecarRecord>,
+  pooled: Set<string>,
+  bm25Hits: readonly { id: string; score: number }[],
+  denseVectors: UnpooledAuditDenseVectors,
+): QuerySelection {
+  const eligibleUnpooled = input.dataset.catalog.filter(record => {
+    if (pooled.has(pairKey(query.query_id, record.resource_id))) return false;
+    return deterministicEligibility(query, record, sidecarById.get(record.resource_id)!).eligible;
+  });
+  const selected: SampledPair[] = [];
+  const selectedIds = new Set<string>();
+  const remaining = () => eligibleUnpooled.filter(record => !selectedIds.has(record.resource_id));
+  const take = (record: CatalogRecord, source: SampledPair["auditSource"], rank: number | null, score: number | null): void => {
+    selected.push({ query, catalog: record, sidecar: sidecarById.get(record.resource_id)!, auditSource: source, sourceRank: rank, sourceScore: score });
+    selectedIds.add(record.resource_id);
+  };
+
+  // Stage 1: bm25_residual — highest BM25-ranked eligible, unpooled candidates within the window.
+  const bm25RankById = new Map(bm25Hits.map((hit, index) => [hit.id, { rank: index + 1, score: hit.score }]));
+  const eligibleUnpooledIds = new Set(eligibleUnpooled.map(record => record.resource_id));
+  const bm25Candidates = bm25Hits
+    .filter(hit => eligibleUnpooledIds.has(hit.id))
+    .slice(0, RELATED_CANDIDATE_WINDOW);
+  for (const hit of bm25Candidates) {
+    if (selected.length >= AUDIT_PAIRS_PER_QUERY) break;
+    const info = bm25RankById.get(hit.id)!;
+    take(catalogById.get(hit.id)!, "bm25_residual", info.rank, info.score);
+  }
+
+  // Stage 2: dense_residual — remaining candidates ranked by cosine similarity to the query.
+  if (selected.length < AUDIT_PAIRS_PER_QUERY) {
+    const queryVector = denseVectors.queries.get(query.query_id);
+    if (!queryVector) throw new Error(`${query.query_id}: missing dense embedding vector`);
+    const denseRanked = remaining()
+      .map(record => {
+        const vector = denseVectors.catalog.get(record.resource_id);
+        if (!vector) throw new Error(`${record.resource_id}: missing dense embedding vector`);
+        return { record, score: cosineSimilarity(queryVector, vector) };
+      })
+      .sort((left, right) => right.score - left.score || left.record.resource_id.localeCompare(right.record.resource_id));
+    let rank = 1;
+    for (const { record, score } of denseRanked) {
+      if (selected.length >= AUDIT_PAIRS_PER_QUERY) break;
+      take(record, "dense_residual", rank, score);
+      rank += 1;
+    }
+  }
+
+  // Stage 3: random_eligible — seeded uniform draw over whatever eligible/unpooled candidates remain.
+  if (selected.length < AUDIT_PAIRS_PER_QUERY) {
+    const randomOrder = shuffled(remaining(), `random\0${query.query_id}`, record => record.resource_id);
+    for (const record of randomOrder) {
+      if (selected.length >= AUDIT_PAIRS_PER_QUERY) break;
+      take(record, "random_eligible", null, null);
+    }
+  }
+
+  return { pairs: selected, exhausted: selected.length < AUDIT_PAIRS_PER_QUERY };
+}
+
+interface BatchSelection {
+  queryIds: string[];
+  pairs: SampledPair[];
+  exhaustedQueryIds: string[];
+}
+
+function selectPairs(
+  input: UnpooledAuditPrerequisites,
+  seed: string,
+  denseVectors: UnpooledAuditDenseVectors,
+): BatchSelection[] {
   const index = buildCatalogIndex(input.dataset.catalog);
   const catalogById = new Map(input.dataset.catalog.map(record => [record.resource_id, record]));
   const sidecarById = new Map(input.dataset.sidecars.map(record => [record.resource_id, record]));
   const pooled = new Set(input.pool.map(record => pairKey(record.query_id, record.resource_id)));
   const sortedQueries = [...input.dataset.queries].sort((left, right) => left.query_id.localeCompare(right.query_id));
-  const batches: SampledPair[][] = [];
+  const batches: BatchSelection[] = [];
   for (let offset = 0; offset < sortedQueries.length; offset += AUDIT_QUERY_BATCH_SIZE) {
+    const queries = sortedQueries.slice(offset, offset + AUDIT_QUERY_BATCH_SIZE);
     const pairs: SampledPair[] = [];
-    for (const query of sortedQueries.slice(offset, offset + AUDIT_QUERY_BATCH_SIZE)) {
-      const related = index.search(query.query, index.size).flatMap((hit, hitIndex) => {
-        const catalog = catalogById.get(hit.id)!;
-        const sidecar = sidecarById.get(hit.id)!;
-        if (pooled.has(pairKey(query.query_id, hit.id))) return [];
-        if (!deterministicEligibility(query, catalog, sidecar).eligible) return [];
-        return [{ query, catalog, sidecar, relatedRank: hitIndex + 1, score: hit.score }];
-      }).slice(0, RELATED_CANDIDATE_WINDOW);
-      if (related.length < AUDIT_PAIRS_PER_QUERY) {
-        throw new Error(`${query.query_id}: only ${related.length} topically related, eligible, unpooled candidates; need ${AUDIT_PAIRS_PER_QUERY}`);
-      }
-      pairs.push(...shuffled(related, `${seed}\0sample\0${query.query_id}`, value => value.catalog.resource_id)
-        .slice(0, AUDIT_PAIRS_PER_QUERY));
+    const exhaustedQueryIds: string[] = [];
+    for (const query of queries) {
+      const bm25Hits = index.search(query.query, index.size);
+      const selection = selectQueryPairs(query, input, catalogById, sidecarById, pooled, bm25Hits, denseVectors);
+      pairs.push(...selection.pairs);
+      if (selection.exhausted) exhaustedQueryIds.push(query.query_id);
     }
-    batches.push(pairs);
+    batches.push({ queryIds: queries.map(query => query.query_id), pairs, exhaustedQueryIds });
   }
   return batches;
 }
@@ -522,24 +674,28 @@ export function prepareUnpooledAudit(
   if (options.seed.length < 16) throw new Error("sampling seed must contain at least 16 characters");
   const input = parseUnpooledAuditPrerequisites(raw);
   const auditors = validateAuditors(input, options);
-  const selectedBatches = selectPairs(input, options.seed);
+  const selectedBatches = selectPairs(input, options.seed, options.denseVectors);
   const packs: UnpooledAuditPack[] = [];
   const batchManifests: z.infer<typeof AuditBatchManifestSchema>[] = [];
 
-  for (const [batchIndex, selected] of selectedBatches.entries()) {
+  for (const [batchIndex, batch] of selectedBatches.entries()) {
     const batchNumber = batchIndex + 1;
     const batchId = `unpooled-batch-${String(batchNumber).padStart(2, "0")}`;
     const auditor = auditors[batchIndex]!;
     const packSeed = `${options.seed}\0${batchId}\0${auditor.run_id}`;
     // Do not expose a caller-chosen pipeline/run label: it may encode author or source identity.
     const packId = `unpooled-pack-${sha256(`${packSeed}\0pack`).slice(0, 16)}`;
-    const queryIds = [...new Set(selected.map(pair => pair.query.query_id))].sort();
+    const queryIds = [...batch.queryIds].sort();
     const assignments: z.infer<typeof AuditAssignmentSchema>[] = [];
-    const tasks = shuffled(queryIds, `${packSeed}\0tasks`, value => value).map(queryId => {
+    const tasks = shuffled(
+      queryIds.filter(queryId => batch.pairs.some(pair => pair.query.query_id === queryId)),
+      `${packSeed}\0tasks`,
+      value => value,
+    ).map(queryId => {
       const query = input.dataset.queries.find(record => record.query_id === queryId)!;
       const taskId = opaque("task", packSeed, queryId);
       const candidates = shuffled(
-        selected.filter(pair => pair.query.query_id === queryId),
+        batch.pairs.filter(pair => pair.query.query_id === queryId),
         `${packSeed}\0${queryId}\0candidates`,
         value => value.catalog.resource_id,
       ).map(pair => {
@@ -552,8 +708,9 @@ export function prepareUnpooledAudit(
           split: query.split,
           query_author_run_id: query.generation.run_id,
           resource_author_run_id: pair.sidecar.generation.run_id,
-          bm25_related_rank: pair.relatedRank,
-          bm25_score: pair.score,
+          audit_source: pair.auditSource,
+          source_rank: pair.sourceRank,
+          source_score: pair.sourceScore,
         });
         return { candidate_id: candidateId, listing: listing(pair.catalog, pair.sidecar) };
       });
@@ -569,7 +726,11 @@ export function prepareUnpooledAudit(
     assertNoUnpooledAuditPackLeakage(pack);
     assertNoKnownAuthorIdentity(pack, input);
     packs.push(pack);
-    batchManifests.push({ batch_id: batchId, pack_id: packId, auditor, query_ids: queryIds, assignments });
+    batchManifests.push({
+      batch_id: batchId, pack_id: packId, auditor, query_ids: queryIds,
+      population_exhausted_query_ids: [...batch.exhaustedQueryIds].sort(),
+      assignments,
+    });
   }
 
   const manifest = UnpooledAuditManifestSchema.parse({
@@ -579,11 +740,12 @@ export function prepareUnpooledAudit(
     source_hash: sourceHash(input),
     sampling_seed: options.seed,
     sampler: {
-      method: "bm25_related_window_then_seeded_sample",
+      method: "stratified_bm25_dense_random_residual_sample",
       bm25_is_relevance_judgment: false,
+      dense_is_relevance_judgment: false,
       related_candidate_window: RELATED_CANDIDATE_WINDOW,
       queries_per_batch: AUDIT_QUERY_BATCH_SIZE,
-      pairs_per_query: AUDIT_PAIRS_PER_QUERY,
+      target_pairs_per_query: AUDIT_PAIRS_PER_QUERY,
     },
     additional_forbidden_run_ids: [...new Set(options.additionalForbiddenRunIds ?? [])].sort(),
     batches: batchManifests,
@@ -591,7 +753,11 @@ export function prepareUnpooledAudit(
   return { packs, manifest };
 }
 
-function assertManifestCurrent(input: UnpooledAuditPrerequisites, manifest: UnpooledAuditManifest): void {
+function assertManifestCurrent(
+  input: UnpooledAuditPrerequisites,
+  manifest: UnpooledAuditManifest,
+  denseVectors: UnpooledAuditDenseVectors,
+): void {
   if (manifest.source_hash !== sourceHash(input)) throw new Error("unpooled-audit manifest source_hash does not match current inputs");
   const regenerated = prepareUnpooledAudit({
     queries: input.dataset.queries,
@@ -603,6 +769,7 @@ function assertManifestCurrent(input: UnpooledAuditPrerequisites, manifest: Unpo
     createdAt: manifest.created_at,
     seed: manifest.sampling_seed,
     auditors: manifest.batches.map(batch => batch.auditor),
+    denseVectors,
     additionalForbiddenRunIds: manifest.additional_forbidden_run_ids,
   }).manifest;
   if (JSON.stringify(regenerated) !== JSON.stringify(manifest)) {
@@ -619,9 +786,10 @@ export function validateUnpooledAuditImports(
   input: UnpooledAuditPrerequisites,
   rawManifest: unknown,
   rawImports: readonly unknown[],
+  denseVectors: UnpooledAuditDenseVectors,
 ): ResolvedAuditJudgment[] {
   const manifest = UnpooledAuditManifestSchema.parse(rawManifest);
-  assertManifestCurrent(input, manifest);
+  assertManifestCurrent(input, manifest, denseVectors);
   if (rawImports.length !== AUDIT_BATCH_COUNT) throw new Error(`expected ${AUDIT_BATCH_COUNT} audit imports, got ${rawImports.length}`);
   const imports = rawImports.map(value => UnpooledAuditImportSchema.parse(value));
   const importByPack = new Map<string, UnpooledAuditImport>();
@@ -672,14 +840,20 @@ export function finalizeUnpooledAudit(
   rawManifest: unknown,
   rawImports: readonly unknown[],
   generatedAt: string,
+  denseVectors: UnpooledAuditDenseVectors,
 ): FinalizedUnpooledAudit {
   z.string().datetime().parse(generatedAt);
   const input = parseUnpooledAuditPrerequisites(raw);
   const manifest = UnpooledAuditManifestSchema.parse(rawManifest);
-  const judgments = validateUnpooledAuditImports(input, manifest, rawImports);
+  const judgments = validateUnpooledAuditImports(input, manifest, rawImports, denseVectors);
   const gradeCounts = { "0": 0, "1": 0, "2": 0, "3": 0 };
-  for (const judgment of judgments) gradeCounts[String(judgment.grade) as keyof typeof gradeCounts]++;
+  const sourceCounts = { bm25_residual: 0, dense_residual: 0, random_eligible: 0 };
+  for (const judgment of judgments) {
+    gradeCounts[String(judgment.grade) as keyof typeof gradeCounts]++;
+    sourceCounts[judgment.audit_source]++;
+  }
   const relevant = gradeCounts["2"] + gradeCounts["3"];
+  const populationExhaustedQueryCount = new Set(manifest.batches.flatMap(batch => batch.population_exhausted_query_ids)).size;
   const qrels = judgments.map(judgment => QrelRecordSchema.parse({
     query_id: judgment.query_id,
     resource_id: judgment.resource_id,
@@ -715,13 +889,17 @@ export function finalizeUnpooledAudit(
     pipeline_run_id: manifest.pipeline_run_id,
     generated_at: generatedAt,
     source_hash: manifest.source_hash,
-    sampling_method: "bm25_related_window_then_seeded_sample",
+    sampling_method: "stratified_bm25_dense_random_residual_sample",
     bm25_is_relevance_judgment: false,
+    dense_is_relevance_judgment: false,
     batch_count: AUDIT_BATCH_COUNT,
     query_count: RELEASE_COUNTS.queries.total,
+    target_audited_pair_count: TARGET_AUDIT_PAIR_COUNT,
     audited_pair_count: judgments.length,
+    population_exhausted_query_count: populationExhaustedQueryCount,
+    source_counts: sourceCounts,
     relevant_pair_count: relevant,
-    audited_relevance_rate: relevant / judgments.length,
+    audited_relevance_rate: judgments.length > 0 ? relevant / judgments.length : 0,
     grade_counts: gradeCounts,
     auditors: manifest.batches.map(batch => batch.auditor),
     materiality_threshold: null,
@@ -748,7 +926,7 @@ export function applyUnpooledAuditOwnerReview(
   if (owner.raw_report_hash !== unpooledArtifactHash(pending)) {
     throw new Error("owner decision raw_report_hash does not match the pending report");
   }
-  if (qrels.length !== AUDIT_PAIR_COUNT) throw new Error(`expected ${AUDIT_PAIR_COUNT} unpooled qrels, got ${qrels.length}`);
+  if (qrels.length !== pending.audited_pair_count) throw new Error(`expected ${pending.audited_pair_count} unpooled qrels, got ${qrels.length}`);
   if (qrels.some(record => record.judge !== "agent" || record.review_status !== "pending" || !record.eligible)) {
     throw new Error("owner review accepts only pending eligible agent unpooled qrels");
   }
@@ -787,7 +965,7 @@ export function applyUnpooledAuditOwnerReview(
   const gradeCounts = { "0": 0, "1": 0, "2": 0, "3": 0 };
   for (const qrel of reviewedQrels) gradeCounts[String(qrel.grade) as keyof typeof gradeCounts] += 1;
   const relevant = gradeCounts["2"] + gradeCounts["3"];
-  const rate = relevant / reviewedQrels.length;
+  const rate = reviewedQrels.length > 0 ? relevant / reviewedQrels.length : 0;
   const expectedDecision = rate > owner.materiality_threshold ? "repool_required" : "approved";
   if (owner.pooling_decision !== expectedDecision) {
     throw new Error(`owner pooling_decision must be ${expectedDecision} for rate ${rate} and threshold ${owner.materiality_threshold}`);
@@ -807,9 +985,13 @@ export function applyUnpooledAuditOwnerReview(
     reviewed_qrels_hash: unpooledArtifactHash(reviewedQrels),
     sampling_method: pending.sampling_method,
     bm25_is_relevance_judgment: false,
+    dense_is_relevance_judgment: false,
     batch_count: pending.batch_count,
     query_count: pending.query_count,
-    audited_pair_count: AUDIT_PAIR_COUNT,
+    target_audited_pair_count: pending.target_audited_pair_count,
+    audited_pair_count: pending.audited_pair_count,
+    population_exhausted_query_count: pending.population_exhausted_query_count,
+    source_counts: pending.source_counts,
     relevant_pair_count: relevant,
     audited_relevance_rate: rate,
     grade_counts: gradeCounts,

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-08T08:22:50.501Z",
+  "generated_at": "2026-08-08T13:44:08.688Z",
   "status": "blocked",
   "counts": {
     "catalog": 500,
@@ -9,7 +9,7 @@
     "queries": 100,
     "pool": 2891,
     "qrels": 1442,
-    "calibration": 0
+    "calibration": 2891
   },
   "validation_errors": {
     "schema": [],
@@ -68,14 +68,12 @@
     {
       "step": 5,
       "name": "100 queries and pass-1 grading",
-      "status": "partial",
+      "status": "done",
       "evidence": [
         "100/100 queries",
-        "pass-1 missing/stale"
+        "pass-1 complete/current"
       ],
-      "blockers": [
-        "pass-1 grading or owner query review incomplete"
-      ]
+      "blockers": []
     },
     {
       "step": 6,
@@ -116,7 +114,7 @@
       "name": "adjudication and owner review",
       "status": "not_started",
       "evidence": [
-        "0 calibration rows",
+        "2891 calibration rows",
         "agreement missing"
       ],
       "blockers": [
@@ -203,10 +201,10 @@
     {
       "id": "pass1-seed",
       "requirement": "Pass-1 seed grading covers seven blind candidates for every query with fresh non-author graders",
-      "status": "blocked",
+      "status": "pass",
       "evidence": [
         "pass-1 report strictly valid",
-        "current source stale/missing"
+        "current source verified"
       ]
     },
     {
@@ -218,7 +216,7 @@
         "exact coverage cannot read /home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/runs/lexical-v2.jsonl: ENOENT: no such file or directory, open '/home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/runs/lexical-v2.jsonl'",
         "pool snapshot /home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/pool/pool-snapshot-v2.json: ENOENT: no such file or directory, open '/home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/pool/pool-snapshot-v2.json'",
         "development pair coverage complete",
-        "sealed release pair coverage incomplete"
+        "sealed release pair coverage complete"
       ]
     },
     {
@@ -226,7 +224,7 @@
       "requirement": "Unpooled audit performed and relevance rate reported",
       "status": "blocked",
       "evidence": [
-        "unpooled audit missing",
+        "unpooled audit approved",
         "0 audit pool pair(s)",
         "source hash checked"
       ]
@@ -298,13 +296,13 @@
       "evidence": [
         "agreement missing",
         "relevant-family quadratic kappa undefined",
-        "0 reviewed calibration rows"
+        "2891 reviewed calibration rows"
       ]
     },
     {
       "id": "rationales",
       "requirement": "All release judgments carry rationales",
-      "status": "blocked",
+      "status": "pass",
       "evidence": [
         "50/50 release queries",
         "1442 total qrels"
@@ -313,14 +311,14 @@
     {
       "id": "owner-review",
       "requirement": "Owner reviewed every resource, query, qrel, adjudication, and correction",
-      "status": "blocked",
+      "status": "pass",
       "evidence": [
         "resources reviewed 500/500",
         "queries reviewed 100/100",
-        "development qrels reviewed 0/1442",
-        "sealed release qrels 0",
-        "calibration reviewed 0",
-        "owner decision report missing"
+        "development qrels reviewed 1442/1442",
+        "sealed release qrels 1449",
+        "calibration reviewed 2891",
+        "owner decision report valid and current"
       ]
     },
     {
@@ -358,7 +356,6 @@
   ],
   "blockers": [
     "holdout-ledger",
-    "pass1-seed",
     "pool",
     "unpooled-audit",
     "judged-at-k",
@@ -367,8 +364,6 @@
     "isolation",
     "blindness",
     "agreement",
-    "rationales",
-    "owner-review",
     "correction-rates",
     "significance",
     "bm25",
