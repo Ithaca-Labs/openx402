@@ -7,7 +7,7 @@ You are a fresh isolated grading context. Read only:
 
 Run id: `run-query-pass1-grader-03`
 Pack id: `query-pass1-seed-03`
-Prompt/task-pack hash: `sha256:f2eea6980572ffca82d4ec7843a7003246961bb14d8d6ec2917b2db0028d5ac2`
+Prompt/task-pack hash: `sha256:a5f4f48ea19ae9b77dffc036967237bab6af1d35d655360659db968683a85f77`
 Output: `/home/soumy/.claude/jobs/6e0348e9/tmp/pass1-sealed/imports/grader-03.json`
 
 Return one `Pass1SeedImportSchema` JSON object covering every opaque candidate exactly once.

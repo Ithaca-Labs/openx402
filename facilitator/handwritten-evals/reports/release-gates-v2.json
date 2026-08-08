@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-08T07:49:24.227Z",
+  "generated_at": "2026-08-08T08:22:50.501Z",
   "status": "blocked",
   "counts": {
     "catalog": 500,
@@ -205,7 +205,7 @@
       "requirement": "Pass-1 seed grading covers seven blind candidates for every query with fresh non-author graders",
       "status": "blocked",
       "evidence": [
-        "pass-1 report missing",
+        "pass-1 report strictly valid",
         "current source stale/missing"
       ]
     },

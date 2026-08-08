@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "artifact": "pass1-seed-report-v2",
+  "status": "pass",
+  "generated_at": "2026-08-08T00:00:00.000Z",
+  "source_hash": "sha256:baffeeea88222d85d802934544164c14076f74e467ac92bd913c587331c06703",
+  "manifest_hash": "sha256:ff95133673a9f7f30d3a3c43ad75360e69835be8825005c9badcd44a68b897c7",
+  "import_hashes": {
+    "query-pass1-seed-01": "sha256:684a2e3e14ec334780113519086011d6e553b99e4185de602766f844679ee7d5",
+    "query-pass1-seed-02": "sha256:63eb9e7e1a416237d023dba103a6c1f2f2106ada0d7b626ba020832935f22492",
+    "query-pass1-seed-03": "sha256:ab5cd5452033bd90cdc31c04405d32aa806d172058ee188cf25675ea86051d73",
+    "query-pass1-seed-04": "sha256:b4967f99b2d61b2b0ac184f0d50f583d8a3b7e858a709657e90d235ab328ee0d",
+    "query-pass1-seed-05": "sha256:2489a84a0b2fdb81de4fde4bd35f75da458dd7891bb03ee95dcf45bbfd242c60",
+    "query-pass1-seed-06": "sha256:699ec7bfc07d649e861ba0a9ee01dab2f7bdc85007765ff96e4c6244db2323c3",
+    "query-pass1-seed-07": "sha256:f2d3bfcf42163bdec9efcb8be8c07499f522c8d9fa2fa6a2de001481c2e81e6d",
+    "query-pass1-seed-08": "sha256:9447e6a5bfd46c712eaee55bd8e9122b4b44c7a5569f0126699b786162bfd21b",
+    "query-pass1-seed-09": "sha256:cd0220773ed143a5ffd32f44029b0f33ccb021399a9608778040fb36e0de0691",
+    "query-pass1-seed-10": "sha256:af59479682a334eec4bb93a8f094bf5de213ff23158a15493053fd7ece1580f0"
+  },
+  "query_count": 100,
+  "candidates_per_query": 7,
+  "pair_count": 700,
+  "grader_run_ids": [
+    "run-query-pass1-grader-01",
+    "run-query-pass1-grader-02",
+    "run-query-pass1-grader-03",
+    "run-query-pass1-grader-04",
+    "run-query-pass1-grader-05",
+    "run-query-pass1-grader-06",
+    "run-query-pass1-grader-07",
+    "run-query-pass1-grader-08",
+    "run-query-pass1-grader-09",
+    "run-query-pass1-grader-10"
+  ],
+  "checks": {
+    "exact_pack_coverage": true,
+    "exact_pair_coverage": true,
+    "all_rationales_present": true,
+    "graders_are_distinct_non_authors": true
+  }
+}
