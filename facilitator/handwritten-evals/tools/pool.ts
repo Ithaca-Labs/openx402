@@ -245,14 +245,26 @@ export async function loadSystemRunJsonl(
   return records;
 }
 
+/**
+ * `systemsToLoad` lets pool-build-only callers (`build-pool.ts`) skip requiring the
+ * not-yet-produced production `SCORED_SYSTEMS` runs to exist on disk. A system that is
+ * neither overridden nor in `systemsToLoad` resolves to `[]` and is never read by
+ * `buildPool`/`validateRunEligibility` when they are scoped to `POOL_BUILD_SYSTEMS`.
+ * Defaults to `ALL_RUN_SYSTEMS`, preserving the original require-everything behavior.
+ */
 export async function loadSystemRuns(
   runDirectory: string,
   queryIds: ReadonlySet<string>,
   resourceIds: ReadonlySet<string>,
   overrides: Partial<SystemRuns> = {},
+  systemsToLoad: readonly RunSystem[] = ALL_RUN_SYSTEMS,
 ): Promise<SystemRuns> {
+  const loadSet = new Set(systemsToLoad);
   const entries = await Promise.all(ALL_RUN_SYSTEMS.map(async system => {
     const override = overrides[system];
+    if (override === undefined && !loadSet.has(system)) {
+      return [system, []] as const;
+    }
     const records = override ?? await loadSystemRunJsonl(
       resolve(runDirectory, SYSTEM_RUN_FILENAMES[system]), system, queryIds, resourceIds,
     );
@@ -382,12 +394,20 @@ export function generateBm25Run(dataset: V2Dataset, metadata: RunMetadata): Syst
     });
 }
 
-/** Ensures every run — pool-building and scored alike — respected the dataset's deterministic filters. */
-export function validateRunEligibility(dataset: V2Dataset, runs: SystemRuns): void {
+/**
+ * Ensures every run — pool-building and scored alike — respected the dataset's deterministic
+ * filters. `systems` scopes the check (defaults to `ALL_RUN_SYSTEMS`); `buildPool` passes
+ * `POOL_BUILD_SYSTEMS` so pool construction never depends on production runs existing yet.
+ */
+export function validateRunEligibility(
+  dataset: V2Dataset,
+  runs: SystemRuns,
+  systems: readonly RunSystem[] = ALL_RUN_SYSTEMS,
+): void {
   const catalogById = new Map(dataset.catalog.map(record => [record.resource_id, record]));
   const sidecarById = new Map(dataset.sidecars.map(record => [record.resource_id, record]));
   const queryById = new Map(dataset.queries.map(record => [record.query_id, record]));
-  for (const system of ALL_RUN_SYSTEMS) {
+  for (const system of systems) {
     for (const record of runs[system]) {
       const query = queryById.get(record.query_id)!;
       for (const result of record.results) {
@@ -421,7 +441,7 @@ export function buildPool(
   for (const system of POOL_BUILD_SYSTEMS) {
     validateSystemRunRecords(runs[system], system, queryIds, resourceIds);
   }
-  validateRunEligibility(dataset, runs);
+  validateRunEligibility(dataset, runs, POOL_BUILD_SYSTEMS);
 
   const records: PoolRecord[] = [];
   for (const query of [...dataset.queries].sort((a, b) => a.query_id.localeCompare(b.query_id))) {

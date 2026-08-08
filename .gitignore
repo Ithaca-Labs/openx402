@@ -28,6 +28,11 @@
 /facilitator/handwritten-evals/staging/query-pass1/manifest.json
 /facilitator/handwritten-evals/staging/query-pass1/raw-qrels.jsonl
 
+# Derived embedding-vector cache for pool-build exact_dense/hybrid_exact runs.
+# Regenerable from catalog/query text + model; only the resulting ranked run
+# files under pool/ are the committed, hash-pinned artifact.
+/facilitator/handwritten-evals/staging/embeddings/
+
 # OS / editor
 .DS_Store
 *.swp

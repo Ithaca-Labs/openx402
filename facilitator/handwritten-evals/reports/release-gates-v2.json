@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T23:52:34.784Z",
+  "generated_at": "2026-08-08T02:50:10.349Z",
   "status": "blocked",
   "counts": {
     "catalog": 500,
@@ -7,7 +7,7 @@
     "labeled": 100,
     "distractors": 400,
     "queries": 100,
-    "pool": 0,
+    "pool": 2891,
     "qrels": 0,
     "calibration": 0
   },
@@ -88,11 +88,11 @@
     },
     {
       "step": 7,
-      "name": "five-system pool",
+      "name": "three-system pool",
       "status": "not_started",
       "evidence": [
-        "0/5 systems",
-        "0 pool rows",
+        "3/3 pool-build systems",
+        "2891 pool rows",
         "snapshot missing/stale"
       ],
       "blockers": [
@@ -211,13 +211,13 @@
     },
     {
       "id": "pool",
-      "requirement": "Pool covers top-20 of all five systems and every pooled pair is judged",
+      "requirement": "Pool covers top-20 of all three pool-build systems and every pooled pair is judged",
       "status": "blocked",
       "evidence": [
-        "0/5 systems",
-        "exact coverage cannot read /home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/runs/bm25-v2.jsonl: ENOENT: no such file or directory, open '/home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/runs/bm25-v2.jsonl'",
+        "3/3 pool-build systems",
+        "exact coverage cannot read /home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/runs/lexical-v2.jsonl: ENOENT: no such file or directory, open '/home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/runs/lexical-v2.jsonl'",
         "pool snapshot /home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/pool/pool-snapshot-v2.json: ENOENT: no such file or directory, open '/home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/pool/pool-snapshot-v2.json'",
-        "development pair coverage complete",
+        "development pair coverage incomplete",
         "sealed release pair coverage incomplete"
       ]
     },
@@ -228,7 +228,7 @@
       "evidence": [
         "unpooled audit missing",
         "0 audit pool pair(s)",
-        "source pool-v2 is empty"
+        "source hash checked"
       ]
     },
     {

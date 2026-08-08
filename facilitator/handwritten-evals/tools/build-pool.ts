@@ -2,6 +2,7 @@
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { POOL_BUILD_SYSTEMS } from "../schema/schema-v2.js";
 import {
   SYSTEM_RUN_FILENAMES,
   buildPool,
@@ -32,18 +33,32 @@ const bm25 = generateBm25Run(dataset, {
 });
 const queryIds = new Set(dataset.queries.map(query => query.query_id));
 const resourceIds = new Set(dataset.catalog.map(record => record.resource_id));
-const runs = await loadSystemRuns(runDirectory, queryIds, resourceIds, { bm25 });
+// Only the three pool-build systems are required here (ninth revision): production
+// SCORED_SYSTEMS runs (lexical/semantic/hybrid) are produced and scored later, never
+// needed to build the pool itself.
+const runs = await loadSystemRuns(runDirectory, queryIds, resourceIds, { bm25 }, POOL_BUILD_SYSTEMS);
 const pool = buildPool(dataset, runs, { runId: poolRunId, pooledAt: generatedAt });
 
-// Nothing is written until all five complete runs and all hard filters validate.
+// Nothing is written until all three pool-build runs and all hard filters validate.
 await mkdir(runDirectory, { recursive: true });
 await mkdir(poolDirectory, { recursive: true });
 await writeFile(resolve(runDirectory, SYSTEM_RUN_FILENAMES.bm25), encodeJsonl(bm25));
 await writeFile(resolve(poolDirectory, "pool-v2.jsonl"), encodeJsonl(pool));
-const snapshot = await createPoolSnapshot(root, generatedAt);
-await writeFile(resolve(root, POOL_SNAPSHOT_PATH), `${JSON.stringify(snapshot, null, 2)}\n`);
 
 console.log(`BM25: ${bm25.length} queries -> runs/${SYSTEM_RUN_FILENAMES.bm25}`);
 console.log(`BM25 latency: ${bm25.reduce((sum, record) => sum + record.latency_ms, 0).toFixed(3)} ms total`);
 console.log(`Pool: ${pool.length} unique query/resource pairs -> pool/pool-v2.jsonl`);
-console.log(`Freshness binding: dataset + profiles + implementations + 5 runs -> ${POOL_SNAPSHOT_PATH}`);
+
+// The full freshness binding covers all six run systems, including production
+// SCORED_SYSTEMS, which are produced and scored after the pool, not before. Deferred
+// here rather than treated as a pool-build failure.
+try {
+  const snapshot = await createPoolSnapshot(root, generatedAt);
+  await writeFile(resolve(root, POOL_SNAPSHOT_PATH), `${JSON.stringify(snapshot, null, 2)}\n`);
+  console.log(`Freshness binding: dataset + profiles + implementations + 6 runs -> ${POOL_SNAPSHOT_PATH}`);
+} catch (error) {
+  console.log(
+    `Freshness binding deferred: ${error instanceof Error ? error.message : String(error)} `
+    + "(expected until production lexical/semantic/hybrid runs exist)",
+  );
+}
