@@ -1,0 +1,24 @@
+{
+  "name": "@openx402/example-self-facilitating-stellar-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx index.ts",
+    "pay": "tsx client.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@openx402/stellar-facilitator": "file:../..",
+    "@openx402/stellar-upto": "file:../../../packages/stellar-upto",
+    "@x402/core": "2.20.0",
+    "@x402/express": "2.20.0",
+    "@x402/fetch": "2.20.0",
+    "@x402/stellar": "2.20.0",
+    "express": "5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.3",
+    "tsx": "4.20.3",
+    "typescript": "5.9.2"
+  }
+}

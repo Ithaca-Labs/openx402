@@ -1,9 +1,30 @@
 {
   "name": "@openx402/stellar-facilitator",
   "version": "0.1.0",
-  "private": true,
+  "description": "Self-hostable Stellar x402 facilitator with an embeddable resource-server client",
   "license": "Apache-2.0",
   "type": "module",
+  "main": "./dist/src/embedded.js",
+  "types": "./dist/src/embedded.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/embedded.d.ts",
+      "import": "./dist/src/embedded.js"
+    },
+    "./embedded": {
+      "types": "./dist/src/embedded.d.ts",
+      "import": "./dist/src/embedded.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/src",
+    "migrations",
+    "config",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_LICENSES.md"
+  ],
   "engines": {
     "node": ">=22"
   },
@@ -60,6 +81,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@openx402/stellar-upto": "file:../packages/stellar-upto",
     "@types/express": "5.0.3",
     "@types/node": "24.2.0",
     "@types/pg": "8.15.5",

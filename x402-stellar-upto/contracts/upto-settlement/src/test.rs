@@ -6,7 +6,8 @@ use super::{
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype, panic_with_error, symbol_short,
     testutils::{
-        Address as _, AuthorizedFunction, AuthorizedInvocation, Ledger, MockAuth, MockAuthInvoke,
+        Address as _, AuthorizedFunction, AuthorizedInvocation, IssuerFlags, Ledger, MockAuth,
+        MockAuthInvoke,
     },
     token::{StellarAssetClient, TokenClient},
     Address, BytesN, Env, Error, IntoVal,
@@ -408,6 +409,8 @@ impl Fixture {
         let facilitator = Address::generate(&env);
         let admin = Address::generate(&env);
         let sac = env.register_stellar_asset_contract_v2(admin);
+        sac.issuer().set_flag(IssuerFlags::RevocableFlag);
+        sac.issuer().set_flag(IssuerFlags::ClawbackEnabledFlag);
         let token = sac.address();
         StellarAssetClient::new(&env, &token).mint(&payer, &1_000);
         let settlement_id = settlement_id(&env, 1);
@@ -975,6 +978,64 @@ fn ordinary_six_decimal_sep41_token_settles() {
     );
     assert_eq!(f.state(), (970, 30, 0, 0));
     assert_eq!(MockTokenClient::new(&f.env, &f.token).decimals(), 6);
+}
+
+#[test]
+fn deauthorized_sac_payer_fails_atomically() {
+    let f = Fixture::new();
+    let admin = StellarAssetClient::new(&f.env, &f.token);
+    admin.set_authorized(&f.payer, &false);
+    assert!(!admin.authorized(&f.payer));
+
+    let result = UptoSettlementClient::new(&f.env, &f.contract).try_settle(
+        &f.payer,
+        &f.payee,
+        &f.token,
+        &100,
+        &100,
+        &120,
+        &f.facilitator,
+        &f.settlement_id,
+        &None,
+        &30,
+    );
+
+    assert!(result.is_err());
+    assert_eq!(f.balances(), (1_000, 0, 0, 0));
+}
+
+#[test]
+fn deauthorized_sac_recipient_fails_atomically() {
+    let f = Fixture::new();
+    let admin = StellarAssetClient::new(&f.env, &f.token);
+    admin.set_authorized(&f.payee, &false);
+    assert!(!admin.authorized(&f.payee));
+
+    let result = UptoSettlementClient::new(&f.env, &f.contract).try_settle(
+        &f.payer,
+        &f.payee,
+        &f.token,
+        &100,
+        &100,
+        &120,
+        &f.facilitator,
+        &f.settlement_id,
+        &None,
+        &30,
+    );
+
+    assert!(result.is_err());
+    assert_eq!(f.balances(), (1_000, 0, 0, 0));
+}
+
+#[test]
+fn clawback_capable_sac_settles_without_special_casing() {
+    let f = Fixture::new();
+    assert_eq!(f.settle(30).actual, 30);
+
+    StellarAssetClient::new(&f.env, &f.token).clawback(&f.payee, &10);
+
+    assert_eq!(f.balances(), (970, 20, 0, 0));
 }
 
 #[test]

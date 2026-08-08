@@ -18,7 +18,7 @@ YAML is loaded from `FACILITATOR_CONFIG` (default `config/self-hosted.yaml`). Se
 | `max_request_bytes` | `262144` | JSON request limit. |
 | `max_concurrent_simulations` | `20` | Per-process simulation semaphore. |
 | `max_simulations_per_key_per_minute` | `30` | Database-backed API-key or IP rate. |
-| `max_sponsored_stroops_per_key_per_day` | `5000000` | Database-backed principal budget. |
+| `max_sponsored_stroops_per_key_per_day` | `20000000` | Database-backed principal budget; the development profile permits four measured worst-case upto simulations. |
 | `max_global_sponsored_stroops_per_day` | `200000000` | Database-backed global budget. |
 | `max_pending_settlements` | `1000` | Backpressure threshold for unresolved records. |
 | `channel_lease_ms` | `30000` | Cross-replica channel lease duration. |

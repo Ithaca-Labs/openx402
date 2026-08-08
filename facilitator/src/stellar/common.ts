@@ -254,6 +254,54 @@ export function sameTransfers(actual: TransferEvent[], expected: TransferEvent[]
   });
 }
 
+/**
+ * Validates an exact payment without assuming the token emits no other events.
+ * SEP-41 amounts are already atomic i128 values; token decimals never enter
+ * this comparison and no seven-decimal conversion is applied here.
+ */
+export function validateExactTransferEvents(
+  events: xdr.DiagnosticEvent[],
+  expected: TransferEvent & { asset: string },
+): VerifyResponse | undefined {
+  const transfers: TransferEvent[] = [];
+  for (const diagnostic of events) {
+    let isExpectedTokenTransfer = false;
+    try {
+      const event = diagnostic.event();
+      if (event.type().name !== "contract") continue;
+      const id = event.contractId();
+      if (!id) continue;
+      const contract = Address.fromScAddress(xdr.ScAddress.scAddressTypeContract(id)).toString();
+      if (contract !== expected.asset) continue;
+      const body = event.body().v0();
+      const topics = body.topics();
+      if (topics[0]?.switch().name !== "scvSymbol" || topics[0].sym().toString() !== "transfer") continue;
+      isExpectedTokenTransfer = true;
+      if (topics.length < 3) throw new Error("transfer event has fewer than three topics");
+      transfers.push({
+        from: String(scValToNative(topics[1]!)),
+        to: String(scValToNative(topics[2]!)),
+        amount: BigInt(scValToNative(body.data()) as bigint),
+      });
+    } catch (error) {
+      if (!isExpectedTokenTransfer) continue;
+      return invalid(
+        "invalid_exact_stellar_malformed_transfer_event",
+        expected.from,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+  if (!sameTransfers(transfers, [expected])) {
+    return invalid(
+      "invalid_exact_stellar_unexpected_balance_changes",
+      expected.from,
+      JSON.stringify(transfers, (_key, value) => typeof value === "bigint" ? value.toString() : value),
+    );
+  }
+  return undefined;
+}
+
 export async function buildSourceTransaction(
   server: rpc.Server,
   channelAddress: string,

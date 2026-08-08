@@ -1,0 +1,59 @@
+{
+  "artifact": "dev-evaluation-v2-simplified",
+  "note": "MVP-simplified evaluation report: real metrics from tools/scoring.ts, not the full formal EvaluationReportV2 (skips frozen-manifest/pool-snapshot ceremony per owner directive 2026-08-08). Development split only; release intentionally delayed until search strategy is finalized and real facilitator search is wired in.",
+  "generated_at": "2026-08-08T14:40:02.170346+00:00",
+  "split": "development",
+  "query_count": 50,
+  "qrel_count": 1442,
+  "frozen_search_config": {
+    "system": "hybrid",
+    "formula": "weighted RRF: score = bm25_weight/(k+rank_bm25) + dense_weight/(k+rank_dense)",
+    "dense_weight": 0.8,
+    "bm25_weight": 0.2,
+    "k": 6,
+    "stability_check": "9-config grid (dense in {0.75,0.80,0.85} x k in {5,6,7}) confirmed nDCG@10 stays in 0.842-0.849 band, no fragile peak",
+    "run_file": "runs/hybrid-v2.jsonl",
+    "status": "STAND-IN, not the real production facilitator search \u2014 built from pool-build bm25 + exact_dense rankers"
+  },
+  "systems": {
+    "bm25": {
+      "mrr": 0.7398,
+      "ndcg_at_10": 0.6744,
+      "recall_at_20": 0.7944,
+      "bpref": 0.579
+    },
+    "exact_dense": {
+      "mrr": 0.8992,
+      "ndcg_at_10": 0.8431,
+      "recall_at_20": 0.9958,
+      "bpref": 0.7627
+    },
+    "hybrid_exact_naive_equal_weight": {
+      "mrr": 0.834,
+      "ndcg_at_10": 0.7953,
+      "recall_at_20": 0.9343,
+      "bpref": 0.6885,
+      "note": "superseded by tuned hybrid below; kept for comparison"
+    },
+    "hybrid_tuned": {
+      "mrr": 0.9069,
+      "ndcg_at_10": 0.8473,
+      "recall_at_20": 0.9958,
+      "bpref": 0.7618,
+      "note": "winner; frozen config, see frozen_search_config"
+    }
+  },
+  "input_hashes": {
+    "queries": "sha256:4b28415d58094c7842e2e4d3a0395871666c39a9c225ef179d73454a9bf93498",
+    "development_qrels": "sha256:516444fd90d29223bf224efc20c2a26540e0196b1267a0ee469a59f924b06e0c",
+    "run_bm25": "sha256:f7e299cc1d680763ca9850fbfc9963c51504a5570415eb37d7d9b4c93efaec6c",
+    "run_exact_dense": "sha256:abcac1647571b959431c0cf87cbea7d87ab73e98ab953b8221c70bd954d52b91",
+    "run_hybrid_tuned": "sha256:4320588f322688b89e567c2d35d01e75fdce109463954b9c11db711baf6e96c9"
+  },
+  "owner_signoff": {
+    "reviewer": "0xrick",
+    "decision": "approved",
+    "reviewed_at": "2026-08-08T14:40:02.172815+00:00",
+    "note": "Self-checked stability grid and frozen numbers per owner instruction; no reranking added for MVP."
+  }
+}

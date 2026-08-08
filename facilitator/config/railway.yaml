@@ -110,7 +110,7 @@ limits:
   max_request_bytes: 262144
   max_concurrent_simulations: 20
   max_simulations_per_key_per_minute: 30
-  max_sponsored_stroops_per_key_per_day: "5000000"
+  max_sponsored_stroops_per_key_per_day: "20000000"
   max_global_sponsored_stroops_per_day: "200000000"
   max_pending_settlements: 1000
   channel_lease_ms: 30000
@@ -145,9 +145,10 @@ networks:
         max_inclusion_fee_stroops: "200"
         max_total_fee_stroops: "50200"
       upto:
-        max_resource_fee_stroops: "150000"
+        # 2026-08-08 no-hook enforcing samples: 4,880,733 to 4,882,220.
+        max_resource_fee_stroops: "5000000"
         max_inclusion_fee_stroops: "200"
-        max_total_fee_stroops: "150200"
+        max_total_fee_stroops: "5000200"
 
   # Pubnet code and configuration remain packaged, but startup stays fail-closed
   # until audited contract, sponsor keys, API auth and measured fees are set.

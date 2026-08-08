@@ -1,5 +1,5 @@
 import { Operation, scValToNative } from "@stellar/stellar-sdk";
-import type { Mechanism, NetworkRuntime, ParsedPayment, PreparedSettlement, RequestEnvelope, VerificationResult, ChannelSigner } from "../types.js";
+import type { Mechanism, NetworkRuntime, PreparedSettlement, RequestEnvelope, VerificationResult, ChannelSigner } from "../types.js";
 import {
   addressOfAuth,
   authInvocation,
@@ -15,19 +15,48 @@ import {
   parseInteger,
   preparedFrom,
   rpcServer,
-  sameTransfers,
   simulate,
-  tokenTransfers,
   transactionOperation,
   validateAuthExpiration,
   validateEnvelope,
+  validateExactTransferEvents,
   validateFee,
 } from "./common.js";
+import { X402StellarExactVerifier, type ExactProtocolVerifier } from "./upstream-exact.js";
+
+// @x402/stellar 2.20.0 over-rejects unrelated contract events before it
+// reaches auth validation. These two cases may continue only into the complete
+// local hardening path, which performs signed-auth and exact-transfer checks.
+const UPSTREAM_EVENT_COMPATIBILITY_REASONS = new Set([
+  "invalid_exact_stellar_payload_event_not_transfer",
+  "invalid_exact_stellar_payload_event_wrong_asset",
+]);
 
 export class ExactMechanism implements Mechanism {
+  constructor(private readonly protocol: ExactProtocolVerifier = new X402StellarExactVerifier()) {}
+
   async verify(request: RequestEnvelope, runtime: NetworkRuntime): Promise<VerificationResult> {
     const structural = validateEnvelope(request, runtime, "exact", "verify");
     if (structural) return { response: structural };
+    let upstream;
+    try {
+      upstream = await this.protocol.verify(request, runtime);
+    } catch (error) {
+      return {
+        response: invalid(
+          "unexpected_verify_error",
+          undefined,
+          error instanceof Error ? error.message : String(error),
+        ),
+      };
+    }
+    if (!upstream.isValid && !UPSTREAM_EVENT_COMPATIBILITY_REASONS.has(upstream.invalidReason ?? "")) {
+      return {
+        response: upstream.invalidReason
+          ? upstream
+          : invalid("unexpected_verify_error", upstream.payer, upstream.invalidMessage),
+      };
+    }
     const passphrase = networkPassphrase(runtime.config.id);
     const transaction = parseClientTransaction(request.paymentPayload, passphrase);
     if (isVerifyResponse(transaction)) return { response: transaction };
@@ -40,6 +69,9 @@ export class ExactMechanism implements Mechanism {
     const from = String(scValToNative(invocation.args[0]!));
     const to = String(scValToNative(invocation.args[1]!));
     const amount = BigInt(scValToNative(invocation.args[2]!) as bigint);
+    if (upstream.isValid && upstream.payer !== from) {
+      return { response: invalid("invalid_exact_stellar_upstream_payer_mismatch", from) };
+    }
     if (runtime.unsafeInternalAddresses.has(from)) return { response: invalid("invalid_exact_stellar_facilitator_is_payer", from) };
     if (to !== request.paymentRequirements.payTo) return { response: invalid("invalid_exact_stellar_wrong_recipient", from) };
     const required = parseInteger(request.paymentRequirements.amount);
@@ -55,15 +87,9 @@ export class ExactMechanism implements Mechanism {
     const server = rpcServer(runtime);
     const expiration = await validateAuthExpiration(auth, server, request.paymentRequirements.maxTimeoutSeconds);
     if (expiration) return { response: { ...expiration, payer: from } };
-    const recordingTx = await buildSourceTransaction(
-      server,
-      runtime.simulationSource.address,
-      operationWithAuth(operation, []),
-      passphrase,
-      request.paymentRequirements.maxTimeoutSeconds,
-    );
-    const recording = await simulate(server, recordingTx, "record");
-    if (isVerifyResponse(recording)) return { response: { ...recording, payer: from } };
+    // The canonical verifier above supplies the record-mode simulation. This
+    // enforcing pass is the operator hardening gate for custom __check_auth
+    // accounts and token-side behavior.
     const enforcingTx = await buildSourceTransaction(
       server,
       runtime.simulationSource.address,
@@ -75,10 +101,8 @@ export class ExactMechanism implements Mechanism {
     if (isVerifyResponse(enforcing)) return { response: { ...enforcing, payer: from } };
     const feeError = validateFee(enforcing, runtime.config.exactFee, from);
     if (feeError) return { response: feeError };
-    const transfers = tokenTransfers(enforcing.events, invocation.contract);
-    if (!sameTransfers(transfers, [{ from, to, amount }])) return {
-      response: invalid("invalid_exact_stellar_unexpected_balance_changes", from, transferSummary(transfers)),
-    };
+    const transferError = validateExactTransferEvents(enforcing.events, { asset: invocation.contract, from, to, amount });
+    if (transferError) return { response: { ...transferError, payer: from } };
     return {
       response: { isValid: true, payer: from },
       parsed: { scheme: "exact", network: runtime.config.id, payer: from, maximum: amount, actual: amount },
@@ -111,12 +135,13 @@ export class ExactMechanism implements Mechanism {
     const feeError = validateFee(enforcing, runtime.config.exactFee, verified.parsed.payer);
     if (feeError) return feeError;
     const invocation = operationInvocation(operation)!;
-    const transfers = tokenTransfers(enforcing.events, invocation.contract);
-    if (!sameTransfers(transfers, [{
+    const transferError = validateExactTransferEvents(enforcing.events, {
+      asset: invocation.contract,
       from: verified.parsed.payer,
       to: request.paymentRequirements.payTo,
       amount: verified.parsed.actual,
-    }])) return invalid("invalid_exact_stellar_unexpected_balance_changes", verified.parsed.payer, transferSummary(transfers));
+    });
+    if (transferError) return { ...transferError, payer: verified.parsed.payer };
     const finalized = finalizeSponsoredTransaction({ sourceTransaction, enforcing, channel, sponsor: runtime.sponsor, passphrase });
     return preparedFrom(verified.parsed, channel, finalized, enforcing);
   }
@@ -124,10 +149,6 @@ export class ExactMechanism implements Mechanism {
 
 function argsXdr(args: readonly { toXDR(): Buffer }[]): string {
   return Buffer.concat(args.map(arg => arg.toXDR())).toString("base64");
-}
-
-function transferSummary(transfers: Array<{ from: string; to: string; amount: bigint }>): string {
-  return JSON.stringify(transfers, (_key, value) => typeof value === "bigint" ? value.toString() : value);
 }
 
 function operationInvocationFromAuth(entry: NonNullable<Operation.InvokeHostFunction["auth"]>[number]):

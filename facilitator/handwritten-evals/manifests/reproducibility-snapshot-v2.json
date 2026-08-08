@@ -1,0 +1,15 @@
+{
+  "artifact": "reproducibility-snapshot-v2-simplified",
+  "note": "MVP-simplified reproducibility record: file hashes only, not the full formal pool-snapshot binding schema. See owner directive 2026-08-08.",
+  "generated_at": "2026-08-08T14:30:26.190931Z",
+  "file_hashes": {
+    "catalog": "sha256:c444bfc90f3d134a91df0ce79c012f013c5685b222765ba99200428097973672",
+    "sidecars": "sha256:2471c31feb21b8de1899c16ebae15137e1791c04cdaccaab638b8d639d62c87c",
+    "queries": "sha256:4b28415d58094c7842e2e4d3a0395871666c39a9c225ef179d73454a9bf93498",
+    "pool": "sha256:db11a12a0293648881cd691fdb83fe041ba21c741df246ee31c7cd9c632eae6c",
+    "development_qrels": "sha256:516444fd90d29223bf224efc20c2a26540e0196b1267a0ee469a59f924b06e0c",
+    "run_bm25": "sha256:f7e299cc1d680763ca9850fbfc9963c51504a5570415eb37d7d9b4c93efaec6c",
+    "run_exact_dense": "sha256:abcac1647571b959431c0cf87cbea7d87ab73e98ab953b8221c70bd954d52b91",
+    "run_hybrid_exact": "sha256:bd1bc36f8b439c733874609cd19ee214e01005008e06092b5eb913674e53ee32"
+  }
+}

@@ -117,7 +117,9 @@ limits:
   max_request_bytes: 262144
   max_concurrent_simulations: 20
   max_simulations_per_key_per_minute: 30
-  max_sponsored_stroops_per_key_per_day: "5000000"
+  # Current upto enforcing simulations are about 4.881M stroops. This permits
+  # four such development settlements per caller before the global backstop.
+  max_sponsored_stroops_per_key_per_day: "20000000"
   max_global_sponsored_stroops_per_day: "200000000"
   max_pending_settlements: 1000
   channel_lease_ms: 30000
@@ -131,7 +133,9 @@ networks:
     horizon_url: https://horizon-testnet.stellar.org
     friendbot_url: https://friendbot.stellar.org
     development_auto_fund: true
-    # These ceilings cover the measured testnet profiles in tests/live/testnet.ts.
+    # Repeated 2026-08-08 no-hook enforcing measurements were 4,880,733,
+    # 4,880,871, and 4,882,220 stroops. The 5M ceiling is the next measured-profile
+    # bound; production operators must replace it from their own p99 sample.
     fee_ceilings_calibrated: true
     channel_account_count: 3
     channel_min_balance_stroops: "50000000"
@@ -153,9 +157,9 @@ networks:
         max_inclusion_fee_stroops: "200"
         max_total_fee_stroops: "50200"
       upto:
-        max_resource_fee_stroops: "150000"
+        max_resource_fee_stroops: "5000000"
         max_inclusion_fee_stroops: "200"
-        max_total_fee_stroops: "150200"
+        max_total_fee_stroops: "5000200"
 
   stellar:pubnet:
     enabled: false

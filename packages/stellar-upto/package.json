@@ -1,0 +1,52 @@
+{
+  "name": "@openx402/stellar-upto",
+  "version": "0.1.0",
+  "description": "Upstream-shaped Stellar upto scheme client and server for x402 v2",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "UPSTREAM.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "licenses": "node scripts/check-licenses.mjs",
+    "prepack": "npm run build && npm test"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "16.2.0",
+    "@x402/core": "2.20.0",
+    "@x402/extensions": "2.20.0",
+    "@x402/stellar": "2.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.2.0",
+    "typescript": "5.9.2",
+    "vitest": "3.2.7"
+  }
+}

@@ -53,11 +53,11 @@ export class FacilitatorCore {
   }
 
   supported(): {
-    kinds: Array<{ x402Version: number; scheme: string; network: string; extra: { areFeesSponsored: true } }>;
+    kinds: Array<{ x402Version: number; scheme: string; network: StellarNetwork; extra: { areFeesSponsored: true } }>;
     extensions: string[];
     signers: Record<string, string[]>;
   } {
-    const kinds: Array<{ x402Version: number; scheme: string; network: string; extra: { areFeesSponsored: true } }> = [];
+    const kinds: Array<{ x402Version: number; scheme: string; network: StellarNetwork; extra: { areFeesSponsored: true } }> = [];
     const signers = new Set<string>();
     for (const [network, runtime] of this.registry.networks) {
       kinds.push({ x402Version: 2, scheme: "exact", network, extra: { areFeesSponsored: true } });

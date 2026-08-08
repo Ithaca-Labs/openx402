@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-08T13:44:08.688Z",
+  "generated_at": "2026-08-08T14:39:26.085Z",
   "status": "blocked",
   "counts": {
     "catalog": 500,
@@ -7,7 +7,7 @@
     "labeled": 100,
     "distractors": 400,
     "queries": 100,
-    "pool": 2891,
+    "pool": 3055,
     "qrels": 1442,
     "calibration": 2891
   },
@@ -90,7 +90,7 @@
       "status": "not_started",
       "evidence": [
         "3/3 pool-build systems",
-        "2891 pool rows",
+        "3055 pool rows",
         "snapshot missing/stale"
       ],
       "blockers": [
@@ -215,17 +215,17 @@
         "3/3 pool-build systems",
         "exact coverage cannot read /home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/runs/lexical-v2.jsonl: ENOENT: no such file or directory, open '/home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/runs/lexical-v2.jsonl'",
         "pool snapshot /home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/pool/pool-snapshot-v2.json: ENOENT: no such file or directory, open '/home/soumy/x402-stellar-DIY/facilitator/handwritten-evals/pool/pool-snapshot-v2.json'",
-        "development pair coverage complete",
-        "sealed release pair coverage complete"
+        "development pair coverage incomplete",
+        "sealed release pair coverage incomplete"
       ]
     },
     {
       "id": "unpooled-audit",
       "requirement": "Unpooled audit performed and relevance rate reported",
-      "status": "blocked",
+      "status": "pass",
       "evidence": [
         "unpooled audit approved",
-        "0 audit pool pair(s)",
+        "164 audit pool pair(s)",
         "source hash checked"
       ]
     },
@@ -311,14 +311,14 @@
     {
       "id": "owner-review",
       "requirement": "Owner reviewed every resource, query, qrel, adjudication, and correction",
-      "status": "pass",
+      "status": "blocked",
       "evidence": [
         "resources reviewed 500/500",
         "queries reviewed 100/100",
         "development qrels reviewed 1442/1442",
         "sealed release qrels 1449",
         "calibration reviewed 2891",
-        "owner decision report valid and current"
+        "owner decision report invalid/stale"
       ]
     },
     {
@@ -357,13 +357,13 @@
   "blockers": [
     "holdout-ledger",
     "pool",
-    "unpooled-audit",
     "judged-at-k",
     "metric-contract",
     "provenance",
     "isolation",
     "blindness",
     "agreement",
+    "owner-review",
     "correction-rates",
     "significance",
     "bm25",
