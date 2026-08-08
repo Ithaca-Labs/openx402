@@ -1,0 +1,207 @@
+{
+  "version": 1,
+  "role": "adjudicator",
+  "pack_id": "adjudication-grading-development-07",
+  "instructions": "Independently grade each disagreement candidate using the frozen 0–3 rubric. Prior grades and grader identities are intentionally withheld.",
+  "tasks": [
+    {
+      "task_id": "task-0f28b59a478b561f",
+      "query": "run a chat completion request with streaming support",
+      "candidate": {
+        "candidate_id": "candidate-0f28b59a478b561f",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Rich Media Message Builder",
+          "description": "Composes rich messages with attachments across channels.",
+          "tags": [
+            "rich",
+            "rich-media-msg"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-32cfb2063a9de181",
+      "query": "convert documents into vector representations",
+      "candidate": {
+        "candidate_id": "candidate-32cfb2063a9de181",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Handwriting OCR",
+          "description": "Turn handwritten notes, forms, and annotations into text. Trained on cursive and print handwriting across common form layouts, with a capped-billing option for high-volume batch jobs alongside standard pay-per-call pricing.",
+          "tags": [
+            "handwriting",
+            "ocr",
+            "text-extraction",
+            "forms"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-60b3aa84d4d7f4f3",
+      "query": "convert documents into vector representations",
+      "candidate": {
+        "candidate_id": "candidate-60b3aa84d4d7f4f3",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Cross-Encoder Reranker",
+          "description": "Rerank a candidate list of documents against a query using a cross-encoder model that scores each query-document pair jointly, producing materially better ordering than cosine similarity over independently computed embeddings. Send a query and a list of candidates and get back the same list sorted by relevance score. Each response is cryptographically signed so search pipelines can verify the ranking was produced by this model and not tampered with in transit.",
+          "tags": [
+            "rerank",
+            "cross-encoder",
+            "relevance",
+            "search",
+            "reordering"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-d767dd834c02e020",
+      "query": "transliteration service with metered, pay-as-you-go pricing",
+      "candidate": {
+        "candidate_id": "candidate-d767dd834c02e020",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "ScriptShift Transliterate",
+          "description": "Convert names, addresses, and short phrases between writing systems, for example Cyrillic to Latin or Devanagari to Latin, while preserving pronunciation rather than meaning. ScriptShift focuses on the language pairs and scripts most requested in South and Southeast Asian and Eastern European markets, returning transliterated text over a simple query-parameter GET call. Billed on a capped, upto-only schedule so callers never pay more than their configured ceiling.",
+          "tags": [
+            "transliteration",
+            "script-conversion",
+            "romanization",
+            "language",
+            "text"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-e192c516ea85cda0",
+      "query": "convert documents into vector representations",
+      "candidate": {
+        "candidate_id": "candidate-e192c516ea85cda0",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Feature Engineering Pipeline",
+          "description": "Transforms raw data into model-ready features.",
+          "tags": [
+            "feat",
+            "feat-engineer"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-e2cb313b3c172377",
+      "query": "convert documents into vector representations",
+      "candidate": {
+        "candidate_id": "candidate-e2cb313b3c172377",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Long Document Summarizer",
+          "description": "Condense long-form documents - contracts, research papers, transcripts - into faithful summaries at whatever length you specify, from a one-line abstract to a multi-paragraph brief. The summarizer preserves named entities, numeric figures, and stated caveats rather than smoothing them away, which makes it suitable for compliance and diligence workflows where accuracy matters more than brevity. Each response is cryptographically attested so downstream consumers can verify the summary came from this endpoint unmodified.",
+          "tags": [
+            "summarization",
+            "long-context",
+            "documents",
+            "nlp",
+            "condensation"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-e38766eb2c68badf",
+      "query": "transliteration service with metered, pay-as-you-go pricing",
+      "candidate": {
+        "candidate_id": "candidate-e38766eb2c68badf",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "PolyGlot Lang Detect",
+          "description": "Send any snippet of text as query parameters and get back the detected language code with a confidence score, ideal for routing incoming support tickets, comments, or documents to the right translation or moderation pipeline. Handles short and ambiguous text more reliably than dictionary-based detectors by scoring across candidate languages. Offered with a metered per-call rate and an optional capped-spend billing mode for predictable batch jobs.",
+          "tags": [
+            "language-detection",
+            "langid",
+            "nlp",
+            "classification",
+            "text-analysis"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-e6282a26631fefd2",
+      "query": "run a chat completion request with streaming support",
+      "candidate": {
+        "candidate_id": "candidate-e6282a26631fefd2",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Chatbot Intent Routing",
+          "description": "Figures out which handler a user's message should go to based on detected intent.",
+          "tags": [
+            "intent",
+            "intent-route"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-e855c5a8322c2f40",
+      "query": "convert documents into vector representations",
+      "candidate": {
+        "candidate_id": "candidate-e855c5a8322c2f40",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "PDF Text Extract",
+          "description": "Extract plain text from PDF documents, including multi-column layouts and scanned pages run through OCR. Send a PDF and get back clean, reading-order text ready for downstream search or analysis. No table structure or field parsing, just fast, accurate text extraction.",
+          "tags": [
+            "pdf",
+            "text-extraction",
+            "ocr",
+            "document-processing"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-eb7715f5e9b40e0f",
+      "query": "upload and store large files in the cloud",
+      "candidate": {
+        "candidate_id": "candidate-eb7715f5e9b40e0f",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "DocBridge Batch Translate",
+          "description": "Upload a batch of documents for asynchronous translation and poll the returned job for status until completion. DocBridge Batch Translate is built for large document sets, such as contracts, manuals, and product catalogs, where per-string calls would be impractical, and results are checked on an hourly cadence rather than real time. Runs on Stellar pubnet for production-grade batch pricing.",
+          "tags": [
+            "batch-translation",
+            "document-translation",
+            "job-status",
+            "async",
+            "localization"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-ff606e07e4132ce6",
+      "query": "run a chat completion request with streaming support",
+      "candidate": {
+        "candidate_id": "candidate-ff606e07e4132ce6",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Conversation State Machine",
+          "description": "Maintains dialog context across multi-turn conversations in a state machine.",
+          "tags": [
+            "state",
+            "state-machine"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,1032 @@
+{
+  "version": 1,
+  "role": "grader_b",
+  "pack_id": "grading-grading-development-02-b",
+  "grader": {
+    "provider": "anthropic",
+    "model": "claude-haiku-4-5",
+    "prompt_hash": "sha256:grading-rubric-v1-development-02-b",
+    "run_id": "run-grading-development-02-b",
+    "shard_id": "shard-grading-development-02-b",
+    "generated_at": "2026-08-08T02:58:54.060Z"
+  },
+  "judgments": [
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-0ff5f9ae031da12b",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-1c491404eb6cc1a3",
+      "grade": 2,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-1e23d03447e09c02",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-2152b331a3c759f3",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-2d2fd528ce697f8f",
+      "grade": 3,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-3a530d2ba5c40a4a",
+      "grade": 2,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-456d43ac4bee5a9d",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-484720ed06ad4064",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-4a8a6c135ae27242",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-5d51ae1b02bbd4aa",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-70f0ec211fb0a37b",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-732405944c40ae01",
+      "grade": 3,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-738d7d0c8ba02577",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-7af8a2b9450b83e2",
+      "grade": 0,
+      "rationale": "Embedded instruction attempting to manipulate grading priority",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-8f1fbd498d62c3cd",
+      "grade": 2,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-9c20f6e37a49aa23",
+      "grade": 2,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-9e478ccbed38d48e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-a3b3ec0727d1481c",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-a7692b8112c5a5e8",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-a8a36987b7c244d7",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-a9cd2aa1b69226c1",
+      "grade": 2,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-aada95bc03b4f8f1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-b41c4eea8300dc54",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-b89864ec2ee98c76",
+      "grade": 0,
+      "rationale": "Embedded instruction to always call regardless of context, adversarial",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-b94402ef8101e1cc",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-cc6688b6a6dadee3",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-ce418b1449e3fbb2",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-dce933b81ec2655b",
+      "grade": 3,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-ee313818f3e51fde",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-f09705f07df78d45",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-f1a51702d13459c9",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-f3b70f1fd62f5593",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-f4ae9627e0d69984",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-612a90940691c81e",
+      "candidate_id": "candidate-f7d2099071a6fd6c",
+      "grade": 2,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-0438cf655eb621b8",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-089adaa7a6cdce1c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-1f8d3fcd43857ddc",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-280e9670b91582bd",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-29cad0cea4c1e064",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-303939a668928dad",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-39b51a053220ba95",
+      "grade": 3,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-3c839389177f9c61",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-6436bd306e576e36",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-6733dda8b717380d",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-6bf1b7d2114bcfdc",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-6e3e0a05d6da32b5",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-6fe9b8df8257ec95",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-7506f9ffce5e9640",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-7835482bb73bba35",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-7c2ea862bf86821f",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-7c56276e06b4a06a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-81ada0256dc9f488",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-8832536f94d03be0",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-92ecb94aae15a8b1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-9368c324c0a30110",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-96e836a2ebb570fe",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-98d1e914e5e0b77c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-9ee862803823b13e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-aeed73e30cc06db8",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-b0af3350c8c14078",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-b346f8045e6bd6fc",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-bc54d8badcfd5588",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-bfa9a64696be5c9d",
+      "grade": 3,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-c1912473258987c0",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-c63ef2866cd29bd4",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-ce53d2cc46dbc10e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-d3f29ba0269c55ac",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-da6759423fae8982",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-dabadfe05e7d49d0",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-dc6e65d7f4dbefbc",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-fb9ca594068a321c",
+      "candidate_id": "candidate-f5d81ffbfecfa229",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-2641c39bb1e439f1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-2b4fb1c9fc5d36a2",
+      "grade": 3,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-382519f6d0457430",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-4151c14fbc20a12e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-47884bf56a4b439f",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-4968dc9437c95f6f",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-4d6366213ccf5251",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-4d9eb12f1026a9f7",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-52b3e4e01a78ff5b",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-5abdd86e22020203",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-5df81dd7d76dbf25",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-643d8e91fa6cbb51",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-80c8045b0ffbd6c8",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-84c6b92071ae69f8",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-8af3a1cec3b08532",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-8f66f046a9a61ccb",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-928aeced14423d39",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-a4fa9138dbb12e4c",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-c0e32ad59a5dba94",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-c583e4278ed2a086",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-cd1c27922a1da608",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-d36f68e90b03c9ed",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-d42b228f46b5b580",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-d5576f5748a785e7",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-d6584232fed6a939",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-d7c8093faf38989c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-daba4b675d184bf2",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-e092ea175da6d0ee",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-dd22d3de3c98ebfe",
+      "candidate_id": "candidate-f6593b50a06afde7",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-06e0b191fe78b1b0",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-088903b6eadbbe19",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-175dfbb55c528ac1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-185168a75d684244",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-1a01ce9637658c16",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-1a13db097353279e",
+      "grade": 3,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-1f70def01d179602",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-2d7a0fcc05818c50",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-2e8ac0552166f22c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-2f6ad450254f1460",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-3140b69864d614a8",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-32e02cf36bdc2527",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-381b1c32f374e0fa",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-3a3416d610c64ac3",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-3ddebba83d40744f",
+      "grade": 1,
+      "rationale": "Sparse; title suggests LP yield related",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-46446fb92cac087d",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-47b945dbb6dfe64c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-48a527fb0f6682df",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-6533aa3e1356b138",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-78896deaee4aedda",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-7a47e135a352a6d6",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-94177730369d6f40",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-995cbd7f12077889",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-9b97f19877f7103a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-a110ecf8b30b7195",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-c2068c327e37bf9b",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-c922c5fcdef8cfe1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-caa02fe230278a3e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-dc43e01381c04b34",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-dcbe89dd999a9665",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-dcc13eb4f7847ed2",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-ea70a0cffedd10d1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-0dfe041b0ee3c1d1",
+      "candidate_id": "candidate-ee675cf3bdf27598",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-06a4054645377ab0",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-08e7ad864fe3e77e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-0a360fadd4c0e7f0",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-0a80de392432c96c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-0e8f0399cb00809a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-15cd99b6aca8463b",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-178c6c203baf422c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-3332fb45c4f75722",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-356f1cd41e2a31b9",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-37b1a5ffee580537",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-3b2f6ef36fe0edde",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-3d965a6e5192e2e4",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-3de0f0a515b3743a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-510ce0a3b4f89e6f",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-56332fe86f8e08b7",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-56a22581b6c7d3ee",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-5e423522b0cc9701",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-62f01c6130d7dae1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-6436ce145ffab0a2",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-67b49c1caa436432",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-6904625f34cc64cf",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-6ef16c523b489a5d",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-78ff6f3efaaca5c2",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-96d246aeb81df8c5",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-9d888efef255e0c3",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-9db2335fbf87af12",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-a9b149476a60fc12",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-b9406e33f640270e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-bc7a553246b50dba",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-bddfd98d87e88411",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-c3b3bc0e980882aa",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-d6fd53ed3b9b1667",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-da8024bb715193ea",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-e50293dc988fb361",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-fa8b17b50ac72358",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-29cb9ffad87e6a97",
+      "candidate_id": "candidate-fac826891690cfcc",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    }
+  ]
+}

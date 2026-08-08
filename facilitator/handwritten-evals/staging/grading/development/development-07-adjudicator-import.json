@@ -1,0 +1,79 @@
+[
+  {
+    "task_id": "task-0f28b59a478b561f",
+    "candidate_id": "candidate-0f28b59a478b561f",
+    "grade": 0,
+    "rationale": "Composes rich messages across channels; doesn't run chat completions or support streaming. Entirely different capability.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-32cfb2063a9de181",
+    "candidate_id": "candidate-32cfb2063a9de181",
+    "grade": 0,
+    "rationale": "Converts handwritten notes to text via OCR; doesn't create vector embeddings. Text extraction is not vectorization.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-60b3aa84d4d7f4f3",
+    "candidate_id": "candidate-60b3aa84d4d7f4f3",
+    "grade": 0,
+    "rationale": "Reranks existing document candidates; doesn't convert documents to vector representations. Ranking ≠ embedding.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-d767dd834c02e020",
+    "candidate_id": "candidate-d767dd834c02e020",
+    "grade": 2,
+    "rationale": "Right capability (transliteration) but billing mismatch: capped upto-only schedule differs from metered pay-as-you-go pricing model.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-e192c516ea85cda0",
+    "candidate_id": "candidate-e192c516ea85cda0",
+    "grade": 1,
+    "rationale": "ML feature engineering on raw data; same domain (data transformation) but wrong capability—not document vectorization/embedding.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-e2cb313b3c172377",
+    "candidate_id": "candidate-e2cb313b3c172377",
+    "grade": 0,
+    "rationale": "Summarizes long documents into condensed versions; doesn't convert to vector representations. Summarization ≠ vectorization.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-e38766eb2c68badf",
+    "candidate_id": "candidate-e38766eb2c68badf",
+    "grade": 0,
+    "rationale": "Detects language with confidence scores; doesn't transliterate between writing systems. Different NLP capability entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-e6282a26631fefd2",
+    "candidate_id": "candidate-e6282a26631fefd2",
+    "grade": 0,
+    "rationale": "Routes messages to handlers based on intent; doesn't run chat completions or support streaming. Different capability.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-e855c5a8322c2f40",
+    "candidate_id": "candidate-e855c5a8322c2f40",
+    "grade": 0,
+    "rationale": "Extracts plain text from PDFs via OCR; doesn't embed documents into vector representations. Text extraction ≠ vectorization.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-eb7715f5e9b40e0f",
+    "candidate_id": "candidate-eb7715f5e9b40e0f",
+    "grade": 1,
+    "rationale": "Uploads documents to cloud for batch translation; same domain (cloud document handling) but wrong capability—translation, not storage.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-ff606e07e4132ce6",
+    "candidate_id": "candidate-ff606e07e4132ce6",
+    "grade": 0,
+    "rationale": "Maintains multi-turn conversation state; doesn't run chat completions or support streaming. Different capability entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  }
+]

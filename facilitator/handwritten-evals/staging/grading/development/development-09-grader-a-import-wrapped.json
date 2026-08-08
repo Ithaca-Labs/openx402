@@ -1,0 +1,944 @@
+{
+  "version": 1,
+  "role": "grader_a",
+  "pack_id": "grading-grading-development-09-a",
+  "grader": {
+    "provider": "anthropic",
+    "model": "claude-haiku-4-5",
+    "prompt_hash": "sha256:grading-rubric-v1-development-09-a",
+    "run_id": "run-grading-development-09-a",
+    "shard_id": "shard-grading-development-09-a",
+    "generated_at": "2026-08-08T02:58:54.060Z"
+  },
+  "judgments": [
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-07f95b13a502f947",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-0f1dcea9ab724022",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-1cb3e7b63f69cd85",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-28da7af3342d9349",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-3553122fd8afdde8",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-4cf2ac8c1164275a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-64ea17e3523fcffd",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-6f77ab126d5c9794",
+      "grade": 3,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-74a5cfc6ac907793",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-799e13315c439214",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-7b0e9de87239b527",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-7e88836d5ffac14b",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-7fa4cb2b70a8ce55",
+      "grade": 3,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-8668c45db65f1810",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-86a0afced9301fe2",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-8c83f84c34b27559",
+      "grade": 2,
+      "rationale": "Custom timeseries aggregation could support protocol metrics but lacks protocol-specific focus",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-94dd353283af00da",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-9962d6e3a2e0ae69",
+      "grade": 2,
+      "rationale": "TVL is important protocol metric but not same as usage activity/adoption trends",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-9fd61ca220e8f940",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-a2bfff30d9cdaa87",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-aa734607a0e018c7",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-abbf4017b5ecf1cc",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-ad584da7be54fab8",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-b2cc9b1ff5fef65b",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-c1194dc5a5577b2b",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-cb0ae696503d9f3d",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-cd3f44021618eb44",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-d3331475991787fc",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-da794935a20388eb",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-e5ee78f6a9d5d5be",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-e8f120c281ae5e52",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-e9f78cbcb8d635c2",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-efc7ea846ae9fa18",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-f35be9c52b7ea93e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-f7f9dee531d35f49",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-a3c7171d72019701",
+      "candidate_id": "candidate-fee1983a2ec29b64",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-07070b6acd73207e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-0f1cb935674dddf7",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-178ee3a62c9da51c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-23db0513e45ae1dc",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-24224929fe826116",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-2a1dc84bc00cf0d9",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-345225b42492ad23",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-3bdb1da30ff4a8e2",
+      "grade": 0,
+      "rationale": "Reverse geocoding does opposite: takes coordinates, returns names",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-494ce63ad5c4d45e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-4c0684a9fd438c05",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-4f04f8ee49f49145",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-5186fa716582a43e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-527f311851c99cb5",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-5c58428667408eef",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-61b69b9e116275a3",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-6275c7207967d903",
+      "grade": 1,
+      "rationale": "Takes coordinates as input, not names; returns POI nearby",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-6351ce73491c35d2",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-6599ed770a1ffd06",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-6a116aa61f848919",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-6a3e677f4024750d",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-6fbf449abcaf744a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-757b895ab3fe87da",
+      "grade": 3,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-7a3a6bac9c4224d6",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-7f4e0bd5239f45c8",
+      "grade": 1,
+      "rationale": "Directory of locations but not geocoding service",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-88ee4738a00f256b",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-8a30e3e8562cb74a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-9446b25660d05eea",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-a2a767bc32ccdd94",
+      "grade": 1,
+      "rationale": "Directory of roasters but not geocoding API",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-ae34f0e2b9fa29b3",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-b2e1b69649d26d55",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-c17bb3bad92752c9",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-d109bdc6e5938f54",
+      "grade": 1,
+      "rationale": "Attractions directory but not geocoding service",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-f0b97e6756c03b56",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-ee6ce8abe58c01e6",
+      "candidate_id": "candidate-f4e8da1a047c90d6",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-04bc53d455d3dcf4",
+      "grade": 1,
+      "rationale": "Specialized for tables, not general PDF text extraction",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-11d3425e82bf4d62",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-1e986dff35db00f2",
+      "grade": 1,
+      "rationale": "Specialized for invoices, not general PDF text extraction",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-1e9a506166208b39",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-1fd9e3dc777b9cc7",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-285a26b1991365eb",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-30404880c8ff96d9",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-33fa6b006992ec41",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-3df78f14866092f9",
+      "grade": 1,
+      "rationale": "Verifies address docs, not general PDF text extraction",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-53aa44b4a8e4f1ce",
+      "grade": 1,
+      "rationale": "Verifies ID docs, not general PDF text extraction",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-67a859560de2b19c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-6bef712e0594f3ce",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-7c5f3c80467a4d2c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-8f8c1a174755f451",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-920ee88827b17d38",
+      "grade": 2,
+      "rationale": "Handles OCR for handwritten content but not comprehensive PDF extraction",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-980c954eba33b130",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-9c3ab45a800b9f81",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-a3122d397ec4ee35",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-b2134f5e9efed965",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-c0e3611139b5d8b3",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-c5210f2647351f92",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-ccef7f692e420711",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-da0227b51d93c114",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-e00209bc01e507be",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-e3468df07760fd14",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-e41a7733beb182af",
+      "grade": 1,
+      "rationale": "Classifies pages but does not extract text",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-e9a8f645af76d153",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-ef9b1400ae09b10a",
+      "grade": 0,
+      "rationale": "Adversarial listing with manipulative ranking language",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-f2b58e992e008464",
+      "grade": 3,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-f7729584abf51287",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-d17e8655ab53d5cd",
+      "candidate_id": "candidate-f77e56583deb8e51",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-07d5fabf095526e9",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-0b200d1fec5dcee0",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-0f8e0410580792d4",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-10d17838fb95774d",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-11832831555fc3d2",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-2377d2be3a62cb82",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-23991409132da4c2",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-262e4bd83fe0bd55",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-26cbbcf20c2bc3c2",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-29c87873e9c1cd8b",
+      "grade": 1,
+      "rationale": "Name screening but not identity document verification",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-30b0f99042ec2e4a",
+      "grade": 0,
+      "rationale": "Adversarial listing with manipulative ranking language",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-3de0043349ad2e26",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-420c6e677062852b",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-431d2a16b50c1d40",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-4a01bc4e25099661",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-4b5e3bb84d2a01cc",
+      "grade": 1,
+      "rationale": "Checks address documents, not identity document verification",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-530addd0024589b3",
+      "grade": 1,
+      "rationale": "Polls verification status but does not perform verification",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-728bc0728397aa27",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-7daae4297c097e32",
+      "grade": 1,
+      "rationale": "Compliance screening, not identity document verification",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-7eccd2ee7c51e881",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-93d28ee55c578121",
+      "grade": 1,
+      "rationale": "Liveness check for selfies, not identity document verification",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-97626b87eb48fe5b",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-a687b19eea43bca6",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-a6ad689a6e6d2624",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-aac29d2a932987f3",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-b7cdbf6a71a25f12",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-b81872a8203499ff",
+      "grade": 1,
+      "rationale": "Classifies document pages, not verification",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-bb9a5cb4c9ad1794",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-c4eafa37e27ec44a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-c58c1f7010ac1627",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-cd3a09bfc48a4162",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-de4f827e5fcaba52",
+      "grade": 3,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-e0bd491f0ca20f16",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-671aa77f4d9ca0df",
+      "candidate_id": "candidate-fc3ac32d0ec75cf1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-063ffae9a94812ff",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-11cc8f08d0f80cf8",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-13d8940ff3a1a696",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-16b95085d33867a9",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-1c644025f7db58bf",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-3a2f26638c5adc90",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-41006493b726b9e5",
+      "grade": 1,
+      "rationale": "Address risk scoring, not PEP screening",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-47f90cb95dfe8681",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-69ed5b6190ddcffc",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-6cdc4491e0417769",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-ad201d31648eee19",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-b47f89ee237db058",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-ded4fddbed0127f9",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-df866b29129326e1",
+      "grade": 2,
+      "rationale": "Right service on Stellar pubnet but specifies exact-amount billing not metered",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-dff985dd6e97826d",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-133544c40809dd12",
+      "candidate_id": "candidate-e6449ff2b2ea1994",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    }
+  ]
+}

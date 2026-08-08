@@ -1,0 +1,585 @@
+{
+  "version": 1,
+  "role": "adjudicator",
+  "pack_id": "adjudication-grading-development-06",
+  "instructions": "Independently grade each disagreement candidate using the frozen 0–3 rubric. Prior grades and grader identities are intentionally withheld.",
+  "tasks": [
+    {
+      "task_id": "task-017f0391911e872c",
+      "query": "classify pages for $0.002 or less per page",
+      "candidate": {
+        "candidate_id": "candidate-017f0391911e872c",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "DocBridge Batch Translate",
+          "description": "Upload a batch of documents for asynchronous translation and poll the returned job for status until completion. DocBridge Batch Translate is built for large document sets, such as contracts, manuals, and product catalogs, where per-string calls would be impractical, and results are checked on an hourly cadence rather than real time. Runs on Stellar pubnet for production-grade batch pricing.",
+          "tags": [
+            "batch-translation",
+            "document-translation",
+            "job-status",
+            "async",
+            "localization"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-06ddd6b82e1e8ee7",
+      "query": "breakdown wallet counterparty risk using MCP protocol",
+      "candidate": {
+        "candidate_id": "candidate-06ddd6b82e1e8ee7",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Attestation Signature Check",
+          "description": "An MCP tool that verifies a detached signature over a price mark, randomness beacon output, or any other attested bundle against the attestor's published public key, then returns a pass/fail status along with the resolved attestor identity and the timestamp the signature was checked. Built for agents that consume signed feeds from multiple chains and need a single trusted verification step before acting on the data, rather than re-implementing signature checking themselves.",
+          "tags": [
+            "signature-verification",
+            "mcp-tool",
+            "attestation",
+            "multi-chain"
+          ],
+          "mimeType": "application/json",
+          "mcp": {
+            "server_name": "attestation-verifier-mcp",
+            "tool_name": "verify_signature",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-13a02108b29b3046",
+      "query": "rules for compliance in different jurisdictions",
+      "candidate": {
+        "candidate_id": "candidate-13a02108b29b3046",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Audit Retention Guide",
+          "description": "Reference guide to audit-log retention period requirements by industry and regulation.",
+          "tags": [
+            "audit",
+            "compliance",
+            "reference"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-13a3726d545a014e",
+      "query": "rules for compliance in different jurisdictions",
+      "candidate": {
+        "candidate_id": "candidate-13a3726d545a014e",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Accessibility Compliance Checker",
+          "description": "Validates a page or app against WCAG accessibility guidelines.",
+          "tags": [
+            "a11y",
+            "a11y-check"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-16b6257df09cf4be",
+      "query": "classify pages for $0.002 or less per page",
+      "candidate": {
+        "candidate_id": "candidate-16b6257df09cf4be",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "ID Document Verify",
+          "description": "Verify government-issued ID documents in real time. Upload a photo of a passport, driver's license, or national ID and receive an authenticity status covering tamper detection, MRZ validation, and expiry checks. Built for onboarding flows that need a fast pass/fail signal before a human reviewer gets involved.",
+          "tags": [
+            "identity-verification",
+            "document-check",
+            "kyc",
+            "onboarding"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-1926fc2044d2d107",
+      "query": "rules for compliance in different jurisdictions",
+      "candidate": {
+        "candidate_id": "candidate-1926fc2044d2d107",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Software License Comparator",
+          "description": "Breaks down open-source and proprietary software licenses -- what they restrict, what commercial use costs, and derivative-work rules.",
+          "tags": [
+            "licenses",
+            "software",
+            "legal"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-1fb7cb528023f296",
+      "query": "rules for compliance in different jurisdictions",
+      "candidate": {
+        "candidate_id": "candidate-1fb7cb528023f296",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Exotic Animal Import Guide",
+          "description": "Before importing an exotic pet, check legal status and regulatory approval here -- care requirements and sourcing ethics included.",
+          "tags": [
+            "exotic-animals",
+            "regulations",
+            "care"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-2a9c631ea63d62f7",
+      "query": "I need the current trading value of Apple and Microsoft for our quarterly report",
+      "candidate": {
+        "candidate_id": "candidate-2a9c631ea63d62f7",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Fundamentals Snapshot",
+          "description": "Core company fundamentals — revenue, net income, EPS, balance-sheet ratios — assembled from the latest filed statements and refreshed daily. Supports capped 'pay up to' billing alongside standard exact pricing for teams metering usage across large ticker universes.",
+          "tags": [
+            "fundamentals",
+            "equities-data",
+            "financial-ratios",
+            "daily-updates"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-2e94ed266d201e30",
+      "query": "proof of address verification on Stellar testnet",
+      "candidate": {
+        "candidate_id": "candidate-2e94ed266d201e30",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Verification Case Status",
+          "description": "Poll the current status of an identity verification case by case ID. Returns whether the case is pending, needs additional documents, passed, or failed, updated live as your verification pipeline progresses. Built for dashboards and webhooks that need the latest state without re-running checks.",
+          "tags": [
+            "kyc",
+            "case-management",
+            "identity-verification",
+            "status-lookup"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-3f3911f032ee225f",
+      "query": "I need the current trading value of Apple and Microsoft for our quarterly report",
+      "candidate": {
+        "candidate_id": "candidate-3f3911f032ee225f",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Company Profile Lookup",
+          "description": "Reference-grade company profiles for globally listed issuers — sector, exchange listing, share class, incorporation jurisdiction, and key executives — refreshed daily and queryable by ticker or legal entity name across any market covered by the catalog.",
+          "tags": [
+            "company-profile",
+            "equities-data",
+            "issuer-reference",
+            "global-listings"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-3fddee07c6a9b12f",
+      "query": "proof of address verification on Stellar testnet",
+      "candidate": {
+        "candidate_id": "candidate-3fddee07c6a9b12f",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Proof of Address Check",
+          "description": "Submit a utility bill, bank statement, or lease and get back a status on whether it satisfies proof-of-address requirements. Checks document age, name match, and address format, and returns a signed attestation of the result you can hand to a downstream compliance system.",
+          "tags": [
+            "proof-of-address",
+            "kyc",
+            "document-check",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-57dd1a73c5794a70",
+      "query": "rules for compliance in different jurisdictions",
+      "candidate": {
+        "candidate_id": "candidate-57dd1a73c5794a70",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Capped-Rate Jurisdiction Lookup"
+        }
+      }
+    },
+    {
+      "task_id": "task-6e493377f28c7c21",
+      "query": "rules for compliance in different jurisdictions",
+      "candidate": {
+        "candidate_id": "candidate-6e493377f28c7c21",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Proof of Address Check",
+          "description": "Submit a utility bill, bank statement, or lease and get back a status on whether it satisfies proof-of-address requirements. Checks document age, name match, and address format, and returns a signed attestation of the result you can hand to a downstream compliance system.",
+          "tags": [
+            "proof-of-address",
+            "kyc",
+            "document-check",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-72c1d941161a6584",
+      "query": "rules for compliance in different jurisdictions",
+      "candidate": {
+        "candidate_id": "candidate-72c1d941161a6584",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Agency Guidance Diff",
+          "description": "Submit the identifiers or dates of two versions of an agency guidance document in a JSON request body and receive a plain-text diff highlighting substantive additions, deletions, and reworded provisions. Useful for compliance teams tracking how informal agency guidance shifts between updates without re-reading the full document each time. Coverage is regional and the underlying guidance corpus is refreshed daily.",
+          "tags": [
+            "guidance-diff",
+            "regulatory",
+            "change-tracking",
+            "agency-guidance",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-76522e66373c3d50",
+      "query": "rules for compliance in different jurisdictions",
+      "candidate": {
+        "candidate_id": "candidate-76522e66373c3d50",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Rule Docket Timeline",
+          "description": "Fetch the complete procedural timeline of a specific regulatory docket, identified by docket ID in the request path, from initial notice through comment periods, hearings, and final action. Returns an ordered list of dated events with links to the associated filings. The archive is historical, covering closed and long-running dockets going back multiple years, within a single jurisdiction.",
+          "tags": [
+            "docket",
+            "timeline",
+            "rulemaking",
+            "regulatory-history",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-7919c4632c6a2a3b",
+      "query": "breakdown wallet counterparty risk using MCP protocol",
+      "candidate": {
+        "candidate_id": "candidate-7919c4632c6a2a3b",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Swap Route Quote",
+          "description": "MCP tool for computing optimal swap routes across multiple blockchain DEX venues. Submit a source asset, destination asset, and trade size to receive the best-priced route, expected output amount, and estimated price impact, computed live against current pool and orderbook state across the venues it indexes.",
+          "tags": [
+            "swap-route",
+            "dex-quote",
+            "route-optimization",
+            "multi-chain",
+            "mcp-tool"
+          ],
+          "mcp": {
+            "server_name": "stellar-swap-router-mcp",
+            "tool_name": "get_swap_route_quote",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "nested_object"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-85313d7bef0fce65",
+      "query": "I need the current trading value of Apple and Microsoft for our quarterly report",
+      "candidate": {
+        "candidate_id": "candidate-85313d7bef0fce65",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Corporate Actions Feed",
+          "description": "Structured feed of corporate actions — stock splits, dividend declarations, mergers, spin-offs — for regionally listed issuers, delivered daily as a list of dated events with effective and record dates for portfolio reconciliation.",
+          "tags": [
+            "corporate-actions",
+            "dividends",
+            "equities-data",
+            "options-chain"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-92534b986a695c3a",
+      "query": "rules for compliance in different jurisdictions",
+      "candidate": {
+        "candidate_id": "candidate-92534b986a695c3a",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Compliance Assessment Tracker",
+          "description": "Tracks completion status across compliance control testing.",
+          "tags": [
+            "control",
+            "control-tracker"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-93560ff638841b10",
+      "query": "classify pages for $0.002 or less per page",
+      "candidate": {
+        "candidate_id": "candidate-93560ff638841b10",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Legal Document Review",
+          "description": "Professional review of legal documents, with template options available.",
+          "tags": [
+            "legal-review",
+            "documents",
+            "templates"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-a4da21f910ccba04",
+      "query": "rules for compliance in different jurisdictions",
+      "candidate": {
+        "candidate_id": "candidate-a4da21f910ccba04",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Screening Case Status",
+          "description": "Query the current disposition of a screening case opened against a name, entity, or address, such as open, cleared, escalated, or closed. Intended for compliance systems that need a live, auditable read of case state rather than a fresh screening run. Every response is cryptographically signed so it can be retained as evidence of the decision at the time it was queried.",
+          "tags": [
+            "case-status",
+            "screening",
+            "compliance",
+            "audit-trail",
+            "aml"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-a66711735660dfd5",
+      "query": "proof of address verification on Stellar testnet",
+      "candidate": {
+        "candidate_id": "candidate-a66711735660dfd5",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Screening Case Status",
+          "description": "Query the current disposition of a screening case opened against a name, entity, or address, such as open, cleared, escalated, or closed. Intended for compliance systems that need a live, auditable read of case state rather than a fresh screening run. Every response is cryptographically signed so it can be retained as evidence of the decision at the time it was queried.",
+          "tags": [
+            "case-status",
+            "screening",
+            "compliance",
+            "audit-trail",
+            "aml"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-ab59b9c6f61c4ee1",
+      "query": "proof of address verification on Stellar testnet",
+      "candidate": {
+        "candidate_id": "candidate-ab59b9c6f61c4ee1",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Tx Receipt Lookup",
+          "description": "An MCP tool for looking up a finalized transaction receipt by hash across Stellar testnet and pubnet in one call. Returns execution result, fee charged, operation-level outcomes, and any contract events emitted, so an agent can confirm settlement or diagnose a failed submission without separately querying two networks.",
+          "tags": [
+            "tx-receipt",
+            "transaction-status",
+            "multi-chain",
+            "settlement-check"
+          ],
+          "mcp": {
+            "server_name": "stellar-tx-receipt-server",
+            "tool_name": "lookup_transaction_receipt",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-b5feeba1063e1de1",
+      "query": "breakdown wallet counterparty risk using MCP protocol",
+      "candidate": {
+        "candidate_id": "candidate-b5feeba1063e1de1",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Historical Price Series",
+          "description": "An MCP tool that returns a daily close price series for a token pair over an arbitrary historical date range on Stellar testnet. Pass the pair and a start and end date as structured tool arguments and get back an ordered list of dated closing prices, suitable for backtests, performance charts, or tax-lot reconstruction.",
+          "tags": [
+            "price-history",
+            "daily-close",
+            "backtest-data",
+            "testnet"
+          ],
+          "mcp": {
+            "server_name": "stellar-price-history-server",
+            "tool_name": "get_historical_price_series",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "nested_object"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-b7bfd137fc10ef56",
+      "query": "proof of address verification on Stellar testnet",
+      "candidate": {
+        "candidate_id": "candidate-b7bfd137fc10ef56",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Business Registry Lookup",
+          "description": "Look up a registered business by name or registration number against regional company registries. Returns incorporation status, registered address, filing history, and directors on record, refreshed daily. Useful for KYB checks before onboarding a merchant or counterparty.",
+          "tags": [
+            "kyb",
+            "business-registry",
+            "company-lookup",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-be92702b40ad496c",
+      "query": "rules for compliance in different jurisdictions",
+      "candidate": {
+        "candidate_id": "candidate-be92702b40ad496c",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Data Retention Policy Enforcer",
+          "description": "Enforces retention rules with automatic data deletion.",
+          "tags": [
+            "retention",
+            "retention-enforce"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-dc39a9eadf7b4ed9",
+      "query": "I need the current trading value of Apple and Microsoft for our quarterly report",
+      "candidate": {
+        "candidate_id": "candidate-dc39a9eadf7b4ed9",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Batch Price Quote",
+          "description": "Submit a list of token symbols or asset identifiers in a single POST request and get back current reference quotes for all of them at once. Designed for portfolio dashboards and settlement engines that need consistent, same-instant pricing across many assets rather than issuing dozens of individual lookups.",
+          "tags": [
+            "batch-quote",
+            "multi-asset",
+            "portfolio-pricing",
+            "live-quote"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-e2818630af694e47",
+      "query": "classify pages for $0.002 or less per page",
+      "candidate": {
+        "candidate_id": "candidate-e2818630af694e47",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Long Document Summarizer",
+          "description": "Condense long-form documents - contracts, research papers, transcripts - into faithful summaries at whatever length you specify, from a one-line abstract to a multi-paragraph brief. The summarizer preserves named entities, numeric figures, and stated caveats rather than smoothing them away, which makes it suitable for compliance and diligence workflows where accuracy matters more than brevity. Each response is cryptographically attested so downstream consumers can verify the summary came from this endpoint unmodified.",
+          "tags": [
+            "summarization",
+            "long-context",
+            "documents",
+            "nlp",
+            "condensation"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-e97c8b9304671abc",
+      "query": "breakdown wallet counterparty risk using MCP protocol",
+      "candidate": {
+        "candidate_id": "candidate-e97c8b9304671abc",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Sanctions Name Screener",
+          "description": "Screen an individual or entity name against consolidated global sanctions and watchlist data, including OFAC SDN, EU consolidated, UN Security Council, and UK OFSI lists, via a single MCP tool call. Returns a normalized match confidence score along with the strongest candidate hits so downstream workflows can set their own review threshold. List content is refreshed daily from primary publishers.",
+          "tags": [
+            "sanctions",
+            "name-screening",
+            "aml",
+            "watchlist",
+            "compliance"
+          ],
+          "mcp": {
+            "server_name": "sanctions-screen-mcp",
+            "tool_name": "screen_name",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-fcd17c3bb414c5da",
+      "query": "breakdown wallet counterparty risk using MCP protocol",
+      "candidate": {
+        "candidate_id": "candidate-fcd17c3bb414c5da",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Table Extraction",
+          "mcp": {
+            "server_name": "table-extract-mcp",
+            "tool_name": "extract_tables",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "nested_object"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-fd1f8a3bc273010f",
+      "query": "proof of address verification on Stellar testnet",
+      "candidate": {
+        "candidate_id": "candidate-fd1f8a3bc273010f",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Archive Ledger State",
+          "description": "Query historical contract data and account state as it existed at a specific past ledger sequence on Stellar testnet. Pass a ledger sequence number and a state key as query parameters to get back the exact entry value at that point in history -- useful for reconstructing balances, auditing past contract storage, or replaying a dispute.",
+          "tags": [
+            "archive-state",
+            "historical-ledger",
+            "point-in-time",
+            "testnet"
+          ]
+        }
+      }
+    }
+  ]
+}

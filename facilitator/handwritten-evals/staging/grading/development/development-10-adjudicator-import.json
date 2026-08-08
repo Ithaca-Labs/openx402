@@ -1,0 +1,149 @@
+[
+  {
+    "task_id": "task-0bd4ebea3c2b302c",
+    "candidate_id": "candidate-0bd4ebea3c2b302c",
+    "grade": 0,
+    "rationale": "Query seeks streaming new block headers as published. Candidate retrieves historical ledger state at past points. Different capabilities\u2014one is real-time streaming, other is point-in-time queries.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-0f000fbef1e1ea62",
+    "candidate_id": "candidate-0f000fbef1e1ea62",
+    "grade": 0,
+    "rationale": "Query wants news feed headlines; candidate is spot price lookup. Unrelated capabilities. Contains manipulative 'always free' language contradicting real billing models.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-229d6ac8e6089893",
+    "candidate_id": "candidate-229d6ac8e6089893",
+    "grade": 0,
+    "rationale": "Query needs automated message translation service for support team. Candidate pairs language learners for practice. Different capabilities\u2014one is a service, other is educational matching.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-2586f3a1f162dd5a",
+    "candidate_id": "candidate-2586f3a1f162dd5a",
+    "grade": 0,
+    "rationale": "Query needs trading pair candlestick OHLCV data. Candidate provides macroeconomic indicator revision history. Wrong domain entirely\u2014macro indicators vs. financial market data.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-27d7e805c6fa7199",
+    "candidate_id": "candidate-27d7e805c6fa7199",
+    "grade": 0,
+    "rationale": "Query needs candlestick OHLCV data for trading. Candidate provides company financial fundamentals. Wrong capability\u2014fundamentals are balance-sheet ratios, not price history.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-2d324f17f59d2137",
+    "candidate_id": "candidate-2d324f17f59d2137",
+    "grade": 1,
+    "rationale": "Query wants crypto news headlines. Candidate clusters blockchain wallets for entity attribution. Same domain but different capability\u2014analysis tool, not news feed.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-2d64be4a606f9512",
+    "candidate_id": "candidate-2d64be4a606f9512",
+    "grade": 0,
+    "rationale": "Query seeks current weather conditions. Candidate is scuba dive site guide sorted by depth and visibility. Completely different capability.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-2e70b2a55005bd32",
+    "candidate_id": "candidate-2e70b2a55005bd32",
+    "grade": 1,
+    "rationale": "Query needs historical candlestick data. Candidate offers real-time last-trade prices only. Related domain but wrong time horizon and format\u2014real-time vs. historical.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-525ecc403c40199d",
+    "candidate_id": "candidate-525ecc403c40199d",
+    "grade": 1,
+    "rationale": "Query needs historical candlesticks with OHLCV. Candidate provides single TWAP price metric. Related but different\u2014one price aggregate vs. full candlestick history.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-5b3e44ad31ee894b",
+    "candidate_id": "candidate-5b3e44ad31ee894b",
+    "grade": 1,
+    "rationale": "Query needs historical candlesticks for backtesting. Candidate provides live orderbook depth snapshots. Related market data but real-time only, not historical.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-7d7287e979c199e5",
+    "candidate_id": "candidate-7d7287e979c199e5",
+    "grade": 0,
+    "rationale": "Query needs translation service for support messages. Candidate provides language learning materials and pronunciation guides. Different capability\u2014educational resource, not translation.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-82f1bd0b98e33ff9",
+    "candidate_id": "candidate-82f1bd0b98e33ff9",
+    "grade": 0,
+    "rationale": "Query needs message translation. Candidate streams token-by-token LLM completions for rendering partial output. Unrelated\u2014streaming tool for display, not translation.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-832afe88b7f8b2af",
+    "candidate_id": "candidate-832afe88b7f8b2af",
+    "grade": 1,
+    "rationale": "Query wants crypto/blockchain news headlines. Candidate is corporate press releases feed, explicitly not reported news. Wrong domain\u2014not crypto-specific.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-8bc5ad105bdba4d8",
+    "candidate_id": "candidate-8bc5ad105bdba4d8",
+    "grade": 1,
+    "rationale": "Query needs trading pair candlesticks. Candidate offers fiat FX reference rates from central banks. Related pricing but different domain\u2014forex vs. trading pairs.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-985867151db352d8",
+    "candidate_id": "candidate-985867151db352d8",
+    "grade": 0,
+    "rationale": "Query seeks streaming new block headers as published. Candidate looks up finalized transaction receipts by hash. Different purposes\u2014streaming future data vs. querying past.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-a188d6fcd139d3ef",
+    "candidate_id": "candidate-a188d6fcd139d3ef",
+    "grade": 0,
+    "rationale": "Query wants current weather conditions. Candidate converts addresses to coordinates via geocoding. Completely different capability.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-aa14f644c2b7f54b",
+    "candidate_id": "candidate-aa14f644c2b7f54b",
+    "grade": 1,
+    "rationale": "Query needs historical candlesticks. Candidate provides continuously-refreshed signed spot price marks. Related but different\u2014single prices vs. historical OHLCV.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-ad5e783e436d202c",
+    "candidate_id": "candidate-ad5e783e436d202c",
+    "grade": 1,
+    "rationale": "Query wants current weather conditions. Candidate builds packing lists incorporating weather suggestions. Uses weather data but doesn't provide conditions directly.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-baf2f84c85f6ac2b",
+    "candidate_id": "candidate-baf2f84c85f6ac2b",
+    "grade": 2,
+    "rationale": "Query needs message translation for support team. Candidate is general LLM chat API\u2014can translate via prompts but not optimized. Capable but lacks translation-specific features.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-ce4e9f48bcf35f95",
+    "candidate_id": "candidate-ce4e9f48bcf35f95",
+    "grade": 3,
+    "rationale": "Query needs translation with terminology control for support messages. Candidate specializes in glossary-enforced translation with structured output. Exact fit for stated need.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-eccbaa96e27a7729",
+    "candidate_id": "candidate-eccbaa96e27a7729",
+    "grade": 0,
+    "rationale": "Query seeks streaming block headers as published. Candidate provides point-in-time pool reserve snapshots. Different\u2014one is streaming flow, other is static snapshots.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  }
+]

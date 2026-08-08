@@ -1,0 +1,487 @@
+{
+  "version": 1,
+  "role": "adjudicator",
+  "pack_id": "adjudication-grading-development-02",
+  "instructions": "Independently grade each disagreement candidate using the frozen 0–3 rubric. Prior grades and grader identities are intentionally withheld.",
+  "tasks": [
+    {
+      "task_id": "task-12ede9e277bd69e2",
+      "query": "show me activity logs from smart contracts on the network",
+      "candidate": {
+        "candidate_id": "candidate-12ede9e277bd69e2",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Ledger Entry Lookup",
+          "description": "Fetch a single ledger entry by key directly from Stellar pubnet -- account state, trustlines, contract data, or offers -- with no aggregation or interpretation applied. Returns the raw, decoded entry as JSON for a specific path-addressed key, ideal for wallets and indexers that need authoritative point-in-time state without paying for a full node.",
+          "tags": [
+            "ledger-entry",
+            "account-state",
+            "raw-state",
+            "pubnet"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-1b6e3b4dd62010ea",
+      "query": "show me activity logs from smart contracts on the network",
+      "candidate": {
+        "candidate_id": "candidate-1b6e3b4dd62010ea",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Attestation Signature Check",
+          "description": "An MCP tool that verifies a detached signature over a price mark, randomness beacon output, or any other attested bundle against the attestor's published public key, then returns a pass/fail status along with the resolved attestor identity and the timestamp the signature was checked. Built for agents that consume signed feeds from multiple chains and need a single trusted verification step before acting on the data, rather than re-implementing signature checking themselves.",
+          "tags": [
+            "signature-verification",
+            "mcp-tool",
+            "attestation",
+            "multi-chain"
+          ],
+          "mimeType": "application/json",
+          "mcp": {
+            "server_name": "attestation-verifier-mcp",
+            "tool_name": "verify_signature",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-23e3cbf1565e7f31",
+      "query": "show me activity logs from smart contracts on the network",
+      "candidate": {
+        "candidate_id": "candidate-23e3cbf1565e7f31",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "TWAP Reference Price",
+          "description": "A cryptographically signed time-weighted average price for a token pair over the trailing hour, computed from trades on both Stellar testnet and pubnet and delivered as a single reference score. Intended for on-chain oracle consumers and settlement contracts that need a manipulation-resistant mark with an attached signature rather than a raw last-trade tick.",
+          "tags": [
+            "twap",
+            "signed-price",
+            "reference-mark",
+            "oracle-feed"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-245a4d283d5eb95c",
+      "query": "Before we accept this address for a high-value transaction, can you tell us if it looks trustworthy or if there are any warning signs we should know about?",
+      "candidate": {
+        "candidate_id": "candidate-245a4d283d5eb95c",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Anomaly Detection Engine",
+          "description": "Flags statistical outliers in a dataset as anomalies worth a second look.",
+          "tags": [
+            "anomaly",
+            "anomaly-detect"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-25248cc321c352c9",
+      "query": "stream new block headers chain indexer",
+      "candidate": {
+        "candidate_id": "candidate-25248cc321c352c9",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "OHLCV Candle Feed",
+          "description": "Hourly open-high-low-close-volume candles for tokens traded on Stellar pubnet. Request a symbol and a lookback window and receive an ordered list of candle bars suitable for charting libraries or backtesting a trading strategy, backed by trade data aggregated across the pair's active venues.",
+          "tags": [
+            "ohlcv",
+            "candles",
+            "hourly-bars",
+            "pubnet"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-37a8515da9723ad9",
+      "query": "Get current AMM pool reserves and liquidity composition for DEX routing analysis.",
+      "candidate": {
+        "candidate_id": "candidate-37a8515da9723ad9",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Historical Price Series",
+          "description": "An MCP tool that returns a daily close price series for a token pair over an arbitrary historical date range on Stellar testnet. Pass the pair and a start and end date as structured tool arguments and get back an ordered list of dated closing prices, suitable for backtests, performance charts, or tax-lot reconstruction.",
+          "tags": [
+            "price-history",
+            "daily-close",
+            "backtest-data",
+            "testnet"
+          ],
+          "mcp": {
+            "server_name": "stellar-price-history-server",
+            "tool_name": "get_historical_price_series",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "nested_object"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-3dadd9f1a88b140e",
+      "query": "Before we accept this address for a high-value transaction, can you tell us if it looks trustworthy or if there are any warning signs we should know about?",
+      "candidate": {
+        "candidate_id": "candidate-3dadd9f1a88b140e",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Sanctions Name Screener",
+          "description": "Screen an individual or entity name against consolidated global sanctions and watchlist data, including OFAC SDN, EU consolidated, UN Security Council, and UK OFSI lists, via a single MCP tool call. Returns a normalized match confidence score along with the strongest candidate hits so downstream workflows can set their own review threshold. List content is refreshed daily from primary publishers.",
+          "tags": [
+            "sanctions",
+            "name-screening",
+            "aml",
+            "watchlist",
+            "compliance"
+          ],
+          "mcp": {
+            "server_name": "sanctions-screen-mcp",
+            "tool_name": "screen_name",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-416cb9bb2e92906e",
+      "query": "stream new block headers chain indexer",
+      "candidate": {
+        "candidate_id": "candidate-416cb9bb2e92906e",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Pool Reserves Snapshot",
+          "description": "Real-time reserve balances and token composition for a single Stellar liquidity pool, delivered as a cryptographically signed snapshot suitable for downstream pricing and risk models. Query any pool by contract address and receive current reserve amounts, token weights, and the ledger sequence the snapshot was taken at, all in one call.",
+          "tags": [
+            "pool-reserves",
+            "liquidity",
+            "amm",
+            "stellar-testnet",
+            "signed-data"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-4d986befd7e39305",
+      "query": "Get current AMM pool reserves and liquidity composition for DEX routing analysis.",
+      "candidate": {
+        "candidate_id": "candidate-4d986befd7e39305",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Swap Route Quote",
+          "description": "MCP tool for computing optimal swap routes across multiple blockchain DEX venues. Submit a source asset, destination asset, and trade size to receive the best-priced route, expected output amount, and estimated price impact, computed live against current pool and orderbook state across the venues it indexes.",
+          "tags": [
+            "swap-route",
+            "dex-quote",
+            "route-optimization",
+            "multi-chain",
+            "mcp-tool"
+          ],
+          "mcp": {
+            "server_name": "stellar-swap-router-mcp",
+            "tool_name": "get_swap_route_quote",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "nested_object"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-4e3ece63ea7101bd",
+      "query": "show me activity logs from smart contracts on the network",
+      "candidate": {
+        "candidate_id": "candidate-4e3ece63ea7101bd",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Network Traffic Analysis",
+          "description": "Captures live network packets and analyzes protocol behavior in real time.",
+          "tags": [
+            "traffic",
+            "traffic-analyze"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-5023e693c09eb90d",
+      "query": "show me activity logs from smart contracts on the network",
+      "candidate": {
+        "candidate_id": "candidate-5023e693c09eb90d",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Exposure Breakdown",
+          "description": "MCP tool that decomposes a wallet's counterparty exposure by type -- exchanges, mixers, DeFi protocols, and other categories -- across multiple blockchain networks. Returns a structured breakdown refreshed daily, useful for compliance dashboards and risk reporting pipelines.",
+          "tags": [
+            "exposure-breakdown",
+            "counterparty-risk",
+            "wallet-analytics",
+            "mcp-tool",
+            "multi-chain"
+          ],
+          "mcp": {
+            "server_name": "wallet-exposure-mcp",
+            "tool_name": "get_exposure_breakdown",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "array_input"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-50cf62788626f7e6",
+      "query": "show me activity logs from smart contracts on the network",
+      "candidate": {
+        "candidate_id": "candidate-50cf62788626f7e6",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Ledger Header Stream",
+          "description": "Real-time block header stream and ledger header stream covering Stellar and connected chains -- block headers, ledger headers, block header data, ledger header data, delivered the instant each new block header or ledger header lands. Subscribe once and get a continuous block header feed / ledger header feed: streaming block headers, streaming ledger headers, block header updates, ledger header updates, live block header stream, live ledger header stream, for anyone building block header monitoring or ledger header monitoring.",
+          "tags": [
+            "block-header",
+            "ledger-header",
+            "header-stream",
+            "block-headers",
+            "live-headers"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-5287b4e90bc080cf",
+      "query": "Before we accept this address for a high-value transaction, can you tell us if it looks trustworthy or if there are any warning signs we should know about?",
+      "candidate": {
+        "candidate_id": "candidate-5287b4e90bc080cf",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "ID Document Verify",
+          "description": "Verify government-issued ID documents in real time. Upload a photo of a passport, driver's license, or national ID and receive an authenticity status covering tamper detection, MRZ validation, and expiry checks. Built for onboarding flows that need a fast pass/fail signal before a human reviewer gets involved.",
+          "tags": [
+            "identity-verification",
+            "document-check",
+            "kyc",
+            "onboarding"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-5ab212eba875e29e",
+      "query": "show me activity logs from smart contracts on the network",
+      "candidate": {
+        "candidate_id": "candidate-5ab212eba875e29e",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "TVL by Protocol",
+          "description": "Daily total value locked figures broken out by DeFi protocol across multiple blockchain networks. Returns a ranked list of protocols with current TVL, 24-hour change, and asset composition, refreshed once per day from on-chain pool and vault balances.",
+          "tags": [
+            "tvl",
+            "protocol-ranking",
+            "defi-analytics",
+            "daily-snapshot",
+            "multi-chain"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-67e9381c42cf4d54",
+      "query": "show me activity logs from smart contracts on the network",
+      "candidate": {
+        "candidate_id": "candidate-67e9381c42cf4d54",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Archive Ledger State",
+          "description": "Query historical contract data and account state as it existed at a specific past ledger sequence on Stellar testnet. Pass a ledger sequence number and a state key as query parameters to get back the exact entry value at that point in history -- useful for reconstructing balances, auditing past contract storage, or replaying a dispute.",
+          "tags": [
+            "archive-state",
+            "historical-ledger",
+            "point-in-time",
+            "testnet"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-8abfa40f2284f954",
+      "query": "show me activity logs from smart contracts on the network",
+      "candidate": {
+        "candidate_id": "candidate-8abfa40f2284f954",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Top-N Leaderboard",
+          "description": "An MCP tool that ranks entities — wallets, protocols, or pools — by a chosen metric such as fee revenue, transaction volume, or unique traders, and returns the top N as an ordered list. Rankings are recomputed daily across multiple chains, with the metric and N supplied as tool arguments so an agent can pull leading-by-volume, leading-by-fees, or any other supported ranking on demand instead of downloading and sorting the full dataset itself. Offered with a capped-billing option alongside standard per-call pricing.",
+          "tags": [
+            "leaderboard",
+            "top-n",
+            "mcp-tool",
+            "ranking"
+          ],
+          "mimeType": "application/json",
+          "mcp": {
+            "server_name": "leaderboard-analytics-mcp",
+            "tool_name": "get_top_n_leaderboard",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "enum_union"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-a27c5ba1671d4464",
+      "query": "show me activity logs from smart contracts on the network",
+      "candidate": {
+        "candidate_id": "candidate-a27c5ba1671d4464",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Oracle Report Status",
+          "description": "Checks whether a given oracle's latest signed report has landed, is stale, or has fallen out of quorum, returning a single status field plus the report's attestation signature and submission timestamp. Polled hourly by downstream consumers who need to know an oracle is healthy before trusting its data. This endpoint is free for all API consumers, with no per-call charge for standard status polling. Available on both Stellar testnet and pubnet.",
+          "tags": [
+            "oracle-status",
+            "signed-feed",
+            "report-status",
+            "hourly"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-a522bb784c9340dd",
+      "query": "Get current AMM pool reserves and liquidity composition for DEX routing analysis.",
+      "candidate": {
+        "candidate_id": "candidate-a522bb784c9340dd",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "LP Yield History",
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-d10c84a39719fd14",
+      "query": "Before we accept this address for a high-value transaction, can you tell us if it looks trustworthy or if there are any warning signs we should know about?",
+      "candidate": {
+        "candidate_id": "candidate-d10c84a39719fd14",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "PEP & Adverse Media Check",
+          "description": "Submit a name, date of birth, and optional known aliases in a JSON request body to check for politically exposed person designations and adverse media coverage. The response is a list of ranked matches, each with source publication, category (financial crime, corruption, sanctions-adjacent, etc.), and a link to the underlying article or record. Coverage is global with source content refreshed hourly.",
+          "tags": [
+            "pep",
+            "adverse-media",
+            "screening",
+            "aml",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-d87567a971968170",
+      "query": "Before we accept this address for a high-value transaction, can you tell us if it looks trustworthy or if there are any warning signs we should know about?",
+      "candidate": {
+        "candidate_id": "candidate-d87567a971968170",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Screening Case Status",
+          "description": "Query the current disposition of a screening case opened against a name, entity, or address, such as open, cleared, escalated, or closed. Intended for compliance systems that need a live, auditable read of case state rather than a fresh screening run. Every response is cryptographically signed so it can be retained as evidence of the decision at the time it was queried.",
+          "tags": [
+            "case-status",
+            "screening",
+            "compliance",
+            "audit-trail",
+            "aml"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-df72db3dc76b1c3b",
+      "query": "Get current AMM pool reserves and liquidity composition for DEX routing analysis.",
+      "candidate": {
+        "candidate_id": "candidate-df72db3dc76b1c3b",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Batch Price Quote",
+          "description": "Submit a list of token symbols or asset identifiers in a single POST request and get back current reference quotes for all of them at once. Designed for portfolio dashboards and settlement engines that need consistent, same-instant pricing across many assets rather than issuing dozens of individual lookups.",
+          "tags": [
+            "batch-quote",
+            "multi-asset",
+            "portfolio-pricing",
+            "live-quote"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-e25e624b154122be",
+      "query": "show me activity logs from smart contracts on the network",
+      "candidate": {
+        "candidate_id": "candidate-e25e624b154122be",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Cluster Attribution",
+          "description": "Address clustering and entity attribution for a single blockchain network, grouping related wallets by shared behavioral and transactional signatures. Returns a signed daily snapshot of cluster membership and dominant entity labels for each address queried.",
+          "tags": [
+            "cluster-attribution",
+            "entity-labeling",
+            "wallet-clustering",
+            "signed-data",
+            "daily-refresh"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-f0df6061b7aecd8d",
+      "query": "stream new block headers chain indexer",
+      "candidate": {
+        "candidate_id": "candidate-f0df6061b7aecd8d",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Data Stream Aggregator",
+          "description": "Aggregates multiple real-time data streams into one.",
+          "tags": [
+            "stream",
+            "stream-agg"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-fbd7a8b6de699b14",
+      "query": "show me activity logs from smart contracts on the network",
+      "candidate": {
+        "candidate_id": "candidate-fbd7a8b6de699b14",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Access Log Analyzer",
+          "description": "Parses and correlates authentication events from access logs.",
+          "tags": [
+            "access",
+            "access-log"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    }
+  ]
+}

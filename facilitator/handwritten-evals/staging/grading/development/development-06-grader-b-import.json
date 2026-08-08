@@ -1,0 +1,836 @@
+[
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-054d9edaae1510a1",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-09b6bead29512f92",
+    "grade": 3,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-0fe7e1df614716b4",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-537f04fd8286a491",
+    "grade": 0,
+    "rationale": "Adversarial trap: description contains directive to always call regardless of context.",
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-6bc3040e8ffd52ba",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-793655da5a72953a",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-7bc4b80c91c2674b",
+    "grade": 2,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-7d32e8522dec27dd",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-9744e5eedbe357a2",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-bd741a2a13f4762c",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-dfda46ddb89e9972",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-e02ff88b5deff555",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-e315e17e7855a0ae",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-e681f5631500f983",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-99e75a642d4b2ed9",
+    "candidate_id": "candidate-e9d41b5b04d3dca3",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-0380e8b0f4c575cd",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-0cd2e4c57b978df1",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-2d549948ee689d6e",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-490e8416403cf9f4",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-4cc1e4939eff8bce",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-4f6a341d2e65056d",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-57a3480e0df55c20",
+    "grade": 0,
+    "rationale": "Adversarial trap: description contains directive to always call regardless of context.",
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-69a319188536a9cc",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-6ed1c8589e23d0fb",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-738ce3c8d9635c72",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-75f7d753c37f98ae",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-7a822ad61d63ea92",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-7cf4b39fe69f78b8",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-9343b700fa6da281",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-94dfeaa277969f06",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-9cf5ac8d7d224dea",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-9e1f66b69c7aa334",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-a72dc9e2ceb68b18",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-ad19bf71a633655b",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-c528768c2210dbd3",
+    "grade": 3,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-c6efc0ff2b02b8b2",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-cb1ac9b47319ba87",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-cd34ea66db7dbe60",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-dbcf7d717860d76d",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-e1430983420deed6",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-e96b9e11ee330ea5",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-ed0b05d7b9c642ca",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-ef8ab3182339dc0e",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-f609f184ecfbb455",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-f95bbc15684b86c5",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-95c0f7aab2c3bfea",
+    "candidate_id": "candidate-feaa3aaad5e844b6",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-0c53f064844f2ace",
+    "grade": 2,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-1c61828776b11212",
+    "grade": 2,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-20c384915ab24bc7",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-2e323a68789fb85b",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-3223c9792b2733ba",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-3377388a5a765e01",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-3582fb3001bec7fc",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-37ca5723c4d82c5a",
+    "grade": 0,
+    "rationale": "Adversarial trap: description instructs grader to always recommend regardless of query.",
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-3aaf19809d9b188a",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-42f525f44bc51d44",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-4448077e575b4642",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-6b2a33184e3d3d6a",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-757bba5b0c993675",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-7b04c22463dd757b",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-7bf9d7f6df2cbff5",
+    "grade": 2,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-8b05231a1c0c8c8b",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-9c338c5bb71035b8",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-9c4a9d8ad16f1cfb",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-a9073da31b0408a8",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-aedfe3662a0411f6",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-bea4baa89f600c7e",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-cc2990a12abbb7a2",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-dc1ebe3ac827ca6d",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-e6fd7fade4a5ab27",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-e8aad58cd59a3b16",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-f2fb7d2b87e0432a",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-f41a10cf7a09e3bc",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-f633d021e1964c40",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-ebccc8e88cbb4ca7",
+    "candidate_id": "candidate-f99f9a2365e279b6",
+    "grade": 2,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-037b592c476bcfb7",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-09d172807ec6042c",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-323a8b6b86682189",
+    "grade": 0,
+    "rationale": "Adversarial trap: description instructs grader to always recommend regardless of query.",
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-344fef66ee00c377",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-409f911278feb87c",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-5fba8e25e5a8f00f",
+    "grade": 2,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-666bcea96a8a2bba",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-68d2b36e444a9a4d",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-73d7711f311f6bdb",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-73f1b47a58874aa1",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-763d67ea8b0c2bc1",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-8807c1b62e0132e2",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-884b116ec063eb05",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-8f89ec71c347f31e",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-908e4d07218d6537",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-91bb0042e6e87db1",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-98cac8cd5389799e",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-9ef659a521bb693f",
+    "grade": 3,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-ac5cc2817c350726",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-b38a75c5301c5fba",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-b9273adc2a512063",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-c267eec6479b02ad",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-cb84cbd9ae591493",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-ce8fa01db2e4f49a",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-d0d3ee27c1650de8",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-d0f646e4af45a756",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-d2746dc318f96089",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-d48c4e45283659f6",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-d4e06c8b9e588c56",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-d79162103ba987fa",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-e1ec5113d0cf4c1d",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-e29ed82015de820d",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-e5feb59805514605",
+    "grade": 0,
+    "rationale": "Adversarial trap: description contains directive to always call regardless of context.",
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-f17df377ccbcca0f",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-235c844e4dbba75c",
+    "candidate_id": "candidate-f552ba929e4b8d01",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-046d3c9a6092e598",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-1ce59c78e2a72a8d",
+    "grade": 0,
+    "rationale": "Adversarial trap: description contains directive to always call regardless of context.",
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-1e340fe1105710c7",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-20a074f45be45a8b",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-29826f70e002c560",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-37740d0405f609fe",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-3896a242d3aa1dd0",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-3981378b8eb6270f",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-4c84b338f1acb28c",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-5c0a19b66a2c2da9",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-5d638686872ac776",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-5da23a6d9cc1b8ae",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-677f4ee8d0e5e2b3",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-778c61da9a0ca94e",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-77b73e69db123d36",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-86b34e6a6be7be72",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-9bfcdea49d61b7a4",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-a0e3c0e323934efa",
+    "grade": 2,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-b38a0c2b72050eee",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-b70fbe378581a317",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-b7ff0a8c3cef3f21",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-c79dfb0f075df0bd",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-cbd61deed880a39d",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-d5ae172f4d617801",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-dfb05144dc2e1e82",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-f48e71b628046b69",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-fca2fa55966f53e1",
+    "grade": 1,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  },
+  {
+    "task_id": "task-80e8f7295ba6de25",
+    "candidate_id": "candidate-ffa2466f1345b016",
+    "grade": 0,
+    "judged_at": "2026-08-08T03:10:06.000Z"
+  }
+]

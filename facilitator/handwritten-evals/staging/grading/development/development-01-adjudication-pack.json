@@ -1,0 +1,509 @@
+{
+  "version": 1,
+  "role": "adjudicator",
+  "pack_id": "adjudication-grading-development-01",
+  "instructions": "Independently grade each disagreement candidate using the frozen 0–3 rubric. Prior grades and grader identities are intentionally withheld.",
+  "tasks": [
+    {
+      "task_id": "task-0294c157bd9f68fc",
+      "query": "historical LP yield performance data, metered pay-as-you-go pricing",
+      "candidate": {
+        "candidate_id": "candidate-0294c157bd9f68fc",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "LP Yield History",
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-092432a79da2e72e",
+      "query": "historical LP yield performance data, metered pay-as-you-go pricing",
+      "candidate": {
+        "candidate_id": "candidate-092432a79da2e72e",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Econ Release Calendar",
+          "description": "Structured calendar of upcoming and past macroeconomic data releases — CPI, payrolls, PMI, central bank decisions — with exact release timestamps, country tags, and revision flags refreshed hourly so trading and research desks never miss a print.",
+          "tags": [
+            "release-calendar",
+            "macro-indicators",
+            "economic-data",
+            "hourly-updates"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-13d42bf809bd6375",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-13d42bf809bd6375",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Batch Price Quote",
+          "description": "Submit a list of token symbols or asset identifiers in a single POST request and get back current reference quotes for all of them at once. Designed for portfolio dashboards and settlement engines that need consistent, same-instant pricing across many assets rather than issuing dozens of individual lookups.",
+          "tags": [
+            "batch-quote",
+            "multi-asset",
+            "portfolio-pricing",
+            "live-quote"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-231476ea1395f423",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-231476ea1395f423",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Historical Price Series",
+          "description": "An MCP tool that returns a daily close price series for a token pair over an arbitrary historical date range on Stellar testnet. Pass the pair and a start and end date as structured tool arguments and get back an ordered list of dated closing prices, suitable for backtests, performance charts, or tax-lot reconstruction.",
+          "tags": [
+            "price-history",
+            "daily-close",
+            "backtest-data",
+            "testnet"
+          ],
+          "mcp": {
+            "server_name": "stellar-price-history-server",
+            "tool_name": "get_historical_price_series",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "nested_object"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-285ecde5ecbaeb25",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-285ecde5ecbaeb25",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Orderbook Depth",
+          "description": "Live orderbook depth for a single trading pair on a Stellar-based DEX, returned as a list of bid and ask levels with cumulative size at each price band. Path-addressable by pair symbol for fast integration into execution and slippage-estimation tools.",
+          "tags": [
+            "orderbook",
+            "depth-chart",
+            "liquidity",
+            "live-data",
+            "single-chain"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-2fc6158b7bfce587",
+      "query": "historical LP yield performance data, metered pay-as-you-go pricing",
+      "candidate": {
+        "candidate_id": "candidate-2fc6158b7bfce587",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Top-N Leaderboard",
+          "description": "An MCP tool that ranks entities — wallets, protocols, or pools — by a chosen metric such as fee revenue, transaction volume, or unique traders, and returns the top N as an ordered list. Rankings are recomputed daily across multiple chains, with the metric and N supplied as tool arguments so an agent can pull leading-by-volume, leading-by-fees, or any other supported ranking on demand instead of downloading and sorting the full dataset itself. Offered with a capped-billing option alongside standard per-call pricing.",
+          "tags": [
+            "leaderboard",
+            "top-n",
+            "mcp-tool",
+            "ranking"
+          ],
+          "mimeType": "application/json",
+          "mcp": {
+            "server_name": "leaderboard-analytics-mcp",
+            "tool_name": "get_top_n_leaderboard",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "enum_union"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-3167a2f1c4f3ff7a",
+      "query": "Screen this transaction for counterparty risk using a service priced at $0.005 or less.",
+      "candidate": {
+        "candidate_id": "candidate-3167a2f1c4f3ff7a",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "ID Document Verify",
+          "description": "Verify government-issued ID documents in real time. Upload a photo of a passport, driver's license, or national ID and receive an authenticity status covering tamper detection, MRZ validation, and expiry checks. Built for onboarding flows that need a fast pass/fail signal before a human reviewer gets involved.",
+          "tags": [
+            "identity-verification",
+            "document-check",
+            "kyc",
+            "onboarding"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-3d6e02dbf6693aed",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-3d6e02dbf6693aed",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Ledger Entry Lookup",
+          "description": "Fetch a single ledger entry by key directly from Stellar pubnet -- account state, trustlines, contract data, or offers -- with no aggregation or interpretation applied. Returns the raw, decoded entry as JSON for a specific path-addressed key, ideal for wallets and indexers that need authoritative point-in-time state without paying for a full node.",
+          "tags": [
+            "ledger-entry",
+            "account-state",
+            "raw-state",
+            "pubnet"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-4a66ec95ececafd3",
+      "query": "Screen this transaction for counterparty risk using a service priced at $0.005 or less.",
+      "candidate": {
+        "candidate_id": "candidate-4a66ec95ececafd3",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Business Registry Lookup",
+          "description": "Look up a registered business by name or registration number against regional company registries. Returns incorporation status, registered address, filing history, and directors on record, refreshed daily. Useful for KYB checks before onboarding a merchant or counterparty.",
+          "tags": [
+            "kyb",
+            "business-registry",
+            "company-lookup",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-4bade91bf0df16db",
+      "query": "historical LP yield performance data, metered pay-as-you-go pricing",
+      "candidate": {
+        "candidate_id": "candidate-4bade91bf0df16db",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Fundamentals Snapshot",
+          "description": "Core company fundamentals — revenue, net income, EPS, balance-sheet ratios — assembled from the latest filed statements and refreshed daily. Supports capped 'pay up to' billing alongside standard exact pricing for teams metering usage across large ticker universes.",
+          "tags": [
+            "fundamentals",
+            "equities-data",
+            "financial-ratios",
+            "daily-updates"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-68d929bfbe33d8ec",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-68d929bfbe33d8ec",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Protocol Usage Metrics",
+          "description": "Daily computed usage aggregates for a named protocol — unique active accounts, transaction counts, and gross volume — rolled up once per day across every chain the protocol is deployed to, so a buyer gets a single ready-to-use number instead of raw event logs to sum themselves. Designed for dashboards, growth reporting, and competitive comparisons where the underlying transaction history is irrelevant and only the aggregate matters.",
+          "tags": [
+            "usage-metrics",
+            "protocol-analytics",
+            "daily-aggregate",
+            "multi-chain"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-8573f22e731b4b52",
+      "query": "Fetch the current state of a specific ledger entry to retrieve account details and balances.",
+      "candidate": {
+        "candidate_id": "candidate-8573f22e731b4b52",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Ledger Header Stream",
+          "description": "Real-time block header stream and ledger header stream covering Stellar and connected chains -- block headers, ledger headers, block header data, ledger header data, delivered the instant each new block header or ledger header lands. Subscribe once and get a continuous block header feed / ledger header feed: streaming block headers, streaming ledger headers, block header updates, ledger header updates, live block header stream, live ledger header stream, for anyone building block header monitoring or ledger header monitoring.",
+          "tags": [
+            "block-header",
+            "ledger-header",
+            "header-stream",
+            "block-headers",
+            "live-headers"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-8b46ba6326c9a5be",
+      "query": "historical LP yield performance data, metered pay-as-you-go pricing",
+      "candidate": {
+        "candidate_id": "candidate-8b46ba6326c9a5be",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Spot Price Lookup",
+          "description": "Free, real-time spot price lookups for any Stellar testnet token pair. Always free to call -- get the latest last-trade price instantly, no rate limits, no hidden fees. Built for bots and dashboards that need a live reference price on demand, with an optional capped-billing mode for high-frequency polling.",
+          "tags": [
+            "spot-price",
+            "last-trade",
+            "live-price",
+            "token-pair",
+            "testnet"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-9aed4991ea0fff8c",
+      "query": "historical LP yield performance data, metered pay-as-you-go pricing",
+      "candidate": {
+        "candidate_id": "candidate-9aed4991ea0fff8c",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Batch Price Quote",
+          "description": "Submit a list of token symbols or asset identifiers in a single POST request and get back current reference quotes for all of them at once. Designed for portfolio dashboards and settlement engines that need consistent, same-instant pricing across many assets rather than issuing dozens of individual lookups.",
+          "tags": [
+            "batch-quote",
+            "multi-asset",
+            "portfolio-pricing",
+            "live-quote"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-a60f3f650b378c64",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-a60f3f650b378c64",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Top-N Leaderboard",
+          "description": "An MCP tool that ranks entities — wallets, protocols, or pools — by a chosen metric such as fee revenue, transaction volume, or unique traders, and returns the top N as an ordered list. Rankings are recomputed daily across multiple chains, with the metric and N supplied as tool arguments so an agent can pull leading-by-volume, leading-by-fees, or any other supported ranking on demand instead of downloading and sorting the full dataset itself. Offered with a capped-billing option alongside standard per-call pricing.",
+          "tags": [
+            "leaderboard",
+            "top-n",
+            "mcp-tool",
+            "ranking"
+          ],
+          "mimeType": "application/json",
+          "mcp": {
+            "server_name": "leaderboard-analytics-mcp",
+            "tool_name": "get_top_n_leaderboard",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "enum_union"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-ac39c3c26eb306bd",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-ac39c3c26eb306bd",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "TWAP Reference Price",
+          "description": "A cryptographically signed time-weighted average price for a token pair over the trailing hour, computed from trades on both Stellar testnet and pubnet and delivered as a single reference score. Intended for on-chain oracle consumers and settlement contracts that need a manipulation-resistant mark with an attached signature rather than a raw last-trade tick.",
+          "tags": [
+            "twap",
+            "signed-price",
+            "reference-mark",
+            "oracle-feed"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-ba3771eb624d09ef",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-ba3771eb624d09ef",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Swap Route Quote",
+          "description": "MCP tool for computing optimal swap routes across multiple blockchain DEX venues. Submit a source asset, destination asset, and trade size to receive the best-priced route, expected output amount, and estimated price impact, computed live against current pool and orderbook state across the venues it indexes.",
+          "tags": [
+            "swap-route",
+            "dex-quote",
+            "route-optimization",
+            "multi-chain",
+            "mcp-tool"
+          ],
+          "mcp": {
+            "server_name": "stellar-swap-router-mcp",
+            "tool_name": "get_swap_route_quote",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "nested_object"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-bf81aaa593a59ee0",
+      "query": "historical LP yield performance data, metered pay-as-you-go pricing",
+      "candidate": {
+        "candidate_id": "candidate-bf81aaa593a59ee0",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "NewsPulse Headline Feed",
+          "description": "An MCP tool that returns a ranked list of current top headlines for a requested category or region, refreshed live as stories break. NewsPulse Headline Feed is designed for agent workflows that need a quick, structured news snapshot rather than a full search index, and supports both metered per-call pricing and a capped upto billing mode for always-on monitoring agents. Delivered over Stellar pubnet.",
+          "tags": [
+            "headline-feed",
+            "news",
+            "mcp",
+            "real-time",
+            "list"
+          ],
+          "mcp": {
+            "server_name": "newspulse-headline-mcp",
+            "tool_name": "get_top_headlines",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-c42d30035e407cce",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-c42d30035e407cce",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Signed Price Attestations",
+          "description": "Cryptographically signed spot price marks for major Stellar and cross-chain asset pairs. Each response bundles the price with a detached signature over the payload, an attestor public key reference, and a monotonic sequence number, so a buyer can verify the mark was produced by a known attestor and has not been altered in transit. Marks are refreshed continuously and cover pairs quoted across multiple chains, making this suitable for settlement checks, liquidation triggers, and any workflow that needs a price it can prove rather than merely trust.",
+          "tags": [
+            "price-attestation",
+            "signed-feed",
+            "multi-chain",
+            "verifiable"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-d405a24a3940abc1",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-d405a24a3940abc1",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "OHLCV Candle Feed",
+          "description": "Hourly open-high-low-close-volume candles for tokens traded on Stellar pubnet. Request a symbol and a lookback window and receive an ordered list of candle bars suitable for charting libraries or backtesting a trading strategy, backed by trade data aggregated across the pair's active venues.",
+          "tags": [
+            "ohlcv",
+            "candles",
+            "hourly-bars",
+            "pubnet"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-d90cd494e0bcd788",
+      "query": "Fetch the current state of a specific ledger entry to retrieve account details and balances.",
+      "candidate": {
+        "candidate_id": "candidate-d90cd494e0bcd788",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Archive Ledger State",
+          "description": "Query historical contract data and account state as it existed at a specific past ledger sequence on Stellar testnet. Pass a ledger sequence number and a state key as query parameters to get back the exact entry value at that point in history -- useful for reconstructing balances, auditing past contract storage, or replaying a dispute.",
+          "tags": [
+            "archive-state",
+            "historical-ledger",
+            "point-in-time",
+            "testnet"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-da0878f762e910a6",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-da0878f762e910a6",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "FX Reference Rate Oracle",
+          "description": "MCP tool for fetching fiat FX reference rates against a weighted currency basket, returning a normalized reliability score alongside the quoted rate so downstream agents can gate on data confidence before settling cross-currency conversions. Refreshed hourly from multiple central bank and interbank sources.",
+          "tags": [
+            "fx-rates",
+            "forex",
+            "macro-indicators",
+            "reference-rate"
+          ],
+          "mcp": {
+            "server_name": "fx-reference-rates-mcp",
+            "tool_name": "get_fx_reference_rate",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-e37d7a91c2c50ed7",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-e37d7a91c2c50ed7",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Pool Reserves Snapshot",
+          "description": "Real-time reserve balances and token composition for a single Stellar liquidity pool, delivered as a cryptographically signed snapshot suitable for downstream pricing and risk models. Query any pool by contract address and receive current reserve amounts, token weights, and the ledger sequence the snapshot was taken at, all in one call.",
+          "tags": [
+            "pool-reserves",
+            "liquidity",
+            "amm",
+            "stellar-testnet",
+            "signed-data"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-e6ba01da1e29b3b5",
+      "query": "Screen this transaction for counterparty risk using a service priced at $0.005 or less.",
+      "candidate": {
+        "candidate_id": "candidate-e6ba01da1e29b3b5",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Proof of Address Check",
+          "description": "Submit a utility bill, bank statement, or lease and get back a status on whether it satisfies proof-of-address requirements. Checks document age, name match, and address format, and returns a signed attestation of the result you can hand to a downstream compliance system.",
+          "tags": [
+            "proof-of-address",
+            "kyc",
+            "document-check",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-e90af8aaa27bd906",
+      "query": "Our trading desk needs to know what the current market rate is for Stellar tokens to evaluate entry points for today's positions.",
+      "candidate": {
+        "candidate_id": "candidate-e90af8aaa27bd906",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Oracle Report Status",
+          "description": "Checks whether a given oracle's latest signed report has landed, is stale, or has fallen out of quorum, returning a single status field plus the report's attestation signature and submission timestamp. Polled hourly by downstream consumers who need to know an oracle is healthy before trusting its data. This endpoint is free for all API consumers, with no per-call charge for standard status polling. Available on both Stellar testnet and pubnet.",
+          "tags": [
+            "oracle-status",
+            "signed-feed",
+            "report-status",
+            "hourly"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    }
+  ]
+}

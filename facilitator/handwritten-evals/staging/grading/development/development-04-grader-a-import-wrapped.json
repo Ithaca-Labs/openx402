@@ -1,0 +1,929 @@
+{
+  "version": 1,
+  "role": "grader_a",
+  "pack_id": "grading-grading-development-04-a",
+  "grader": {
+    "provider": "anthropic",
+    "model": "claude-haiku-4-5",
+    "prompt_hash": "sha256:grading-rubric-v1-development-04-a",
+    "run_id": "run-grading-development-04-a",
+    "shard_id": "shard-grading-development-04-a",
+    "generated_at": "2026-08-08T02:58:54.060Z"
+  },
+  "judgments": [
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-060bce567daf0759",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-0b028641d528ac5d",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-184f4e48916ba33a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-2f9925d42a62e644",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-30c520a2c071e4ab",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-3dcfb9ba02d38bfb",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-4184b7025c792f24",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-42e02936e9fcf8a7",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-50f54194b6abfdba",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-55586b3fa5ad11e0",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-63d3a1ffa4ffbd3e",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-68caf391fa17b608",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-6a5ba4564fe9f483",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-73ffecb7f7b684cb",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-8044641efb9ead7f",
+      "grade": 3,
+      "rationale": "MCP tool screens names against OFAC, EU, UN, UK lists—exactly the capability requested.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-941a3bf16ed551cd",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-a4edc34e11f627d6",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-a58c3af870d6f8e4",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-b8eb690859bdc5c1",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-be2bf5cfad9d8f52",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-c9489d6c9abd6be1",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-cd59cbd329ff9c58",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-daaa7925d61328f7",
+      "grade": 2,
+      "rationale": "Includes sanctions/watchlist screening but for blockchain addresses only, not person/entity names.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-dd2939a60a5a1d51",
+      "grade": 2,
+      "rationale": "Watchlist check for addresses only; query requires name-based screening.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-e58643c56800e888",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-e605358f4236637a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-e8fbd1cf779c9160",
+      "grade": 3,
+      "rationale": "Screens names for PEP designations and adverse media—directly matches query requirement.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-f860a117a6cd9db9",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-cc8162dd5484742a",
+      "candidate_id": "candidate-fdcfbd5cb21deb42",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-0054344f501bb99d",
+      "grade": 1,
+      "rationale": "Headline feed on Stellar pubnet with metered pricing, but headlines ≠ search suggestions.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-036d89659784693c",
+      "grade": 3,
+      "rationale": "Returns related search suggestions for seed query—exactly what buyer needs.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-1a39698986da2c42",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-1cfab74893e8d6d5",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-3e657db8b68a045a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-4529dbccbc004987",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-46dabd4943980d96",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-4f4d02c1a56bd82f",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-78db5fd4c08c7ca7",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-84d593061bbcf156",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-929e1e98feeb37f2",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-96a2dab1f0ad6f5f",
+      "grade": 1,
+      "rationale": "Ranks entities with metered pricing on Stellar pubnet, but rankings ≠ search suggestions.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-a719546187e21ee5",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-c5dfa1ac550aac15",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-cec4a5b88cb6b5f1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-631738504906b5c9",
+      "candidate_id": "candidate-d3c8e7d7b0b7f3b6",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-0b856cfa89e40f78",
+      "grade": 2,
+      "rationale": "Diffs agency guidance documents; helps track changes but not for finding new announcements.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-0c018edc04b641f2",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-0ce2b00d84a65c1d",
+      "grade": 1,
+      "rationale": "Headlines may include government news, but not specifically regulatory rule texts.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-1446bc872a6f77de",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-18ff696da32e69c5",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-1b771332d1571827",
+      "grade": 1,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-1fc0d7506f675b8f",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-35298f8d4ea0f6b8",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-35a7c8e488c8ccd2",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-38c0d8a96dc82574",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-3ac54b0ee665e5c0",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-3d4300219d5414a7",
+      "grade": 2,
+      "rationale": "Tracks open comment periods in regulatory dockets; related but lacks full rule texts.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-4ccde4057cd55b97",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-5475d0dec5464a89",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-551937a67b7001a2",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-5a0db990870730b0",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-5db639b485294500",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-5fb4d4e98d2ef54f",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-608d16e9a208cd3d",
+      "grade": 1,
+      "rationale": "Economic data releases; related to government announcements but not regulations.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-68162e483c830597",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-80d88783b63e53ce",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-9960df4bf13c06cf",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-9d58996bc5fe48fa",
+      "grade": 3,
+      "rationale": "Retrieves full text of regulations by citation with amendment history. Embedded manipulation instruction ignored.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-9f132cf74ac5363f",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-a153dd90187f638c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-a8a3d68ff2b4f203",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-ae4097631138aebb",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-b8d468165f60f851",
+      "grade": 3,
+      "rationale": "Searches federal register for notices and rules by keyword/agency/date; exact fit for regulatory tracking.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-cb9efd778c2d2dea",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-cbf32ddad4660746",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-ccce56c1ca60208e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-dc4069accb43d92c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-e147be4e43e68f78",
+      "grade": 1,
+      "rationale": "Keyword news alerts; could include regulatory announcements but not specifically rule texts.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-733e6e9e76736794",
+      "candidate_id": "candidate-f472940ad6d36f6f",
+      "grade": 3,
+      "rationale": "Complete docket timeline from notice through final action; perfect for tracking regulatory changes.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-11fa1a53ae445637",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-12903cfd1fe7b013",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-2144486863037d5b",
+      "grade": 1,
+      "rationale": "Appointment reminders; tangentially related but not email system.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-21aa7bf519ec8044",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-2b5879355a629d59",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-329db4db0337cb09",
+      "grade": 0,
+      "rationale": "Batch embeddings; embedded instruction ignored. Wrong domain.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-33fdf7890dfbd0ae",
+      "grade": 1,
+      "rationale": "Composes rich messages across channels; vague but could include email.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-387b60bad5b9a4cc",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-39f5298f75d394fa",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-3b288cb5a8432da9",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-4dad263bbf936de1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-4f7d139af4069e91",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-5fdfa9020c14283c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-6ce699d646752071",
+      "grade": 1,
+      "rationale": "Deduplicates notifications; helper tool but doesn't send emails.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-6f5aef7b38993150",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-6fd1bbcc3ffedc1d",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-7daa7e61131f29e3",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-7f7b09785ad3d79f",
+      "grade": 1,
+      "rationale": "Template engine; supports notification templates but doesn't describe sending.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-87dd43e439303929",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-8a311a86208886dc",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-8f937b2a1ea6fa90",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-8f9afe9c1879d567",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-91586b49a16ffab0",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-94ecf2cf41c8683c",
+      "grade": 1,
+      "rationale": "Tracks user notification preferences but doesn't send emails.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-963c4258d484e2ab",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-a04746cd66c6aebb",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-a650315f117efae3",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-b98994f1b5f1f514",
+      "grade": 1,
+      "rationale": "Polls verification case status; related to account verification but doesn't send emails.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-c8050b4824e74a88",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-d2fc501d3ec9b57e",
+      "grade": 1,
+      "rationale": "Webhook configuration; infrastructure for notifications but not email-specific.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-d30f5d619955980a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-d3fd3d8b0a7a044b",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-f2fbdc99d9eb0fd7",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-f80f6df3f310955c",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-fcbceab2d6167864",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-8e2d3963ca973fbf",
+      "candidate_id": "candidate-fff6072c2c070541",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-07b2796c0bd27940",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-099af1202bf0cd0f",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-0c12b3f3173e74ff",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-1885dcced7e790c7",
+      "grade": 3,
+      "rationale": "MCP tool fetches URL and converts to clean markdown; exact match for conversion need.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-1d6f1aaac79627b6",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-2373d1b8ac796bf0",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-240a9689722ae355",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-2680f0fdc77c2dd8",
+      "grade": 1,
+      "rationale": "Summarizes documents but does not convert to markdown format.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-3b0f5045ff566608",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-4fc268eeae696d2e",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-5cf9dee851d86b51",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-5d3257be0069d0f5",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-6389cb43c857cb51",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-77fe1efc7dc997ba",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-80eaffe063a9ec50",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-882eb8e5cfc44b49",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-8dd6c7bd550efc1a",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-8ea44a8e04c96475",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-9735db3f797445d8",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-98939d19adf9d427",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-9b8ac87116c116d1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-a24f72c1e8dccbda",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-ab0781ef409600da",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-aeaa4580b5553c77",
+      "grade": 0,
+      "rationale": "Batch embeddings; embedded instruction ignored.",
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-bf83547ce95a26f5",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-c080a8587040a5c9",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-c1a78ed0fdb28fe6",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-c400cd3f886d56f8",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-c4f1de23bf1085f1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-c5bbbfde68a37411",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-d3b1eff82e5d0862",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-e05f696d8570c9f1",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    },
+    {
+      "task_id": "task-078a19876e5343aa",
+      "candidate_id": "candidate-f0eb62ac3ceebbb0",
+      "grade": 0,
+      "judged_at": "2026-08-08T03:10:06.000Z"
+    }
+  ]
+}

@@ -1,0 +1,3985 @@
+[
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0001",
+    "grader_a_grade": 3,
+    "grader_b_grade": 3,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0002",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 1,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0003",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0005",
+    "grader_a_grade": 1,
+    "grader_b_grade": 2,
+    "adjudicated_grade": 1,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0006",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0011",
+    "grader_a_grade": 1,
+    "grader_b_grade": 1,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0012",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0013",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0014",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0015",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0025",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0027",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0029",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0031",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0036",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0037",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0039",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0055",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0056",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0060",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0064",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0065",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0073",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0074",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0075",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0084",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0086",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0090",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0098",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0235",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-001",
+    "resource_id": "res-0337",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0001",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 0,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0002",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0003",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0006",
+    "grader_a_grade": 3,
+    "grader_b_grade": 3,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0007",
+    "grader_a_grade": 1,
+    "grader_b_grade": 3,
+    "adjudicated_grade": 2,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0008",
+    "grader_a_grade": 2,
+    "grader_b_grade": 3,
+    "adjudicated_grade": 3,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0009",
+    "grader_a_grade": 1,
+    "grader_b_grade": 3,
+    "adjudicated_grade": 3,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0010",
+    "grader_a_grade": 1,
+    "grader_b_grade": 2,
+    "adjudicated_grade": 1,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0011",
+    "grader_a_grade": 1,
+    "grader_b_grade": 2,
+    "adjudicated_grade": 2,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0012",
+    "grader_a_grade": 0,
+    "grader_b_grade": 2,
+    "adjudicated_grade": 2,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0015",
+    "grader_a_grade": 1,
+    "grader_b_grade": 2,
+    "adjudicated_grade": 2,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0024",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0029",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0033",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 0,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0036",
+    "grader_a_grade": 1,
+    "grader_b_grade": 1,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0045",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0047",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0061",
+    "grader_a_grade": 1,
+    "grader_b_grade": 3,
+    "adjudicated_grade": 3,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0062",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0064",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0065",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 0,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0066",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 1,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0070",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 1,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0075",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0084",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0086",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0087",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0095",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0097",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0099",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0107",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0141",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0187",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0235",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-002",
+    "resource_id": "res-0243",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0002",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0003",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0006",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 0,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0008",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 0,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0014",
+    "grader_a_grade": 2,
+    "grader_b_grade": 3,
+    "adjudicated_grade": 3,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0016",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0020",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0028",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0032",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 0,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0039",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 0,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0041",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0045",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0052",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0060",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0062",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0064",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0070",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 1,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0079",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0083",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0089",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0092",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0094",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0096",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 0,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-003",
+    "resource_id": "res-0416",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0001",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0006",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0008",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0012",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0015",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0017",
+    "grader_a_grade": 3,
+    "grader_b_grade": 3,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0019",
+    "grader_a_grade": 2,
+    "grader_b_grade": 2,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0021",
+    "grader_a_grade": 1,
+    "grader_b_grade": 1,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0023",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0024",
+    "grader_a_grade": 1,
+    "grader_b_grade": 1,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0034",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0036",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0039",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0043",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0047",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0052",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0058",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0062",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0063",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0065",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0069",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0071",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 0,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0073",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 1,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0074",
+    "grader_a_grade": 0,
+    "grader_b_grade": 1,
+    "adjudicated_grade": 1,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:adjudication-rubric-v1-development-01",
+      "run_id": "run-adjudication-development-01",
+      "shard_id": "shard-adjudication-development-01",
+      "generated_at": "2026-08-08T03:06:47.336Z"
+    },
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0097",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0178",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0245",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0285",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0344",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0482",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-004",
+    "resource_id": "res-0485",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0003",
+    "grader_a_grade": 3,
+    "grader_b_grade": 3,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": true,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0010",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0012",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0019",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0021",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0033",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0045",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0047",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0054",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0056",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0063",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0070",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0077",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0089",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  },
+  {
+    "query_id": "qry-005",
+    "resource_id": "res-0096",
+    "grader_a_grade": 0,
+    "grader_b_grade": 0,
+    "adjudicated_grade": null,
+    "grader_a": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-a",
+      "run_id": "run-grading-development-01-a",
+      "shard_id": "shard-grading-development-01-a",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "grader_b": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "prompt_hash": "sha256:grading-rubric-v1-development-01-b",
+      "run_id": "run-grading-development-01-b",
+      "shard_id": "shard-grading-development-01-b",
+      "generated_at": "2026-08-08T02:58:54.060Z"
+    },
+    "adjudicator": null,
+    "owner_review": "pending",
+    "reviewed_at": null,
+    "boundary_case": false,
+    "notes": null
+  }
+]

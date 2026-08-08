@@ -1,0 +1,132 @@
+[
+  {
+    "shard": "development-01",
+    "queryIds": [
+      "qry-001",
+      "qry-002",
+      "qry-003",
+      "qry-004",
+      "qry-005"
+    ],
+    "pairCount": 136,
+    "packHashA": "pack-a: 136 candidates",
+    "packHashB": "pack-b: 136 candidates"
+  },
+  {
+    "shard": "development-02",
+    "queryIds": [
+      "qry-006",
+      "qry-007",
+      "qry-008",
+      "qry-009",
+      "qry-010"
+    ],
+    "pairCount": 169,
+    "packHashA": "pack-a: 169 candidates",
+    "packHashB": "pack-b: 169 candidates"
+  },
+  {
+    "shard": "development-03",
+    "queryIds": [
+      "qry-011",
+      "qry-012",
+      "qry-013",
+      "qry-014",
+      "qry-015"
+    ],
+    "pairCount": 122,
+    "packHashA": "pack-a: 122 candidates",
+    "packHashB": "pack-b: 122 candidates"
+  },
+  {
+    "shard": "development-04",
+    "queryIds": [
+      "qry-016",
+      "qry-017",
+      "qry-018",
+      "qry-019",
+      "qry-020"
+    ],
+    "pairCount": 148,
+    "packHashA": "pack-a: 148 candidates",
+    "packHashB": "pack-b: 148 candidates"
+  },
+  {
+    "shard": "development-05",
+    "queryIds": [
+      "qry-021",
+      "qry-022",
+      "qry-023",
+      "qry-024",
+      "qry-025"
+    ],
+    "pairCount": 136,
+    "packHashA": "pack-a: 136 candidates",
+    "packHashB": "pack-b: 136 candidates"
+  },
+  {
+    "shard": "development-06",
+    "queryIds": [
+      "qry-026",
+      "qry-027",
+      "qry-028",
+      "qry-029",
+      "qry-030"
+    ],
+    "pairCount": 138,
+    "packHashA": "pack-a: 138 candidates",
+    "packHashB": "pack-b: 138 candidates"
+  },
+  {
+    "shard": "development-07",
+    "queryIds": [
+      "qry-031",
+      "qry-032",
+      "qry-033",
+      "qry-034",
+      "qry-035"
+    ],
+    "pairCount": 140,
+    "packHashA": "pack-a: 140 candidates",
+    "packHashB": "pack-b: 140 candidates"
+  },
+  {
+    "shard": "development-08",
+    "queryIds": [
+      "qry-036",
+      "qry-037",
+      "qry-038",
+      "qry-039",
+      "qry-040"
+    ],
+    "pairCount": 141,
+    "packHashA": "pack-a: 141 candidates",
+    "packHashB": "pack-b: 141 candidates"
+  },
+  {
+    "shard": "development-09",
+    "queryIds": [
+      "qry-041",
+      "qry-042",
+      "qry-043",
+      "qry-044",
+      "qry-045"
+    ],
+    "pairCount": 151,
+    "packHashA": "pack-a: 151 candidates",
+    "packHashB": "pack-b: 151 candidates"
+  },
+  {
+    "shard": "development-10",
+    "queryIds": [
+      "qry-046",
+      "qry-047",
+      "qry-048",
+      "qry-049",
+      "qry-050"
+    ],
+    "pairCount": 161,
+    "packHashA": "pack-a: 161 candidates",
+    "packHashB": "pack-b: 161 candidates"
+  }
+]

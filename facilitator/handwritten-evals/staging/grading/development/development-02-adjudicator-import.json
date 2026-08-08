@@ -1,0 +1,170 @@
+[
+  {
+    "task_id": "task-12ede9e277bd69e2",
+    "candidate_id": "candidate-12ede9e277bd69e2",
+    "grade": 1,
+    "rationale": "Provides point-in-time ledger state lookup, not sequential activity logs of contract execution",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-1b6e3b4dd62010ea",
+    "candidate_id": "candidate-1b6e3b4dd62010ea",
+    "grade": 0,
+    "rationale": "Signature verification is unrelated to viewing activity logs",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-23e3cbf1565e7f31",
+    "candidate_id": "candidate-23e3cbf1565e7f31",
+    "grade": 0,
+    "rationale": "Price feed service, not activity logs",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-245a4d283d5eb95c",
+    "candidate_id": "candidate-245a4d283d5eb95c",
+    "grade": 1,
+    "rationale": "Generic anomaly detection doesn't specifically assess address trustworthiness or identify transaction risk",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-25248cc321c352c9",
+    "candidate_id": "candidate-25248cc321c352c9",
+    "grade": 0,
+    "rationale": "Trading candles, not block headers",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-37a8515da9723ad9",
+    "candidate_id": "candidate-37a8515da9723ad9",
+    "grade": 0,
+    "rationale": "Historical price series, not current pool reserves",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-3dadd9f1a88b140e",
+    "candidate_id": "candidate-3dadd9f1a88b140e",
+    "grade": 3,
+    "rationale": "Directly screens name/entity against OFAC, EU, UN, UK watchlists to identify sanctions risks",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-416cb9bb2e92906e",
+    "candidate_id": "candidate-416cb9bb2e92906e",
+    "grade": 0,
+    "rationale": "Pool reserves snapshot, not block header stream",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-4d986befd7e39305",
+    "candidate_id": "candidate-4d986befd7e39305",
+    "grade": 1,
+    "rationale": "Computes optimal swap routes, not retrieves current pool reserves and composition",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-4e3ece63ea7101bd",
+    "candidate_id": "candidate-4e3ece63ea7101bd",
+    "grade": 0,
+    "rationale": "Network packet analysis, not contract activity logs",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-5023e693c09eb90d",
+    "candidate_id": "candidate-5023e693c09eb90d",
+    "grade": 0,
+    "rationale": "Wallet counterparty exposure breakdown, not activity logs",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-50cf62788626f7e6",
+    "candidate_id": "candidate-50cf62788626f7e6",
+    "grade": 1,
+    "rationale": "Block header stream doesn't capture smart contract activity logs; tag-stuffing suggests manipulation",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-5287b4e90bc080cf",
+    "candidate_id": "candidate-5287b4e90bc080cf",
+    "grade": 1,
+    "rationale": "Document verification assesses individual identity, not address trustworthiness for transactions",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-5ab212eba875e29e",
+    "candidate_id": "candidate-5ab212eba875e29e",
+    "grade": 0,
+    "rationale": "Protocol TVL metrics, not activity logs",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-67e9381c42cf4d54",
+    "candidate_id": "candidate-67e9381c42cf4d54",
+    "grade": 2,
+    "rationale": "Provides historical state at specific ledger sequences; can reconstruct but not ideal form for activity logs",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-8abfa40f2284f954",
+    "candidate_id": "candidate-8abfa40f2284f954",
+    "grade": 0,
+    "rationale": "Entity rankings by metrics, not activity logs",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-a27c5ba1671d4464",
+    "candidate_id": "candidate-a27c5ba1671d4464",
+    "grade": 0,
+    "rationale": "Oracle health status, not smart contract activity logs",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-a522bb784c9340dd",
+    "candidate_id": "candidate-a522bb784c9340dd",
+    "grade": 1,
+    "rationale": "LP yield history indicates returns, not current reserves and composition",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-d10c84a39719fd14",
+    "candidate_id": "candidate-d10c84a39719fd14",
+    "grade": 3,
+    "rationale": "Screens for PEP designation and adverse media, directly identifying key trust warning signs",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-d87567a971968170",
+    "candidate_id": "candidate-d87567a971968170",
+    "grade": 2,
+    "rationale": "Provides screening disposition but requires prior case opening; useful for tracking not initial assessment",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-df72db3dc76b1c3b",
+    "candidate_id": "candidate-df72db3dc76b1c3b",
+    "grade": 1,
+    "rationale": "Batch token price quotes, not pool reserve composition for routing",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-e25e624b154122be",
+    "candidate_id": "candidate-e25e624b154122be",
+    "grade": 0,
+    "rationale": "Wallet clustering and entity attribution, not activity logs",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-f0df6061b7aecd8d",
+    "candidate_id": "candidate-f0df6061b7aecd8d",
+    "grade": 1,
+    "rationale": "Generic data stream aggregator doesn't confirm block header capability",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-fbd7a8b6de699b14",
+    "candidate_id": "candidate-fbd7a8b6de699b14",
+    "grade": 0,
+    "rationale": "Access authentication logs, not smart contract activity logs",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  }
+]

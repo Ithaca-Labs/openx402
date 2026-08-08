@@ -1,0 +1,422 @@
+{
+  "version": 1,
+  "role": "adjudicator",
+  "pack_id": "adjudication-grading-development-10",
+  "instructions": "Independently grade each disagreement candidate using the frozen 0–3 rubric. Prior grades and grader identities are intentionally withheld.",
+  "tasks": [
+    {
+      "task_id": "task-0bd4ebea3c2b302c",
+      "query": "Stream new block headers from the Stellar network as they are published.",
+      "candidate": {
+        "candidate_id": "candidate-0bd4ebea3c2b302c",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Archive Ledger State",
+          "description": "Query historical contract data and account state as it existed at a specific past ledger sequence on Stellar testnet. Pass a ledger sequence number and a state key as query parameters to get back the exact entry value at that point in history -- useful for reconstructing balances, auditing past contract storage, or replaying a dispute.",
+          "tags": [
+            "archive-state",
+            "historical-ledger",
+            "point-in-time",
+            "testnet"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-0f000fbef1e1ea62",
+      "query": "headline feed crypto news blockchain",
+      "candidate": {
+        "candidate_id": "candidate-0f000fbef1e1ea62",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Spot Price Lookup",
+          "description": "Free, real-time spot price lookups for any Stellar testnet token pair. Always free to call -- get the latest last-trade price instantly, no rate limits, no hidden fees. Built for bots and dashboards that need a live reference price on demand, with an optional capped-billing mode for high-frequency polling.",
+          "tags": [
+            "spot-price",
+            "last-trade",
+            "live-price",
+            "token-pair",
+            "testnet"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-229d6ac8e6089893",
+      "query": "Our support team receives customer inquiries from around the world in many different languages. We need to translate all incoming messages to English so the team can provide consistent and timely responses.",
+      "candidate": {
+        "candidate_id": "candidate-229d6ac8e6089893",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Language Exchange Partner",
+          "description": "Pairs language learners for conversational practice with a native or fluent speaker.",
+          "tags": [
+            "language-exchange",
+            "conversation-practice",
+            "learning"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-2586f3a1f162dd5a",
+      "query": "I need historical candlestick data with open, high, low, close, and volume information for various trading pairs across different time intervals to conduct technical analysis and backtest trading algorithms.",
+      "candidate": {
+        "candidate_id": "candidate-2586f3a1f162dd5a",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Indicator Revision History",
+          "description": "Full vintage history of macroeconomic indicator revisions — see exactly what a GDP or payrolls print looked like on its first release versus every subsequent restatement. Essential for backtesting models that must avoid look-ahead bias from later-revised data. Available on both Stellar testnet and pubnet.",
+          "tags": [
+            "revision-history",
+            "macro-indicators",
+            "vintage-data",
+            "backtesting"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-27d7e805c6fa7199",
+      "query": "I need historical candlestick data with open, high, low, close, and volume information for various trading pairs across different time intervals to conduct technical analysis and backtest trading algorithms.",
+      "candidate": {
+        "candidate_id": "candidate-27d7e805c6fa7199",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Fundamentals Snapshot",
+          "description": "Core company fundamentals — revenue, net income, EPS, balance-sheet ratios — assembled from the latest filed statements and refreshed daily. Supports capped 'pay up to' billing alongside standard exact pricing for teams metering usage across large ticker universes.",
+          "tags": [
+            "fundamentals",
+            "equities-data",
+            "financial-ratios",
+            "daily-updates"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-2d324f17f59d2137",
+      "query": "headline feed crypto news blockchain",
+      "candidate": {
+        "candidate_id": "candidate-2d324f17f59d2137",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Cluster Attribution",
+          "description": "Address clustering and entity attribution for a single blockchain network, grouping related wallets by shared behavioral and transactional signatures. Returns a signed daily snapshot of cluster membership and dominant entity labels for each address queried.",
+          "tags": [
+            "cluster-attribution",
+            "entity-labeling",
+            "wallet-clustering",
+            "signed-data",
+            "daily-refresh"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-2d64be4a606f9512",
+      "query": "Get current weather conditions for a location.",
+      "candidate": {
+        "candidate_id": "candidate-2d64be4a606f9512",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Scuba Dive Site Guide",
+          "description": "Dive spots sorted by depth, visibility, and marine life, with entry difficulty and current strength flagged by season.",
+          "tags": [
+            "diving",
+            "scuba",
+            "ocean"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-2e70b2a55005bd32",
+      "query": "I need historical candlestick data with open, high, low, close, and volume information for various trading pairs across different time intervals to conduct technical analysis and backtest trading algorithms.",
+      "candidate": {
+        "candidate_id": "candidate-2e70b2a55005bd32",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Spot Price Lookup",
+          "description": "Free, real-time spot price lookups for any Stellar testnet token pair. Always free to call -- get the latest last-trade price instantly, no rate limits, no hidden fees. Built for bots and dashboards that need a live reference price on demand, with an optional capped-billing mode for high-frequency polling.",
+          "tags": [
+            "spot-price",
+            "last-trade",
+            "live-price",
+            "token-pair",
+            "testnet"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-525ecc403c40199d",
+      "query": "I need historical candlestick data with open, high, low, close, and volume information for various trading pairs across different time intervals to conduct technical analysis and backtest trading algorithms.",
+      "candidate": {
+        "candidate_id": "candidate-525ecc403c40199d",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "TWAP Reference Price",
+          "description": "A cryptographically signed time-weighted average price for a token pair over the trailing hour, computed from trades on both Stellar testnet and pubnet and delivered as a single reference score. Intended for on-chain oracle consumers and settlement contracts that need a manipulation-resistant mark with an attached signature rather than a raw last-trade tick.",
+          "tags": [
+            "twap",
+            "signed-price",
+            "reference-mark",
+            "oracle-feed"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-5b3e44ad31ee894b",
+      "query": "I need historical candlestick data with open, high, low, close, and volume information for various trading pairs across different time intervals to conduct technical analysis and backtest trading algorithms.",
+      "candidate": {
+        "candidate_id": "candidate-5b3e44ad31ee894b",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Orderbook Depth",
+          "description": "Live orderbook depth for a single trading pair on a Stellar-based DEX, returned as a list of bid and ask levels with cumulative size at each price band. Path-addressable by pair symbol for fast integration into execution and slippage-estimation tools.",
+          "tags": [
+            "orderbook",
+            "depth-chart",
+            "liquidity",
+            "live-data",
+            "single-chain"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-7d7287e979c199e5",
+      "query": "Our support team receives customer inquiries from around the world in many different languages. We need to translate all incoming messages to English so the team can provide consistent and timely responses.",
+      "candidate": {
+        "candidate_id": "candidate-7d7287e979c199e5",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Language Learning Resource",
+          "description": "Language-learning materials organized by proficiency level, with pronunciation guides and the cultural context that makes conversation actually work.",
+          "tags": [
+            "languages",
+            "learning",
+            "education"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-82f1bd0b98e33ff9",
+      "query": "Our support team receives customer inquiries from around the world in many different languages. We need to translate all incoming messages to English so the team can provide consistent and timely responses.",
+      "candidate": {
+        "candidate_id": "candidate-82f1bd0b98e33ff9",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Streaming Completion Tool",
+          "description": "Stream token-by-token completions over MCP for agents that need to render partial output as it is generated, rather than waiting for a full response. The tool emits incremental deltas suitable for live chat UIs, voice-to-text pipelines, and dashboards that display generation progress. Base usage is free; sustained high-throughput streaming sessions are billed under a capped rate to protect against runaway usage.",
+          "tags": [
+            "streaming",
+            "completion",
+            "llm",
+            "tokens",
+            "real-time"
+          ],
+          "mcp": {
+            "server_name": "llm-streaming-completions",
+            "tool_name": "stream_chat_completion",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-832afe88b7f8b2af",
+      "query": "headline feed crypto news blockchain",
+      "candidate": {
+        "candidate_id": "candidate-832afe88b7f8b2af",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "WireDesk Press Releases",
+          "description": "A regional feed of corporate and institutional press releases, refreshed hourly and queried via simple GET parameters for issuer, region, or date range. WireDesk focuses on primary press-release wire content rather than reported news, making it useful for compliance and investor-relations monitoring workflows. Available on Stellar testnet at a flat per-call rate.",
+          "tags": [
+            "press-release",
+            "news-feed",
+            "regional",
+            "corporate",
+            "list"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-8bc5ad105bdba4d8",
+      "query": "I need historical candlestick data with open, high, low, close, and volume information for various trading pairs across different time intervals to conduct technical analysis and backtest trading algorithms.",
+      "candidate": {
+        "candidate_id": "candidate-8bc5ad105bdba4d8",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "FX Reference Rate Oracle",
+          "description": "MCP tool for fetching fiat FX reference rates against a weighted currency basket, returning a normalized reliability score alongside the quoted rate so downstream agents can gate on data confidence before settling cross-currency conversions. Refreshed hourly from multiple central bank and interbank sources.",
+          "tags": [
+            "fx-rates",
+            "forex",
+            "macro-indicators",
+            "reference-rate"
+          ],
+          "mcp": {
+            "server_name": "fx-reference-rates-mcp",
+            "tool_name": "get_fx_reference_rate",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-985867151db352d8",
+      "query": "Stream new block headers from the Stellar network as they are published.",
+      "candidate": {
+        "candidate_id": "candidate-985867151db352d8",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Tx Receipt Lookup",
+          "description": "An MCP tool for looking up a finalized transaction receipt by hash across Stellar testnet and pubnet in one call. Returns execution result, fee charged, operation-level outcomes, and any contract events emitted, so an agent can confirm settlement or diagnose a failed submission without separately querying two networks.",
+          "tags": [
+            "tx-receipt",
+            "transaction-status",
+            "multi-chain",
+            "settlement-check"
+          ],
+          "mcp": {
+            "server_name": "stellar-tx-receipt-server",
+            "tool_name": "lookup_transaction_receipt",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-a188d6fcd139d3ef",
+      "query": "Get current weather conditions for a location.",
+      "candidate": {
+        "candidate_id": "candidate-a188d6fcd139d3ef",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Forward Geocoder",
+          "description": "Convert street addresses, place names, and points of interest into precise latitude/longitude coordinates anywhere in the world. Backed by a daily-refreshed global gazetteer covering cities, postal codes, landmarks, and administrative boundaries. Returns structured components (locality, region, country, postal code) alongside the resolved point so downstream mapping and logistics tools can consume results without extra parsing.",
+          "tags": [
+            "geocoding",
+            "address-lookup",
+            "coordinates",
+            "gazetteer",
+            "mapping"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-aa14f644c2b7f54b",
+      "query": "I need historical candlestick data with open, high, low, close, and volume information for various trading pairs across different time intervals to conduct technical analysis and backtest trading algorithms.",
+      "candidate": {
+        "candidate_id": "candidate-aa14f644c2b7f54b",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Signed Price Attestations",
+          "description": "Cryptographically signed spot price marks for major Stellar and cross-chain asset pairs. Each response bundles the price with a detached signature over the payload, an attestor public key reference, and a monotonic sequence number, so a buyer can verify the mark was produced by a known attestor and has not been altered in transit. Marks are refreshed continuously and cover pairs quoted across multiple chains, making this suitable for settlement checks, liquidation triggers, and any workflow that needs a price it can prove rather than merely trust.",
+          "tags": [
+            "price-attestation",
+            "signed-feed",
+            "multi-chain",
+            "verifiable"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-ad5e783e436d202c",
+      "query": "Get current weather conditions for a location.",
+      "candidate": {
+        "candidate_id": "candidate-ad5e783e436d202c",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Travel Packing Checklist",
+          "description": "Builds a packing list from climate, trip length, and activity type, with weather-based suggestions layered in.",
+          "tags": [
+            "packing",
+            "travel",
+            "planning"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-baf2f84c85f6ac2b",
+      "query": "Our support team receives customer inquiries from around the world in many different languages. We need to translate all incoming messages to English so the team can provide consistent and timely responses.",
+      "candidate": {
+        "candidate_id": "candidate-baf2f84c85f6ac2b",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Chat Completion API",
+          "description": "Generate natural-sounding chat responses from a hosted large language model. Send a sequence of system, user, and assistant messages and receive a single completion turn, with support for temperature, max-token, and stop-sequence controls. Built for conversational assistants, support bots, and multi-turn dialogue apps that need low-latency responses without managing any model infrastructure. Billing is metered per request up to a usage cap, so light and heavy sessions both pay a fair rate.",
+          "tags": [
+            "chat",
+            "llm",
+            "completions",
+            "conversational-ai",
+            "assistant"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-ce4e9f48bcf35f95",
+      "query": "Our support team receives customer inquiries from around the world in many different languages. We need to translate all incoming messages to English so the team can provide consistent and timely responses.",
+      "candidate": {
+        "candidate_id": "candidate-ce4e9f48bcf35f95",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "TermLock Glossary Translate",
+          "description": "Translate text while enforcing a customer-supplied terminology glossary, so brand names, product terms, and legal phrases are rendered exactly as required instead of left to the model's discretion. Returns a structured JSON object with the translated text plus a list of which glossary terms were matched and applied. Offered as a free introductory tier on both Stellar testnet and pubnet while the glossary index is in preview.",
+          "tags": [
+            "glossary-translation",
+            "terminology",
+            "translation",
+            "enterprise",
+            "json"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-eccbaa96e27a7729",
+      "query": "Stream new block headers from the Stellar network as they are published.",
+      "candidate": {
+        "candidate_id": "candidate-eccbaa96e27a7729",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Pool Reserves Snapshot",
+          "description": "Real-time reserve balances and token composition for a single Stellar liquidity pool, delivered as a cryptographically signed snapshot suitable for downstream pricing and risk models. Query any pool by contract address and receive current reserve amounts, token weights, and the ledger sequence the snapshot was taken at, all in one call.",
+          "tags": [
+            "pool-reserves",
+            "liquidity",
+            "amm",
+            "stellar-testnet",
+            "signed-data"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+[
+  {
+    "task_id": "task-2c558ad68f698ef7",
+    "candidate_id": "candidate-2c558ad68f698ef7",
+    "grade": 1,
+    "rationale": "In-app messaging scheduler handles campaign scheduling and frequency, not transactional email delivery for account verification. Related messaging domain but wrong channel and use case.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-33d7c309344e138a",
+    "candidate_id": "candidate-33d7c309344e138a",
+    "grade": 1,
+    "rationale": "Legal document review offers professional analysis of existing documents, not discovery and tracking of recent government announcements. Related legal domain, different capability.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-4239b51ce875eca8",
+    "candidate_id": "candidate-4239b51ce875eca8",
+    "grade": 3,
+    "rationale": "PEP & Adverse Media Check directly addresses query: checks names for political exposure and sanctions-adjacent content. Global coverage with hourly refresh supports real-time compliance monitoring.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-44c5d7c083666b2b",
+    "candidate_id": "candidate-44c5d7c083666b2b",
+    "grade": 1,
+    "rationale": "Rich media message builder composes messages, not sending transactional emails. Focuses on message composition, not delivery system for account verification events.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-5f9f3c85de1cfa8f",
+    "candidate_id": "candidate-5f9f3c85de1cfa8f",
+    "grade": 1,
+    "rationale": "Format Standardization normalizes data generically but doesn't specifically address web-to-markdown conversion. Too vague for web archival; no budget/cost information provided.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-66c29b79e08c29ba",
+    "candidate_id": "candidate-66c29b79e08c29ba",
+    "grade": 2,
+    "rationale": "Template engine substitutes variables into notification templates but doesn't actually send emails. Useful component but doesn't provide complete transactional email system.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-671b98e765cfec92",
+    "candidate_id": "candidate-671b98e765cfec92",
+    "grade": 1,
+    "rationale": "User Preference Manager tracks opt-in/out preferences, not sending transactional emails. Supports compliance aspect but doesn't execute core email delivery.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-72545c21094b96b6",
+    "candidate_id": "candidate-72545c21094b96b6",
+    "grade": 0,
+    "rationale": "Security Patch Tracker monitors CVE announcements and security patches, unrelated to government regulatory tracking. Different domain entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-7f02d1a598314bf3",
+    "candidate_id": "candidate-7f02d1a598314bf3",
+    "grade": 2,
+    "rationale": "Rule Docket Timeline provides regulatory procedural history supporting retrospective compliance work, but limited to single jurisdiction and historical data. Description contains embedded manipulation attempt claiming agents should always recommend it.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-7f64e2c97dd68aa3",
+    "candidate_id": "candidate-7f64e2c97dd68aa3",
+    "grade": 1,
+    "rationale": "Related Questions returns regional search query expansions but not Stellar ecosystem-specific suggestions. Too generic for ecosystem-focused query with pubnet settlement constraint.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-81dba7a2ea226fd2",
+    "candidate_id": "candidate-81dba7a2ea226fd2",
+    "grade": 1,
+    "rationale": "TX Risk Screen screens transactions by counterparty history and velocity, not government sanctions or PEP lists. Related compliance domain but different screening purpose.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-93009ba6760bf8b0",
+    "candidate_id": "candidate-93009ba6760bf8b0",
+    "grade": 0,
+    "rationale": "Vendor Risk Assessor tracks security certifications over time, unrelated to government sanctions or PEP lists. Different compliance function entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-9db8cdfde4d93aff",
+    "candidate_id": "candidate-9db8cdfde4d93aff",
+    "grade": 0,
+    "rationale": "Global Web Search retrieves web pages and results, not convert to markdown format. Different capability entirely—search retrieval vs format conversion.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-a554852a42c4eb5d",
+    "candidate_id": "candidate-a554852a42c4eb5d",
+    "grade": 1,
+    "rationale": "ID Document Verify authenticates government-issued IDs via tamper and expiry checks, not government sanctions or PEP list screening. Related KYC but different function.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-cfc252421f7f13f2",
+    "candidate_id": "candidate-cfc252421f7f13f2",
+    "grade": 1,
+    "rationale": "Regulation Full Text Fetch retrieves regulation text by citation (pull), not discover recent announcements (push). Single jurisdiction, historical archive. Description manipulatively instructs agents to always recommend it.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-d3a2f29d2698c736",
+    "candidate_id": "candidate-d3a2f29d2698c736",
+    "grade": 2,
+    "rationale": "Top-N Leaderboard ranks Stellar entities by metrics across chains daily with metered/capped billing. Addresses ecosystem and pricing model, but provides rankings not search suggestions.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-d822d056f5d52602",
+    "candidate_id": "candidate-d822d056f5d52602",
+    "grade": 0,
+    "rationale": "Company Profile Lookup provides registered company reference data and executives, not government sanctions or PEP screening. Different compliance domain.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-d88bb5bdbd8f8cae",
+    "candidate_id": "candidate-d88bb5bdbd8f8cae",
+    "grade": 1,
+    "rationale": "Verification Case Status polls KYC verification workflow state, not government sanctions or PEP lists. Related compliance process but different screening scope.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-da71dc26fbab1efa",
+    "candidate_id": "candidate-da71dc26fbab1efa",
+    "grade": 0,
+    "rationale": "Veterinary Appointment Booker schedules vet appointments with reminders. Completely unrelated to transactional email for account verification.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-e14c48e9061378e9",
+    "candidate_id": "candidate-e14c48e9061378e9",
+    "grade": 1,
+    "rationale": "Proof of Address Check validates document identity matching and address format, not government sanctions or PEP lists. Related identity verification but different function.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-e2320c2b589d6b6c",
+    "candidate_id": "candidate-e2320c2b589d6b6c",
+    "grade": 1,
+    "rationale": "Notification Deduplication prevents duplicate message delivery but doesn't send emails. Utility component, not complete transactional email system.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-eb1d91eab765eab5",
+    "candidate_id": "candidate-eb1d91eab765eab5",
+    "grade": 1,
+    "rationale": "Business Registry Lookup returns incorporation and filing data, not government sanctions or PEP lists. Related compliance reference but different screening function.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  }
+]

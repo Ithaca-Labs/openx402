@@ -1,0 +1,212 @@
+[
+  {
+    "task_id": "task-017f0391911e872c",
+    "candidate_id": "candidate-017f0391911e872c",
+    "grade": 0,
+    "rationale": "Query asks for page classification service at specific price. Candidate is document translation, not classification. Different capability.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-06ddd6b82e1e8ee7",
+    "candidate_id": "candidate-06ddd6b82e1e8ee7",
+    "grade": 0,
+    "rationale": "Query needs counterparty risk breakdown via MCP. Candidate provides signature verification for attestations. Different capability.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-13a02108b29b3046",
+    "candidate_id": "candidate-13a02108b29b3046",
+    "grade": 2,
+    "rationale": "Audit retention guide provides compliance rules by regulation but narrowly scoped to audit retention only. Usable but incomplete.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-13a3726d545a014e",
+    "candidate_id": "candidate-13a3726d545a014e",
+    "grade": 1,
+    "rationale": "WCAG accessibility checker addresses compliance but focuses narrowly on accessibility, not general jurisdiction compliance rules.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-16b6257df09cf4be",
+    "candidate_id": "candidate-16b6257df09cf4be",
+    "grade": 0,
+    "rationale": "Query needs page classification. Candidate is ID document verification. Different capability entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-1926fc2044d2d107",
+    "candidate_id": "candidate-1926fc2044d2d107",
+    "grade": 2,
+    "rationale": "Software license comparator covers compliance rules but limited to software licensing domain, not general jurisdiction rules.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-1fb7cb528023f296",
+    "candidate_id": "candidate-1fb7cb528023f296",
+    "grade": 1,
+    "rationale": "Exotic animal import guide addresses regulatory compliance for specific niche only, not general jurisdiction rules.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-2a9c631ea63d62f7",
+    "candidate_id": "candidate-2a9c631ea63d62f7",
+    "grade": 1,
+    "rationale": "Fundamentals snapshot provides company metrics (revenue, EPS) but not current trading values. Related domain, wrong metric.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-2e94ed266d201e30",
+    "candidate_id": "candidate-2e94ed266d201e30",
+    "grade": 1,
+    "rationale": "Verification case status polls existing verification case disposition but doesn't verify proof of address. Related but different function.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-3f3911f032ee225f",
+    "candidate_id": "candidate-3f3911f032ee225f",
+    "grade": 1,
+    "rationale": "Company profile lookup provides corporate reference data but lacks current trading values. Same domain, wrong metric.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-3fddee07c6a9b12f",
+    "candidate_id": "candidate-3fddee07c6a9b12f",
+    "grade": 2,
+    "rationale": "Proof of address check matches core capability but lacks Stellar testnet requirement. Right capability, missing Stellar context.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-57dd1a73c5794a70",
+    "candidate_id": "candidate-57dd1a73c5794a70",
+    "grade": 1,
+    "rationale": "Sparse listing without description. Name suggests jurisdiction lookup but coverage unclear. Cannot assess capability match.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-6e493377f28c7c21",
+    "candidate_id": "candidate-6e493377f28c7c21",
+    "grade": 0,
+    "rationale": "Query asks for jurisdiction compliance rules. Candidate verifies proof of address documents. Different capability entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-72c1d941161a6584",
+    "candidate_id": "candidate-72c1d941161a6584",
+    "grade": 3,
+    "rationale": "Agency guidance diff tracks substantive changes in compliance guidance with regional/multi-jurisdiction coverage. Exactly satisfies query.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-76522e66373c3d50",
+    "candidate_id": "candidate-76522e66373c3d50",
+    "grade": 1,
+    "rationale": "Rule docket timeline provides regulatory information but explicitly limited to single jurisdiction. Query requires multi-jurisdiction coverage.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-7919c4632c6a2a3b",
+    "candidate_id": "candidate-7919c4632c6a2a3b",
+    "grade": 0,
+    "rationale": "Query needs counterparty risk via MCP. Candidate computes optimal DEX swap routes. Different capability entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-85313d7bef0fce65",
+    "candidate_id": "candidate-85313d7bef0fce65",
+    "grade": 1,
+    "rationale": "Corporate actions feed provides splits, dividends, mergers but not current trading values. Related equities data, wrong metric.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-92534b986a695c3a",
+    "candidate_id": "candidate-92534b986a695c3a",
+    "grade": 0,
+    "rationale": "Compliance assessment tracker monitors control testing status but doesn't provide compliance rules. Different capability entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-93560ff638841b10",
+    "candidate_id": "candidate-93560ff638841b10",
+    "grade": 0,
+    "rationale": "Query needs page classification service. Candidate is legal document review. Different capability entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-a4da21f910ccba04",
+    "candidate_id": "candidate-a4da21f910ccba04",
+    "grade": 0,
+    "rationale": "Screening case status checks disposition of screening cases but doesn't provide compliance rules. Different capability entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-a66711735660dfd5",
+    "candidate_id": "candidate-a66711735660dfd5",
+    "grade": 0,
+    "rationale": "Query needs proof of address verification. Candidate queries screening case status. Different capability entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-ab59b9c6f61c4ee1",
+    "candidate_id": "candidate-ab59b9c6f61c4ee1",
+    "grade": 1,
+    "rationale": "Tx receipt lookup addresses Stellar testnet but returns transaction settlement status, not proof of address verification.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-b5feeba1063e1de1",
+    "candidate_id": "candidate-b5feeba1063e1de1",
+    "grade": 0,
+    "rationale": "Query needs counterparty risk breakdown via MCP. Candidate returns historical price series. Different capability entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-b7bfd137fc10ef56",
+    "candidate_id": "candidate-b7bfd137fc10ef56",
+    "grade": 1,
+    "rationale": "Business registry lookup (KYB) is compliance-related but addresses business registry checks, not proof of address verification.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-be92702b40ad496c",
+    "candidate_id": "candidate-be92702b40ad496c",
+    "grade": 1,
+    "rationale": "Data retention policy enforcer addresses compliance narrowly scoped to data retention enforcement, not general jurisdiction rules.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-dc39a9eadf7b4ed9",
+    "candidate_id": "candidate-dc39a9eadf7b4ed9",
+    "grade": 3,
+    "rationale": "Batch price quote returns current reference quotes for multiple assets. Directly satisfies need for current trading values.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-e2818630af694e47",
+    "candidate_id": "candidate-e2818630af694e47",
+    "grade": 0,
+    "rationale": "Query needs page classification service. Candidate summarizes documents. Different capability entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-e97c8b9304671abc",
+    "candidate_id": "candidate-e97c8b9304671abc",
+    "grade": 1,
+    "rationale": "Sanctions screener via MCP provides compliance/AML function but addresses sanctions screening, not counterparty risk breakdown.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-fcd17c3bb414c5da",
+    "candidate_id": "candidate-fcd17c3bb414c5da",
+    "grade": 0,
+    "rationale": "Query needs counterparty risk via MCP. Candidate is table extraction tool. Different capability entirely.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  },
+  {
+    "task_id": "task-fd1f8a3bc273010f",
+    "candidate_id": "candidate-fd1f8a3bc273010f",
+    "grade": 1,
+    "rationale": "Archive ledger state addresses Stellar testnet but provides historical contract/account state, not proof of address verification.",
+    "judged_at": "2026-08-08T07:42:00.000Z"
+  }
+]

@@ -1,0 +1,446 @@
+{
+  "version": 1,
+  "role": "adjudicator",
+  "pack_id": "adjudication-grading-development-09",
+  "instructions": "Independently grade each disagreement candidate using the frozen 0–3 rubric. Prior grades and grader identities are intentionally withheld.",
+  "tasks": [
+    {
+      "task_id": "task-2dabd33f9f409bcc",
+      "query": "Verify that submitted identity documents are valid and genuine.",
+      "candidate": {
+        "candidate_id": "candidate-2dabd33f9f409bcc",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Business Registry Lookup",
+          "description": "Look up a registered business by name or registration number against regional company registries. Returns incorporation status, registered address, filing history, and directors on record, refreshed daily. Useful for KYB checks before onboarding a merchant or counterparty.",
+          "tags": [
+            "kyb",
+            "business-registry",
+            "company-lookup",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-3af9a906ff0cd567",
+      "query": "Our customer onboarding system receives PDF documents that contain identity information. We need to automatically extract all text from these PDFs so we can parse names, dates, and other required data without manual data entry.",
+      "candidate": {
+        "candidate_id": "candidate-3af9a906ff0cd567",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "ID Document Verify",
+          "description": "Verify government-issued ID documents in real time. Upload a photo of a passport, driver's license, or national ID and receive an authenticity status covering tamper detection, MRZ validation, and expiry checks. Built for onboarding flows that need a fast pass/fail signal before a human reviewer gets involved.",
+          "tags": [
+            "identity-verification",
+            "document-check",
+            "kyc",
+            "onboarding"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-4450715b787b9877",
+      "query": "convert location names to geographic coordinates",
+      "candidate": {
+        "candidate_id": "candidate-4450715b787b9877",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Timezone Lookup",
+          "description": "Resolve the IANA timezone identifier, current UTC offset, and daylight-saving status for any latitude/longitude pair worldwide, addressed directly via URL path segments for simple integration into scheduling and logistics systems. Daily-refreshed against the latest tz-database rules so offset transitions stay accurate year-round.",
+          "tags": [
+            "timezone",
+            "utc-offset",
+            "coordinates",
+            "dst",
+            "tz-database"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-4721039c975bc489",
+      "query": "I need to track usage trends across different protocols on the Stellar network to understand which ones have the highest activity and adoption rates.",
+      "candidate": {
+        "candidate_id": "candidate-4721039c975bc489",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Attestation Bundle History",
+          "description": "Retrieves an ordered archive of previously issued signed attestation bundles — price marks, randomness rounds, or oracle reports — for a chosen window, complete with their original signatures and attestor references intact. Built for audit, dispute resolution, and replay verification, where a buyer needs to prove what an attestor actually signed at a past point in time rather than only its current state. Coverage spans multiple chains recorded on Stellar pubnet.",
+          "tags": [
+            "attestation-history",
+            "audit-trail",
+            "signed-feed",
+            "historical"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-47b50d4285ab370c",
+      "query": "Verify that submitted identity documents are valid and genuine.",
+      "candidate": {
+        "candidate_id": "candidate-47b50d4285ab370c",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Proof of Address Check",
+          "description": "Submit a utility bill, bank statement, or lease and get back a status on whether it satisfies proof-of-address requirements. Checks document age, name match, and address format, and returns a signed attestation of the result you can hand to a downstream compliance system.",
+          "tags": [
+            "proof-of-address",
+            "kyc",
+            "document-check",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-49567e8c4628f491",
+      "query": "Verify that submitted identity documents are valid and genuine.",
+      "candidate": {
+        "candidate_id": "candidate-49567e8c4628f491",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Liveness Selfie Check",
+          "description": "Confirm a live human is present behind the camera before you trust a selfie match. Submit a short capture or single frame and get back a liveness confidence score that flags replay attacks, printed photos, and deepfake injection attempts. Pairs naturally with document verification for a full identity check.",
+          "tags": [
+            "liveness-detection",
+            "biometric",
+            "selfie",
+            "anti-spoofing",
+            "kyc"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-4c238e8d6c24ba32",
+      "query": "I need to track usage trends across different protocols on the Stellar network to understand which ones have the highest activity and adoption rates.",
+      "candidate": {
+        "candidate_id": "candidate-4c238e8d6c24ba32",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Blockchain Consensus Comparison",
+          "description": "How distributed consensus algorithms differ in practice -- characteristics and performance side by side.",
+          "tags": [
+            "blockchain",
+            "consensus",
+            "algorithms"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-5b619a615d864cca",
+      "query": "Verify that submitted identity documents are valid and genuine.",
+      "candidate": {
+        "candidate_id": "candidate-5b619a615d864cca",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Legal Document Review",
+          "description": "Professional review of legal documents, with template options available.",
+          "tags": [
+            "legal-review",
+            "documents",
+            "templates"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-6e28d0f16a8f7ae1",
+      "query": "Our customer onboarding system receives PDF documents that contain identity information. We need to automatically extract all text from these PDFs so we can parse names, dates, and other required data without manual data entry.",
+      "candidate": {
+        "candidate_id": "candidate-6e28d0f16a8f7ae1",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Page Classification",
+          "description": "Classify each page of a multi-page document by type: invoice, contract, ID, form, or other. Returns a confidence score per page so you can route documents to the right downstream parser without a human sorting them first.",
+          "tags": [
+            "page-classification",
+            "document-routing",
+            "ocr",
+            "triage"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-6fbe38721fdd87b0",
+      "query": "Verify that submitted identity documents are valid and genuine.",
+      "candidate": {
+        "candidate_id": "candidate-6fbe38721fdd87b0",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Notary Service Locator",
+          "description": "Finds and books notary services for document authentication.",
+          "tags": [
+            "notary",
+            "document-authentication",
+            "booking"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-75e46ce0b7ab5924",
+      "query": "I need to track usage trends across different protocols on the Stellar network to understand which ones have the highest activity and adoption rates.",
+      "candidate": {
+        "candidate_id": "candidate-75e46ce0b7ab5924",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Custom Timeseries Aggregate",
+          "description": "Custom timeseries aggregate analytics metrics endpoint for building timeseries analytics and metrics aggregation reports. Submit a metric definition and this analytics metrics timeseries aggregate service returns a list of aggregate timeseries analytics metrics points, bucketed hourly, daily, or weekly, over any metrics timeseries you choose. This timeseries aggregate analytics metrics pipeline recomputes every hour across both Stellar networks, so your analytics metrics timeseries aggregate stays current without you writing your own aggregation logic.",
+          "tags": [
+            "analytics",
+            "metrics",
+            "aggregate",
+            "timeseries",
+            "analytics-metrics-timeseries"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-76d91ef84b83aa5d",
+      "query": "convert location names to geographic coordinates",
+      "candidate": {
+        "candidate_id": "candidate-76d91ef84b83aa5d",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Running Route Planner",
+          "description": "Plans a running route by distance and elevation profile, flags the surface type, and rates safety along the way with rest stops marked.",
+          "tags": [
+            "running",
+            "routes",
+            "sports"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-86941c52f391c4d8",
+      "query": "PEP adverse media screening, Stellar pubnet, metered pay-as-you-go pricing",
+      "candidate": {
+        "candidate_id": "candidate-86941c52f391c4d8",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "NewsPulse Headline Feed",
+          "description": "An MCP tool that returns a ranked list of current top headlines for a requested category or region, refreshed live as stories break. NewsPulse Headline Feed is designed for agent workflows that need a quick, structured news snapshot rather than a full search index, and supports both metered per-call pricing and a capped upto billing mode for always-on monitoring agents. Delivered over Stellar pubnet.",
+          "tags": [
+            "headline-feed",
+            "news",
+            "mcp",
+            "real-time",
+            "list"
+          ],
+          "mcp": {
+            "server_name": "newspulse-headline-mcp",
+            "tool_name": "get_top_headlines",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-94ddefb191f09279",
+      "query": "convert location names to geographic coordinates",
+      "candidate": {
+        "candidate_id": "candidate-94ddefb191f09279",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Notary Service Locator",
+          "description": "Finds and books notary services for document authentication.",
+          "tags": [
+            "notary",
+            "document-authentication",
+            "booking"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-9918894616e8f69e",
+      "query": "Our customer onboarding system receives PDF documents that contain identity information. We need to automatically extract all text from these PDFs so we can parse names, dates, and other required data without manual data entry.",
+      "candidate": {
+        "candidate_id": "candidate-9918894616e8f69e",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Page to Markdown",
+          "description": "Fetch a single URL you provide and return its main content converted to clean Markdown, stripping navigation, ads, and boilerplate. Exposed as an MCP tool so agents can pull readable page content directly into their context without hand-rolled HTML parsing.",
+          "tags": [
+            "markdown",
+            "extraction",
+            "mcp-tool",
+            "clean-content",
+            "url-fetch"
+          ],
+          "mcp": {
+            "server_name": "bazaar-page-to-markdown-mcp",
+            "tool_name": "convert_page_to_markdown",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-a2a4712e5c0ca523",
+      "query": "convert location names to geographic coordinates",
+      "candidate": {
+        "candidate_id": "candidate-a2a4712e5c0ca523",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Reverse Geocode"
+        }
+      }
+    },
+    {
+      "task_id": "task-ab4aa0f3ae37ca5f",
+      "query": "convert location names to geographic coordinates",
+      "candidate": {
+        "candidate_id": "candidate-ab4aa0f3ae37ca5f",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Route ETA Estimator",
+          "description": "Submit an origin, destination, and optional waypoints as a JSON body and receive a live, traffic-aware travel-time score for driving, walking, or cycling profiles across a supported region. The score blends current road-network conditions with historical congestion patterns to give a single confidence-weighted ETA figure suitable for dispatch and delivery-window planning.",
+          "tags": [
+            "route-eta",
+            "travel-time",
+            "navigation",
+            "traffic",
+            "dispatch"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-c341a512db06aaef",
+      "query": "Our customer onboarding system receives PDF documents that contain identity information. We need to automatically extract all text from these PDFs so we can parse names, dates, and other required data without manual data entry.",
+      "candidate": {
+        "candidate_id": "candidate-c341a512db06aaef",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Proof of Address Check",
+          "description": "Submit a utility bill, bank statement, or lease and get back a status on whether it satisfies proof-of-address requirements. Checks document age, name match, and address format, and returns a signed attestation of the result you can hand to a downstream compliance system.",
+          "tags": [
+            "proof-of-address",
+            "kyc",
+            "document-check",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-ca73d681263f7d4f",
+      "query": "Our customer onboarding system receives PDF documents that contain identity information. We need to automatically extract all text from these PDFs so we can parse names, dates, and other required data without manual data entry.",
+      "candidate": {
+        "candidate_id": "candidate-ca73d681263f7d4f",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Table Extraction",
+          "mcp": {
+            "server_name": "table-extract-mcp",
+            "tool_name": "extract_tables",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "nested_object"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-cd0b1dfbc186e345",
+      "query": "Our customer onboarding system receives PDF documents that contain identity information. We need to automatically extract all text from these PDFs so we can parse names, dates, and other required data without manual data entry.",
+      "candidate": {
+        "candidate_id": "candidate-cd0b1dfbc186e345",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Handwriting OCR",
+          "description": "Turn handwritten notes, forms, and annotations into text. Trained on cursive and print handwriting across common form layouts, with a capped-billing option for high-volume batch jobs alongside standard pay-per-call pricing.",
+          "tags": [
+            "handwriting",
+            "ocr",
+            "text-extraction",
+            "forms"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-d2beac6bd956c1d3",
+      "query": "I need to track usage trends across different protocols on the Stellar network to understand which ones have the highest activity and adoption rates.",
+      "candidate": {
+        "candidate_id": "candidate-d2beac6bd956c1d3",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Ledger Header Stream",
+          "description": "Real-time block header stream and ledger header stream covering Stellar and connected chains -- block headers, ledger headers, block header data, ledger header data, delivered the instant each new block header or ledger header lands. Subscribe once and get a continuous block header feed / ledger header feed: streaming block headers, streaming ledger headers, block header updates, ledger header updates, live block header stream, live ledger header stream, for anyone building block header monitoring or ledger header monitoring.",
+          "tags": [
+            "block-header",
+            "ledger-header",
+            "header-stream",
+            "block-headers",
+            "live-headers"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-d2d867610459d0ac",
+      "query": "convert location names to geographic coordinates",
+      "candidate": {
+        "candidate_id": "candidate-d2d867610459d0ac",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Hotel Amenity Finder",
+          "description": "Searches hotels by amenity and accessibility, with photos, guest reviews, and location all in one view.",
+          "tags": [
+            "hotels",
+            "travel",
+            "accommodation"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-fa75ab0df14eb339",
+      "query": "I need to track usage trends across different protocols on the Stellar network to understand which ones have the highest activity and adoption rates.",
+      "candidate": {
+        "candidate_id": "candidate-fa75ab0df14eb339",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Top-N Leaderboard",
+          "description": "An MCP tool that ranks entities — wallets, protocols, or pools — by a chosen metric such as fee revenue, transaction volume, or unique traders, and returns the top N as an ordered list. Rankings are recomputed daily across multiple chains, with the metric and N supplied as tool arguments so an agent can pull leading-by-volume, leading-by-fees, or any other supported ranking on demand instead of downloading and sorting the full dataset itself. Offered with a capped-billing option alongside standard per-call pricing.",
+          "tags": [
+            "leaderboard",
+            "top-n",
+            "mcp-tool",
+            "ranking"
+          ],
+          "mimeType": "application/json",
+          "mcp": {
+            "server_name": "leaderboard-analytics-mcp",
+            "tool_name": "get_top_n_leaderboard",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "enum_union"
+          }
+        }
+      }
+    }
+  ]
+}

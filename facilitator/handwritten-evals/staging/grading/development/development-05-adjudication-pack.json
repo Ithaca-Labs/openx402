@@ -1,0 +1,744 @@
+{
+  "version": 1,
+  "role": "adjudicator",
+  "pack_id": "adjudication-grading-development-05",
+  "instructions": "Independently grade each disagreement candidate using the frozen 0–3 rubric. Prior grades and grader identities are intentionally withheld.",
+  "tasks": [
+    {
+      "task_id": "task-03e87d1d11420f69",
+      "query": "swap route quote via MCP tool, not a polling HTTP endpoint",
+      "candidate": {
+        "candidate_id": "candidate-03e87d1d11420f69",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Historical Price Series",
+          "description": "An MCP tool that returns a daily close price series for a token pair over an arbitrary historical date range on Stellar testnet. Pass the pair and a start and end date as structured tool arguments and get back an ordered list of dated closing prices, suitable for backtests, performance charts, or tax-lot reconstruction.",
+          "tags": [
+            "price-history",
+            "daily-close",
+            "backtest-data",
+            "testnet"
+          ],
+          "mcp": {
+            "server_name": "stellar-price-history-server",
+            "tool_name": "get_historical_price_series",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "nested_object"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-06a2a77439a04f14",
+      "query": "check if address is low risk",
+      "candidate": {
+        "candidate_id": "candidate-06a2a77439a04f14",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Cluster Attribution",
+          "description": "Address clustering and entity attribution for a single blockchain network, grouping related wallets by shared behavioral and transactional signatures. Returns a signed daily snapshot of cluster membership and dominant entity labels for each address queried.",
+          "tags": [
+            "cluster-attribution",
+            "entity-labeling",
+            "wallet-clustering",
+            "signed-data",
+            "daily-refresh"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-0d4f856951a9fc5e",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-0d4f856951a9fc5e",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Grocery List Planner",
+          "description": "Builds a smart grocery list and compares prices across nearby stores.",
+          "tags": [
+            "grocery-planning",
+            "price-comparison",
+            "shopping"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-0f419288b097d3d0",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-0f419288b097d3d0",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Configuration Drift Detector",
+          "description": "Alerts on configuration drift from an approved baseline.",
+          "tags": [
+            "drift",
+            "drift-detect"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-153abd213b87c8ee",
+      "query": "swap route quote via MCP tool, not a polling HTTP endpoint",
+      "candidate": {
+        "candidate_id": "candidate-153abd213b87c8ee",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Exposure Breakdown",
+          "description": "MCP tool that decomposes a wallet's counterparty exposure by type -- exchanges, mixers, DeFi protocols, and other categories -- across multiple blockchain networks. Returns a structured breakdown refreshed daily, useful for compliance dashboards and risk reporting pipelines.",
+          "tags": [
+            "exposure-breakdown",
+            "counterparty-risk",
+            "wallet-analytics",
+            "mcp-tool",
+            "multi-chain"
+          ],
+          "mcp": {
+            "server_name": "wallet-exposure-mcp",
+            "tool_name": "get_exposure_breakdown",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "array_input"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-2c29b281525d7f7d",
+      "query": "fetch monthly economic indicators",
+      "candidate": {
+        "candidate_id": "candidate-2c29b281525d7f7d",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "LP Yield History",
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-30a3c2e7f69222fe",
+      "query": "extract name, email, and phone number from a website",
+      "candidate": {
+        "candidate_id": "candidate-30a3c2e7f69222fe",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Proof of Address Check",
+          "description": "Submit a utility bill, bank statement, or lease and get back a status on whether it satisfies proof-of-address requirements. Checks document age, name match, and address format, and returns a signed attestation of the result you can hand to a downstream compliance system.",
+          "tags": [
+            "proof-of-address",
+            "kyc",
+            "document-check",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-3181196bac2a1c71",
+      "query": "extract name, email, and phone number from a website",
+      "candidate": {
+        "candidate_id": "candidate-3181196bac2a1c71",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Craft Coffee Roaster Locator",
+          "description": "Where to find specialty coffee roasters by region, altitude, and roast profile, with tasting notes and a direct line to order.",
+          "tags": [
+            "coffee",
+            "specialty",
+            "roasters",
+            "beverages"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-36f63655cce6c8a5",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-36f63655cce6c8a5",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Agency Guidance Diff",
+          "description": "Submit the identifiers or dates of two versions of an agency guidance document in a JSON request body and receive a plain-text diff highlighting substantive additions, deletions, and reworded provisions. Useful for compliance teams tracking how informal agency guidance shifts between updates without re-reading the full document each time. Coverage is regional and the underlying guidance corpus is refreshed daily.",
+          "tags": [
+            "guidance-diff",
+            "regulatory",
+            "change-tracking",
+            "agency-guidance",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-380e66f462110274",
+      "query": "check if address is low risk",
+      "candidate": {
+        "candidate_id": "candidate-380e66f462110274",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Capped-Rate Jurisdiction Lookup"
+        }
+      }
+    },
+    {
+      "task_id": "task-3d5677aa37c31fc0",
+      "query": "extract name, email, and phone number from a website",
+      "candidate": {
+        "candidate_id": "candidate-3d5677aa37c31fc0",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Field Extractor",
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-3df435fcc5ca8aaa",
+      "query": "check if address is low risk",
+      "candidate": {
+        "candidate_id": "candidate-3df435fcc5ca8aaa",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "ID Document Verify",
+          "description": "Verify government-issued ID documents in real time. Upload a photo of a passport, driver's license, or national ID and receive an authenticity status covering tamper detection, MRZ validation, and expiry checks. Built for onboarding flows that need a fast pass/fail signal before a human reviewer gets involved.",
+          "tags": [
+            "identity-verification",
+            "document-check",
+            "kyc",
+            "onboarding"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-400088d66cd5a240",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-400088d66cd5a240",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Notification Deduplication",
+          "description": "Deduplicates outbound notifications to prevent the same message landing twice.",
+          "tags": [
+            "msg",
+            "msg-dedup"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-43c4c5080860812d",
+      "query": "check if address is low risk",
+      "candidate": {
+        "candidate_id": "candidate-43c4c5080860812d",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "PEP & Adverse Media Check",
+          "description": "Submit a name, date of birth, and optional known aliases in a JSON request body to check for politically exposed person designations and adverse media coverage. The response is a list of ranked matches, each with source publication, category (financial crime, corruption, sanctions-adjacent, etc.), and a link to the underlying article or record. Coverage is global with source content refreshed hourly.",
+          "tags": [
+            "pep",
+            "adverse-media",
+            "screening",
+            "aml",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-5522e4fc82300194",
+      "query": "check if address is low risk",
+      "candidate": {
+        "candidate_id": "candidate-5522e4fc82300194",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Sanctions Name Screener",
+          "description": "Screen an individual or entity name against consolidated global sanctions and watchlist data, including OFAC SDN, EU consolidated, UN Security Council, and UK OFSI lists, via a single MCP tool call. Returns a normalized match confidence score along with the strongest candidate hits so downstream workflows can set their own review threshold. List content is refreshed daily from primary publishers.",
+          "tags": [
+            "sanctions",
+            "name-screening",
+            "aml",
+            "watchlist",
+            "compliance"
+          ],
+          "mcp": {
+            "server_name": "sanctions-screen-mcp",
+            "tool_name": "screen_name",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-5e0158b52b89a242",
+      "query": "fetch monthly economic indicators",
+      "candidate": {
+        "candidate_id": "candidate-5e0158b52b89a242",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Indicator Revision History",
+          "description": "Full vintage history of macroeconomic indicator revisions — see exactly what a GDP or payrolls print looked like on its first release versus every subsequent restatement. Essential for backtesting models that must avoid look-ahead bias from later-revised data. Available on both Stellar testnet and pubnet.",
+          "tags": [
+            "revision-history",
+            "macro-indicators",
+            "vintage-data",
+            "backtesting"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-610baf8d9ebe5654",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-610baf8d9ebe5654",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Severe Weather Alerts",
+          "description": "An MCP tool that returns live, active severe-weather alerts for a supplied region — tornado warnings, hurricane advisories, flash-flood and winter-storm alerts sourced directly from national meteorological warning feeds. Designed for agent workflows that need to check for hazardous conditions before dispatching field crews or scheduling outdoor operations, with alert lists refreshed continuously as new warnings are issued.",
+          "tags": [
+            "severe-weather",
+            "alerts",
+            "mcp-tool",
+            "live-warnings"
+          ],
+          "mcp": {
+            "server_name": "weather-alerts-mcp",
+            "tool_name": "get_severe_alerts",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-641d7653b2f3b2b9",
+      "query": "check if address is low risk",
+      "candidate": {
+        "candidate_id": "candidate-641d7653b2f3b2b9",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Proof of Address Check",
+          "description": "Submit a utility bill, bank statement, or lease and get back a status on whether it satisfies proof-of-address requirements. Checks document age, name match, and address format, and returns a signed attestation of the result you can hand to a downstream compliance system.",
+          "tags": [
+            "proof-of-address",
+            "kyc",
+            "document-check",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-680b77954c731d29",
+      "query": "check if address is low risk",
+      "candidate": {
+        "candidate_id": "candidate-680b77954c731d29",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Anomaly Detection Engine",
+          "description": "Flags statistical outliers in a dataset as anomalies worth a second look.",
+          "tags": [
+            "anomaly",
+            "anomaly-detect"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-7392791e2f22f09f",
+      "query": "check if address is low risk",
+      "candidate": {
+        "candidate_id": "candidate-7392791e2f22f09f",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Business Registry Lookup",
+          "description": "Look up a registered business by name or registration number against regional company registries. Returns incorporation status, registered address, filing history, and directors on record, refreshed daily. Useful for KYB checks before onboarding a merchant or counterparty.",
+          "tags": [
+            "kyb",
+            "business-registry",
+            "company-lookup",
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-782b200cfcd66f07",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-782b200cfcd66f07",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Shipping & Logistics",
+          "description": "Compares multi-carrier shipping rates and tracks delivery in one place.",
+          "tags": [
+            "shipping",
+            "logistics",
+            "rate-comparison"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-7c4d6c9a7bb2760c",
+      "query": "extract name, email, and phone number from a website",
+      "candidate": {
+        "candidate_id": "candidate-7c4d6c9a7bb2760c",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Page to Markdown",
+          "description": "Fetch a single URL you provide and return its main content converted to clean Markdown, stripping navigation, ads, and boilerplate. Exposed as an MCP tool so agents can pull readable page content directly into their context without hand-rolled HTML parsing.",
+          "tags": [
+            "markdown",
+            "extraction",
+            "mcp-tool",
+            "clean-content",
+            "url-fetch"
+          ],
+          "mcp": {
+            "server_name": "bazaar-page-to-markdown-mcp",
+            "tool_name": "convert_page_to_markdown",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-82febeaad70a1892",
+      "query": "swap route quote via MCP tool, not a polling HTTP endpoint",
+      "candidate": {
+        "candidate_id": "candidate-82febeaad70a1892",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Top-N Leaderboard",
+          "description": "An MCP tool that ranks entities — wallets, protocols, or pools — by a chosen metric such as fee revenue, transaction volume, or unique traders, and returns the top N as an ordered list. Rankings are recomputed daily across multiple chains, with the metric and N supplied as tool arguments so an agent can pull leading-by-volume, leading-by-fees, or any other supported ranking on demand instead of downloading and sorting the full dataset itself. Offered with a capped-billing option alongside standard per-call pricing.",
+          "tags": [
+            "leaderboard",
+            "top-n",
+            "mcp-tool",
+            "ranking"
+          ],
+          "mimeType": "application/json",
+          "mcp": {
+            "server_name": "leaderboard-analytics-mcp",
+            "tool_name": "get_top_n_leaderboard",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "enum_union"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-90e84bfd71f44f4b",
+      "query": "extract name, email, and phone number from a website",
+      "candidate": {
+        "candidate_id": "candidate-90e84bfd71f44f4b",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Screenshot Capture",
+          "description": "Render a given URL in a headless browser and capture a full-page or viewport screenshot, returning a signed job status you can poll for the resulting image location. Handles JS-heavy pages, configurable viewport sizes, and wait-for-selector conditions before capture.",
+          "tags": [
+            "screenshot",
+            "headless-render",
+            "capture",
+            "signed",
+            "visual"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-9590ca49282b7970",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-9590ca49282b7970",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Change Management Tracker",
+          "description": "Logs and approves system configuration changes.",
+          "tags": [
+            "change",
+            "change-track"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-962a36cbecb51d51",
+      "query": "extract name, email, and phone number from a website",
+      "candidate": {
+        "candidate_id": "candidate-962a36cbecb51d51",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "PDF Text Extract",
+          "description": "Extract plain text from PDF documents, including multi-column layouts and scanned pages run through OCR. Send a PDF and get back clean, reading-order text ready for downstream search or analysis. No table structure or field parsing, just fast, accurate text extraction.",
+          "tags": [
+            "pdf",
+            "text-extraction",
+            "ocr",
+            "document-processing"
+          ]
+        }
+      }
+    },
+    {
+      "task_id": "task-9b461de914549180",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-9b461de914549180",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Notification Template Engine",
+          "description": "Substitutes dynamic variables into notification templates at send time.",
+          "tags": [
+            "template",
+            "template-engine"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-b1cec5a567bb2ed5",
+      "query": "fetch monthly economic indicators",
+      "candidate": {
+        "candidate_id": "candidate-b1cec5a567bb2ed5",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Fundamentals Snapshot",
+          "description": "Core company fundamentals — revenue, net income, EPS, balance-sheet ratios — assembled from the latest filed statements and refreshed daily. Supports capped 'pay up to' billing alongside standard exact pricing for teams metering usage across large ticker universes.",
+          "tags": [
+            "fundamentals",
+            "equities-data",
+            "financial-ratios",
+            "daily-updates"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-ba65d5a249671439",
+      "query": "fetch monthly economic indicators",
+      "candidate": {
+        "candidate_id": "candidate-ba65d5a249671439",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "FX Reference Rate Oracle",
+          "description": "MCP tool for fetching fiat FX reference rates against a weighted currency basket, returning a normalized reliability score alongside the quoted rate so downstream agents can gate on data confidence before settling cross-currency conversions. Refreshed hourly from multiple central bank and interbank sources.",
+          "tags": [
+            "fx-rates",
+            "forex",
+            "macro-indicators",
+            "reference-rate"
+          ],
+          "mcp": {
+            "server_name": "fx-reference-rates-mcp",
+            "tool_name": "get_fx_reference_rate",
+            "transport": "streamable-http",
+            "tool_count": 1,
+            "input_schema_shape": "flat_scalars"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-bf80b8d9dc05d54e",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-bf80b8d9dc05d54e",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "User Preference Manager",
+          "description": "Tracks user opt-in and opt-out preferences for notifications.",
+          "tags": [
+            "pref",
+            "pref-mgr"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-c0b82c60fd98e2b9",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-c0b82c60fd98e2b9",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Corporate Actions Feed",
+          "description": "Structured feed of corporate actions — stock splits, dividend declarations, mergers, spin-offs — for regionally listed issuers, delivered daily as a list of dated events with effective and record dates for portfolio reconciliation.",
+          "tags": [
+            "corporate-actions",
+            "dividends",
+            "equities-data",
+            "options-chain"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-c1526278a3c228fb",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-c1526278a3c228fb",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "TVL by Protocol",
+          "description": "Daily total value locked figures broken out by DeFi protocol across multiple blockchain networks. Returns a ranked list of protocols with current TVL, 24-hour change, and asset composition, refreshed once per day from on-chain pool and vault balances.",
+          "tags": [
+            "tvl",
+            "protocol-ranking",
+            "defi-analytics",
+            "daily-snapshot",
+            "multi-chain"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-c350774f19281e66",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-c350774f19281e66",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Econ Release Calendar",
+          "description": "Structured calendar of upcoming and past macroeconomic data releases — CPI, payrolls, PMI, central bank decisions — with exact release timestamps, country tags, and revision flags refreshed hourly so trading and research desks never miss a print.",
+          "tags": [
+            "release-calendar",
+            "macro-indicators",
+            "economic-data",
+            "hourly-updates"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-c3f338dc6b03f0c9",
+      "query": "check if address is low risk",
+      "candidate": {
+        "candidate_id": "candidate-c3f338dc6b03f0c9",
+        "listing": {
+          "resource_type": "mcp",
+          "serviceName": "Exposure Breakdown",
+          "description": "MCP tool that decomposes a wallet's counterparty exposure by type -- exchanges, mixers, DeFi protocols, and other categories -- across multiple blockchain networks. Returns a structured breakdown refreshed daily, useful for compliance dashboards and risk reporting pipelines.",
+          "tags": [
+            "exposure-breakdown",
+            "counterparty-risk",
+            "wallet-analytics",
+            "mcp-tool",
+            "multi-chain"
+          ],
+          "mcp": {
+            "server_name": "wallet-exposure-mcp",
+            "tool_name": "get_exposure_breakdown",
+            "transport": "sse",
+            "tool_count": 1,
+            "input_schema_shape": "array_input"
+          }
+        }
+      }
+    },
+    {
+      "task_id": "task-dcee4fd58372950f",
+      "query": "send SMS alerts when prices change",
+      "candidate": {
+        "candidate_id": "candidate-dcee4fd58372950f",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Bike Share Plan Comparator",
+          "description": "Compares bike-share membership plans and per-ride pricing tiers across city programs.",
+          "tags": [
+            "bike-share",
+            "comparison",
+            "pricing"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-e68b5a42336f7ca7",
+      "query": "fetch monthly economic indicators",
+      "candidate": {
+        "candidate_id": "candidate-e68b5a42336f7ca7",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Protocol Usage Metrics",
+          "description": "Daily computed usage aggregates for a named protocol — unique active accounts, transaction counts, and gross volume — rolled up once per day across every chain the protocol is deployed to, so a buyer gets a single ready-to-use number instead of raw event logs to sum themselves. Designed for dashboards, growth reporting, and competitive comparisons where the underlying transaction history is irrelevant and only the aggregate matters.",
+          "tags": [
+            "usage-metrics",
+            "protocol-analytics",
+            "daily-aggregate",
+            "multi-chain"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-f1ab04f2dc8e2941",
+      "query": "extract name, email, and phone number from a website",
+      "candidate": {
+        "candidate_id": "candidate-f1ab04f2dc8e2941",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Company Profile Lookup",
+          "description": "Reference-grade company profiles for globally listed issuers — sector, exchange listing, share class, incorporation jurisdiction, and key executives — refreshed daily and queryable by ticker or legal entity name across any market covered by the catalog.",
+          "tags": [
+            "company-profile",
+            "equities-data",
+            "issuer-reference",
+            "global-listings"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    },
+    {
+      "task_id": "task-fe16f23495b440a0",
+      "query": "extract name, email, and phone number from a website",
+      "candidate": {
+        "candidate_id": "candidate-fe16f23495b440a0",
+        "listing": {
+          "resource_type": "http",
+          "serviceName": "Site-Restricted Search",
+          "description": "Run full-text search scoped to one or more domains you specify, ideal for auditing a competitor's site, pulling every indexed page under a subdomain, or building domain-specific research tools. Accepts a site: filter alongside standard query syntax and returns paginated ranked results with snippet highlighting. Testnet fixture endpoint for agent evaluation and integration testing.",
+          "tags": [
+            "site-search",
+            "domain-filter",
+            "search-api",
+            "testnet",
+            "ranked-results"
+          ],
+          "mimeType": "application/json"
+        }
+      }
+    }
+  ]
+}
