@@ -3,7 +3,15 @@
  * BAAI/bge-m3 + production hybrid RRF) against the handwritten-evals benchmark
  * catalog, on an isolated database. Writes real SystemRunRecordSchema run
  * files for lexical/semantic/hybrid, matching the SCORED_SYSTEMS the
- * benchmark's own report pipeline expects. */
+ * benchmark's own report pipeline expects.
+ *
+ * Usage:
+ *   DATABASE_URL=postgresql://... npx tsx tools/eval-real-search.mts
+ *   DATABASE_URL=postgresql://... npx tsx tools/eval-real-search.mts --lexical-weight 0.2 --semantic-weight 0.8 --rrf-k 6 --tag tuned
+ *
+ * DATABASE_URL must point at an isolated Postgres instance -- never a
+ * shared/production database. See ../compose.yaml for a local instance.
+ */
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import pg from "pg";
@@ -17,6 +25,19 @@ import { catalogConfig, searchConfig } from "../tests/helpers/bazaar.js";
 const EVAL_ROOT = resolve(import.meta.dirname, "../handwritten-evals");
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) throw new Error("DATABASE_URL is required -- point it at an isolated Postgres instance, never a shared/production database");
+
+function argValue(flag: string, fallback: string): string {
+  const index = process.argv.indexOf(flag);
+  return index === -1 ? fallback : process.argv[index + 1]!;
+}
+
+// Defaults match the shipped production profile (see facilitator/docs/SEARCH.md).
+// Pass --lexical-weight/--semantic-weight/--rrf-k to score a different weighting,
+// e.g. the tuned config found by this benchmark: 0.2 / 0.8 / 6.
+const LEXICAL_WEIGHT = Number(argValue("--lexical-weight", "0.7"));
+const SEMANTIC_WEIGHT = Number(argValue("--semantic-weight", "0.3"));
+const RRF_K = Number(argValue("--rrf-k", "20"));
+const TAG = argValue("--tag", "default");
 
 async function readJsonl(path: string): Promise<any[]> {
   const text = await readFile(path, "utf8");
@@ -80,6 +101,7 @@ async function main(): Promise<void> {
   console.error(`seeded ${keys.size} resources`);
 
   const config = searchConfig({
+    lexical: { enabled: true, language: "simple", weight: LEXICAL_WEIGHT, candidateCount: 250 },
     semantic: {
       enabled: true,
       provider: "local",
@@ -89,14 +111,16 @@ async function main(): Promise<void> {
       dimension: 1024,
       pooling: "cls",
       normalization: "l2",
-      weight: 0.3,
+      weight: SEMANTIC_WEIGHT,
       timeoutMs: 60_000,
       candidateCount: 250,
       maxDistance: 0.9,
     },
+    rrfK: RRF_K,
     models: { cacheDir: resolve(import.meta.dirname, "../.models"), offline: false, dtype: "q8", requirePinnedRevision: false },
   });
 
+  console.error(`config: lexical=${LEXICAL_WEIGHT} semantic=${SEMANTIC_WEIGHT} rrf_k=${RRF_K}`);
   console.error("building semantic index (downloading model on first run, this can take a while)...");
   const indexResult = await buildIndex(searchStore, config, "eval-worker-1");
   console.error("index result:", JSON.stringify(indexResult.status), JSON.stringify(indexResult.coverage));
@@ -117,7 +141,7 @@ async function main(): Promise<void> {
     const records = result.perQuery.map((entry, index) => ({
       system: mode.name,
       query_id: queryRows[index].query_id,
-      run_id: "real-facilitator-eval-v1",
+      run_id: `real-facilitator-eval-${TAG}`,
       generated_at: new Date().toISOString(),
       latency_ms: entry.metrics.latencyMs ?? 0,
       requested_depth: 20,
@@ -125,7 +149,8 @@ async function main(): Promise<void> {
       results: entry.returned.slice(0, 20).map((resourceId, i) => ({ resource_id: resourceId, rank: i + 1 })),
     }));
 
-    const outPath = resolve(EVAL_ROOT, `runs/real-${mode.name}-v2.jsonl`);
+    const suffix = mode.name === "hybrid" && TAG !== "default" ? `${mode.name}-${TAG}` : mode.name;
+    const outPath = resolve(EVAL_ROOT, `runs/real-${suffix}-v2.jsonl`);
     await writeFile(outPath, records.map(r => JSON.stringify(r)).join("\n") + "\n");
     console.error(`  wrote ${outPath}`);
   }
