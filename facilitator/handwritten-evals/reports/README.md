@@ -1,6 +1,6 @@
 # v2 report evidence contracts
 
-`tools/release-gates-v2.ts` writes `release-gates-v2.json` and treats missing evidence as blocked.
+`tools/cli/release-gates-v2.ts` writes `release-gates-v2.json` and treats missing evidence as blocked.
 It never promotes absence to success. Semantic/review reports are produced only after their build
 steps run:
 

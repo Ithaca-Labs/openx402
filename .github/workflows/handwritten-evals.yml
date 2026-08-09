@@ -81,4 +81,4 @@ jobs:
         working-directory: facilitator
         env:
           TEST_DATABASE_URL: postgresql://postgres:test@127.0.0.1:55432/facilitator_test
-        run: npx vitest run handwritten-evals/tools/metamorphic.test.ts
+        run: npx vitest run handwritten-evals/tools/tests/lib/metamorphic.test.ts

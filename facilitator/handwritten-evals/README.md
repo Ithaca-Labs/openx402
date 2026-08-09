@@ -75,36 +75,47 @@ they are `WHERE` clauses, not relevance opinions (§7).
 
 ### `tools/`
 
-Each pipeline stage is a paired `<thing>.ts` (pure logic + zod schema, unit-tested) plus, where it
-touches the filesystem, a `run-<thing>.ts` / `<thing>` CLI wrapper.
+Each pipeline stage is a paired `<thing>.ts` (pure logic + zod schema, unit-tested, in `lib/`) plus,
+where it touches the filesystem, a `run-<thing>.ts` / `<thing>` CLI wrapper (in `cli/`). Tests live
+under `tests/lib/` or `tests/cli/`, mirroring their subject's location — vitest discovers them
+automatically, no config changes needed if you add more.
 
-| stage | core module | CLI |
+```text
+tools/
+  lib/      core modules: pure logic + zod schema, imported by cli/ scripts and each other
+  cli/      entry points you actually run — thin wrappers around lib/, or scripts with side effects
+  tests/    lib/*.test.ts and cli/*.test.ts, mirroring the structure above
+  charts/   Python plotting (matplotlib) for the benchmark result charts in reports/charts/
+  bakeoff/  the embedding-model bakeoff script
+```
+
+| stage | core module (`lib/`) | CLI (`cli/`) |
 |---|---|---|
 | schema smoke test | — | `check-schema.ts` |
-| family spec re-derivation | — | `check-families.py` |
-| Step 3 resource merge | `merge-resources.ts` | (same file) |
-| Step 4 distractor merge + forbidden-capability scan | `merge-distractors.ts`, `forbidden-scanner.ts` | (same files) |
+| family spec re-derivation | — | `charts/check-families.py` |
+| Step 3 resource merge | — | `merge-resources.ts` |
+| Step 4 distractor merge + forbidden-capability scan | `forbidden-scanner.ts` | `merge-distractors.ts` |
 | §6 forbidden-capability audit (blind, opaque, owner sign-off) | `forbidden-capability-audit.ts` | `run-forbidden-capability-audit.ts` |
-| Step 5 query merge + pass-1 seed prep | `merge-queries.ts`, `query-pass1.ts` | (same files) |
+| Step 5 query merge + pass-1 seed prep | `query-pass1.ts` | `merge-queries.ts` |
 | §4/§11 distribution + anti-correlation audit | `distribution-audit-v2.ts` | `run-distribution-audit-v2.ts` |
 | Step 6 dataset freeze + release-query index | `manifest-v2.ts` | `freeze-manifest-v2.ts` |
-| holdout / sealed release-run discipline | `holdout-v2.ts` | `release-run-ledger-v2.ts` |
-| Step 7 pool build (exact methods only — `bm25`/`exact_dense`/`hybrid_exact`) and production system scoring inputs | `pool.ts` | `build-pool.ts` |
-| pool freshness binding across all 6 run systems | `pool-snapshot-v2.ts` | (same file) |
-| Step 8 two-way blind grading + adjudication | `grading-pipeline.ts` | `run-grading-pipeline.ts` |
-| Pass 2b unpooled audit | `unpooled-audit.ts` | (same file) |
-| metrics: nDCG@10/MRR/bpref/`judged@k`, BM25 baseline, stratified κ, significance | `scoring.ts`, `bm25.ts`, `agreement.ts`, `significance.ts` | — |
+| holdout / sealed release-run discipline | `holdout-v2.ts`, `release-run-ledger-v2.ts` | — |
+| Step 7 pool build (exact methods only — `bm25`/`exact_dense`/`hybrid_exact`) and production system scoring inputs | `pool.ts`, `bm25.ts` | `build-pool.ts`, `generate-exact-dense-run.ts` |
+| pool freshness binding across all 6 run systems | `pool-snapshot-v2.ts` | — |
+| Step 8 two-way blind grading + adjudication | `grading-pipeline.ts` | `run-grading-pipeline.ts` (see `cli/GRADING-PIPELINE.md`) |
+| Pass 2b unpooled audit | `unpooled-audit.ts` | — |
+| metrics: nDCG@10/MRR/bpref/`judged@k`, BM25 baseline, stratified κ, significance | `scoring.ts`, `agreement.ts`, `significance.ts` | — |
 | Step 10 evaluation report + owner sign-off | `report-v2.ts` | `generate-report-v2.ts`, `finalize-report-v2.ts` |
-| §11 release gate status | `release-gates-v2.ts` | (same file) |
-| §12.4 label-free CI invariants (needs a live Postgres+pgvector) | `metamorphic.test.ts` | — |
+| §11 release gate status | — | `release-gates-v2.ts` |
+| §12.4 label-free CI invariants (needs a live Postgres+pgvector) | — | `tests/lib/metamorphic.test.ts` |
 | §12.1 development-only CI scoring | — | `development-ci-v2.ts` |
 
 ```sh
-npx tsc --noEmit -p tsconfig.json      # the v2 schema module
-npx tsc --noEmit -p tools/tsconfig.json # the evaluation tools
-npx tsx tools/check-schema.ts          # schema refinements
-python3 tools/check-families.py        # family spec distributions
-npm run benchmark:v2:status            # write the current blocked/ready gate report
+npx tsc --noEmit -p tsconfig.json       # the v2 schema module
+npx tsc --noEmit -p tools/tsconfig.json # the evaluation tools (recurses into lib/, cli/, tests/)
+npx tsx tools/cli/check-schema.ts       # schema refinements
+python3 tools/charts/check-families.py  # family spec distributions
+npm run benchmark:v2:status             # write the current blocked/ready gate report
 ```
 
 Two tsconfigs, deliberately. The one in this directory covers `schema/`; `tools/tsconfig.json`
@@ -136,7 +147,7 @@ resources via `src/search/harness.ts`'s `seedSuite` and runs the actual `SearchS
 (`facilitator/tools/eval-real-search.mts`) — not a mock.
 
 **Embedding model bakeoff** — OpenAI `text-embedding-3-large`/`-small`, Qwen3-Embedding-8B, and
-Voyage-4, scored on quality and single-query latency (`facilitator/handwritten-evals/tools/embedding-bakeoff.mts`):
+Voyage-4, scored on quality and single-query latency (`facilitator/handwritten-evals/tools/bakeoff/embedding-bakeoff.mts`):
 
 | model | nDCG@10 | p50 latency | p95 latency |
 |---|---|---|---|
@@ -151,19 +162,18 @@ live query embedding; Voyage-4 is the best quality/latency balance for productio
 ### Reproducing
 
 ```sh
-# fusion tuning against the stand-in benchmark (bm25 + OpenAI dense)
-npx tsx tools/score-embedding-bakeoff.mts   # requires staging/embeddings/bakeoff-*.json (see below)
-
-# embedding model bakeoff (needs OPENROUTER_API_KEY)
-npx tsx tools/embedding-bakeoff.mts
+# embedding model bakeoff -- embeds + scores in one step (needs OPENROUTER_API_KEY)
+npx tsx tools/bakeoff/embedding-bakeoff.mts
 
 # real production facilitator search (needs an isolated Postgres+pgvector instance --
 # see facilitator/compose.yaml; never point DATABASE_URL at a shared/production database)
-cd ../.. && npx tsx facilitator/tools/eval-real-search.mts
+cd ../.. && DATABASE_URL=... npx tsx facilitator/tools/eval-real-search.mts
+# or the tuned weighting found by this benchmark:
+cd ../.. && DATABASE_URL=... npx tsx facilitator/tools/eval-real-search.mts \
+  --lexical-weight 0.2 --semantic-weight 0.8 --rrf-k 6 --tag tuned
 
-# charts
-uv run --with matplotlib --with numpy python3 tools/plot-benchmark-charts.py
-uv run --with matplotlib --with numpy python3 tools/plot-quality-vs-latency.py
+# all 6 charts in one run, written to reports/charts/
+uv run --with matplotlib --with numpy python3 tools/charts/plot-charts.py
 ```
 
 ### What's public vs. sealed
@@ -173,7 +183,7 @@ qrels (owner-reviewed, `qrels/development-v2.jsonl`), and every report/chart ref
 
 **Sealed and NOT in this repo:** the release-split qrels — the answer key for the 50-query holdout
 set. They live at an out-of-tree location precisely so a system can be scored against them blind,
-later, without having trained or tuned against the answer key. See `tools/holdout-v2.ts` for the
+later, without having trained or tuned against the answer key. See `tools/lib/holdout-v2.ts` for the
 isolation mechanism (`STELLAR_BAZAAR_RELEASE_QRELS_PATH`, checked to reject any path inside this
 tree). If you're extending this benchmark, do the same: never commit release judgments here.
 

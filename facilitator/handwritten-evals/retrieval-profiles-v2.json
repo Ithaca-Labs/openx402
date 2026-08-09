@@ -21,8 +21,8 @@
     "../src/search/providers/remote.ts",
     "../src/search/query.ts",
     "../src/search/service.ts",
-    "tools/bm25.ts",
-    "tools/pool.ts"
+    "tools/lib/bm25.ts",
+    "tools/lib/pool.ts"
   ],
   "profiles": [
     {
@@ -90,7 +90,7 @@
     {
       "system": "bm25",
       "profile_id": "evaluation-bm25-v2",
-      "runner": "handwritten-evals/tools/bm25.ts",
+      "runner": "handwritten-evals/tools/lib/bm25.ts",
       "parameters": {
         "k1": 1.2,
         "b": 0.75,

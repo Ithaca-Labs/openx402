@@ -61,9 +61,9 @@
     "benchmark:evaluate": "tsx src/cli/evaluate-release.ts",
     "benchmark:model-report": "tsx src/cli/report-bge-m3.ts",
     "benchmark:gates": "tsx src/cli/release-gates.ts",
-    "benchmark:v2:status": "tsx handwritten-evals/tools/release-gates-v2.ts --report-only",
-    "benchmark:v2:gates": "tsx handwritten-evals/tools/release-gates-v2.ts",
-    "benchmark:v2:development-ci": "tsx handwritten-evals/tools/development-ci-v2.ts",
+    "benchmark:v2:status": "tsx handwritten-evals/tools/cli/release-gates-v2.ts --report-only",
+    "benchmark:v2:gates": "tsx handwritten-evals/tools/cli/release-gates-v2.ts",
+    "benchmark:v2:development-ci": "tsx handwritten-evals/tools/cli/development-ci-v2.ts",
     "index": "tsx src/cli/index-search.ts",
     "test:live-model": "vitest run --config vitest.live-model.config.ts"
   },

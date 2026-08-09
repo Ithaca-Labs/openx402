@@ -6,7 +6,7 @@ existing freeze.
 
 ```sh
 cd facilitator
-npx tsx handwritten-evals/tools/freeze-manifest-v2.ts
+npx tsx handwritten-evals/tools/cli/freeze-manifest-v2.ts
 ```
 
 The manifest hashes the catalog, sidecar, queries, schema, family/axis specifications, forbidden
@@ -17,13 +17,13 @@ Release judgments remain sealed from normal development tuning. Any milestone/fi
 must record a `started` event before reading release inputs, and exactly one terminal event after:
 
 ```sh
-npx tsx handwritten-evals/tools/release-run-ledger-v2.ts \
+npx tsx handwritten-evals/tools/lib/release-run-ledger-v2.ts \
   --phase started --run-id release-2026-08-07-01 --purpose milestone \
   --actor OWNER --reason "Milestone evaluation"
 
 # Run the isolated release evaluator here. Normal CI/development commands must never do this.
 
-npx tsx handwritten-evals/tools/release-run-ledger-v2.ts \
+npx tsx handwritten-evals/tools/lib/release-run-ledger-v2.ts \
   --phase completed --run-id release-2026-08-07-01 --purpose milestone \
   --actor OWNER --reason "Milestone evaluation completed" \
   --report reports/final-v2.json
