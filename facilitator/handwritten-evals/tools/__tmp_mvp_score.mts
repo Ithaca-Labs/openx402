@@ -43,9 +43,13 @@ async function main(): Promise<void> {
   }));
 
   const runFiles: Record<string, string> = {
-    bm25: "runs/bm25-v2.jsonl",
-    exact_dense: "runs/exact-dense-v2.jsonl",
-    hybrid_exact: "runs/hybrid-exact-v2.jsonl",
+    bm25_standin: "runs/bm25-v2.jsonl",
+    exact_dense_standin: "runs/exact-dense-v2.jsonl",
+    hybrid_tuned_standin: "runs/hybrid-v2.jsonl",
+    real_lexical: "runs/real-lexical-v2.jsonl",
+    real_semantic: "runs/real-semantic-v2.jsonl",
+    real_hybrid: "runs/real-hybrid-v2.jsonl",
+    real_hybrid_tuned: "runs/real-hybrid-tuned-v2.jsonl",
   };
 
   console.log(`Scoring ${evalQueries.length} development queries, ${qrels.filter((q: any) => devQueryIds.has(q.query_id)).length} qrels\n`);

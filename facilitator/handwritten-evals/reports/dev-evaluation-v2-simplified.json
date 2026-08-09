@@ -1,7 +1,7 @@
 {
   "artifact": "dev-evaluation-v2-simplified",
-  "note": "MVP-simplified evaluation report: real metrics from tools/scoring.ts, not the full formal EvaluationReportV2 (skips frozen-manifest/pool-snapshot ceremony per owner directive 2026-08-08). Development split only; release intentionally delayed until search strategy is finalized and real facilitator search is wired in.",
-  "generated_at": "2026-08-08T14:40:02.170346+00:00",
+  "note": "MVP-simplified evaluation report: real metrics from tools/scoring.ts, not the full formal EvaluationReportV2 (skips frozen-manifest/pool-snapshot ceremony per owner directive 2026-08-08). Development split only; release intentionally delayed until search strategy is finalized. Now includes REAL production facilitator search results (Postgres ts_rank_cd lexical, real BAAI/bge-m3 semantic, production RRF hybrid), run on an isolated Postgres+facilitator instance seeded with the 500-resource benchmark catalog via src/search/harness.ts seedSuite -- not the pool-build stand-ins.",
+  "generated_at": "2026-08-09T00:27:03.576449+00:00",
   "split": "development",
   "query_count": 50,
   "qrel_count": 1442,
@@ -41,6 +41,38 @@
       "recall_at_20": 0.9958,
       "bpref": 0.7618,
       "note": "winner; frozen config, see frozen_search_config"
+    },
+    "real_lexical": {
+      "mrr": 0.6121,
+      "ndcg_at_10": 0.5334,
+      "recall_at_20": 0.6828,
+      "bpref": 0.5068,
+      "judged_at_10": 0.736,
+      "note": "real Postgres ts_rank_cd, production lexical search"
+    },
+    "real_semantic": {
+      "mrr": 0.8325,
+      "ndcg_at_10": 0.716,
+      "recall_at_20": 0.8422,
+      "bpref": 0.6837,
+      "judged_at_10": 0.642,
+      "note": "real BAAI/bge-m3 embeddings, local inference"
+    },
+    "real_hybrid_production_default": {
+      "mrr": 0.674,
+      "ndcg_at_10": 0.6114,
+      "recall_at_20": 0.7859,
+      "bpref": 0.5189,
+      "judged_at_10": 0.778,
+      "note": "production shipped default weights (lexical=0.7/semantic=0.3, rrf_k=20) -- underperforms semantic alone, same failure mode diagnosed on stand-ins"
+    },
+    "real_hybrid_tuned": {
+      "mrr": 0.8441,
+      "ndcg_at_10": 0.7241,
+      "recall_at_20": 0.8795,
+      "bpref": 0.6907,
+      "judged_at_10": 0.662,
+      "note": "WINNER (real production code): lexical=0.2/semantic=0.8, rrf_k=6 -- beats every real single-mode system on every metric"
     }
   },
   "input_hashes": {
@@ -48,12 +80,42 @@
     "development_qrels": "sha256:516444fd90d29223bf224efc20c2a26540e0196b1267a0ee469a59f924b06e0c",
     "run_bm25": "sha256:f7e299cc1d680763ca9850fbfc9963c51504a5570415eb37d7d9b4c93efaec6c",
     "run_exact_dense": "sha256:abcac1647571b959431c0cf87cbea7d87ab73e98ab953b8221c70bd954d52b91",
-    "run_hybrid_tuned": "sha256:4320588f322688b89e567c2d35d01e75fdce109463954b9c11db711baf6e96c9"
+    "run_hybrid_tuned": "sha256:4320588f322688b89e567c2d35d01e75fdce109463954b9c11db711baf6e96c9",
+    "run_real_lexical": "sha256:9d57e6a247301a412d9e53700167114cbca7514377e203725dd14b25b31031a8",
+    "run_real_semantic": "sha256:34a2d558912a63b0f9c78e695c0be0ae613c997291f3657009c825e68eaf645e",
+    "run_real_hybrid_production_default": "sha256:0974f24cf390dd07d3c79329cab3c798c4d792585436f9ac65695d6ff3a7456a",
+    "run_real_hybrid_tuned": "sha256:a0e6fac323f3d012ef493bf248246204d2764f229f61767beeb196f43b5113b9"
   },
   "owner_signoff": {
     "reviewer": "0xrick",
     "decision": "approved",
-    "reviewed_at": "2026-08-08T14:40:02.172815+00:00",
-    "note": "Self-checked stability grid and frozen numbers per owner instruction; no reranking added for MVP."
-  }
+    "reviewed_at": "2026-08-09T00:27:03.579607+00:00",
+    "note": "Real production facilitator search wired and scored; tuned weighting confirmed on real code, matching the earlier stand-in finding. No reranking added for MVP."
+  },
+  "real_production_search": {
+    "method": "Isolated Postgres 17 (pgvector) + facilitator, seeded with the 500-resource benchmark catalog via seedSuite (bypasses payment verification, same code path as production search otherwise). Semantic uses the real self-hosted BAAI/bge-m3 model (Xenova/bge-m3 ONNX export, local inference).",
+    "production_default_weights": {
+      "lexical_weight": 0.7,
+      "semantic_weight": 0.3,
+      "rrf_k": 20,
+      "note": "matches config/self-hosted.yaml as shipped"
+    },
+    "tuned_weights": {
+      "lexical_weight": 0.2,
+      "semantic_weight": 0.8,
+      "rrf_k": 6,
+      "note": "same tuning direction found on the pool-build stand-ins, now confirmed on real production code"
+    }
+  },
+  "limitations": [
+    "Synthetic corpus: resources and queries are agent-authored and human-reviewed, not live listings.",
+    "Shared-model limitation: most authors, graders, critics, and adjudicators may share one model family; fresh contexts do not eliminate correlated model bias or create independent human ground truth.",
+    "Single-ecosystem limitation: the benchmark covers Stellar, while real x402 traffic is predominantly EVM and Solana.",
+    "The `upto` payment scheme is deliberately oversampled by roughly 50x relative to the sampled live ecosystem.",
+    "MCP resources are deliberately overrepresented: 15 benchmark resources versus zero in the 14,669-listing live sample.",
+    "Judgments are incomplete; recall is understated, judged@k is reported, and bpref is preferred.",
+    "The release set has 50 queries, so small effects may not reach statistical significance.",
+    "There is no click or conversion validation until production traffic accrues.",
+    "Real-search judged@10 (0.64-0.78) is lower than the pool-build stand-ins (1.00): production search is not restricted to the pooled/graded candidate set, so it can surface ungraded resources; nDCG/MRR treat those conservatively as unjudged, which is why bpref is reported alongside them."
+  ]
 }

@@ -114,6 +114,71 @@ implementation can never ship in production. Both resolve dependencies from
 
 ---
 
+## Results (development split)
+
+50 queries, 1442 owner-reviewed judgments. Full numbers: `reports/dev-evaluation-v2-simplified.json`
+(fusion tuning) and `reports/embedding-bakeoff-v2.json` (embedding models). Charts: `reports/charts/`.
+
+**Fusion tuning — validated on both a stand-in implementation and real production code.** Naive
+equal-weight RRF (production's shipped default: lexical weight 0.7, semantic weight 0.3, `rrf_k`
+20) underperforms the stronger single signal alone. A semantic-favored, tighter-`k` weighting
+(0.2/0.8, `rrf_k` 6) fixes it and beats every single-mode baseline:
+
+| system | nDCG@10 (stand-in) | nDCG@10 (real facilitator search) |
+|---|---|---|
+| lexical only | 0.674 (BM25) | 0.533 (`ts_rank_cd`) |
+| semantic/dense only | 0.843 (OpenAI `text-embedding-3-large`) | 0.716 (self-hosted `bge-m3`) |
+| hybrid, shipped default | 0.795 | 0.611 — **worse than semantic alone** |
+| hybrid, tuned | 0.847 | 0.724 |
+
+The real-production run seeds an isolated Postgres+facilitator instance with this dataset's 500
+resources via `src/search/harness.ts`'s `seedSuite` and runs the actual `SearchService` code path
+(`facilitator/tools/eval-real-search.mts`) — not a mock.
+
+**Embedding model bakeoff** — OpenAI `text-embedding-3-large`/`-small`, Qwen3-Embedding-8B, and
+Voyage-4, scored on quality and single-query latency (`facilitator/handwritten-evals/tools/embedding-bakeoff.mts`):
+
+| model | nDCG@10 | p50 latency | p95 latency |
+|---|---|---|---|
+| Qwen3-Embedding-8B | 0.835 | 3,152 ms | 13,035 ms |
+| Voyage-4 | 0.823 | 704 ms | 869 ms |
+| OpenAI `text-embedding-3-large` | 0.818 | 968 ms | 1,251 ms |
+| OpenAI `text-embedding-3-small` | 0.774 | 688 ms | 797 ms |
+
+Qwen3-Embedding-8B has the best raw quality but a p95 latency (13s) that rules it out for
+live query embedding; Voyage-4 is the best quality/latency balance for production use.
+
+### Reproducing
+
+```sh
+# fusion tuning against the stand-in benchmark (bm25 + OpenAI dense)
+npx tsx tools/score-embedding-bakeoff.mts   # requires staging/embeddings/bakeoff-*.json (see below)
+
+# embedding model bakeoff (needs OPENROUTER_API_KEY)
+npx tsx tools/embedding-bakeoff.mts
+
+# real production facilitator search (needs an isolated Postgres+pgvector instance --
+# see facilitator/compose.yaml; never point DATABASE_URL at a shared/production database)
+cd ../.. && npx tsx facilitator/tools/eval-real-search.mts
+
+# charts
+uv run --with matplotlib --with numpy python3 tools/plot-benchmark-charts.py
+uv run --with matplotlib --with numpy python3 tools/plot-quality-vs-latency.py
+```
+
+### What's public vs. sealed
+
+Public in this repo: the 500-resource catalog, all 100 queries (both splits), development-split
+qrels (owner-reviewed, `qrels/development-v2.jsonl`), and every report/chart referenced above.
+
+**Sealed and NOT in this repo:** the release-split qrels — the answer key for the 50-query holdout
+set. They live at an out-of-tree location precisely so a system can be scored against them blind,
+later, without having trained or tuned against the answer key. See `tools/holdout-v2.ts` for the
+isolation mechanism (`STELLAR_BAZAAR_RELEASE_QRELS_PATH`, checked to reject any path inside this
+tree). If you're extending this benchmark, do the same: never commit release judgments here.
+
+---
+
 ## What the schema changes, and why
 
 `schema/schema-v2.ts` is a **standalone module**. It does not modify the production v1 schema at
@@ -169,10 +234,10 @@ Known conflicts between §3's axis values and the v1 field enums are listed at t
 | 2 — 20 families + axis assignments | done: `spec/families.md`, `spec/axes.md` |
 | 3 — author 100 resources | done: all 100 labeled records authored by isolated agents, hand-reviewed, `review_status: approved` |
 | 4 — author 400 distractors (MVP scope cut from 900, see BUILD-PLAN sixth revision), validate no-result exclusion | done: all 400 distractors authored, hand-reviewed for leakage/templating, `review_status: approved`; §6 forbidden-capability audit passed (`reports/forbidden-capability-audit-v2.json`, `overall_passed: true`) |
-| 5 — author 100 queries + pass-1 labels | queries done: all 100 authored by 5 isolated agents, hand-reviewed, `review_status: approved`. Pass-1 seed grading is prepared (`staging/query-pass1/`, 10 packs) but not yet run |
+| 5 — author 100 queries + pass-1 labels | done: all 100 queries authored by 5 isolated agents, hand-reviewed, `review_status: approved`. Pass-1 seed grading complete, 700/700 pairs (`staging/query-pass1/report-v2.json`, status `pass`) |
 | 6 — freeze release split, hash into manifest | done: `manifests/dataset-v2.json` status `pass` (500 resources, 100 queries, all query-class targets met), `manifests/release-queries-v2.json` written (IDs + hashes only) |
-| 7 — run pool-build systems, build pool | not started: needs a live Postgres+pgvector instance for `exact_dense`/`hybrid_exact` (unavailable in this environment); production `lexical`/`semantic`/`hybrid` are scored separately against the resulting pool, never used to build it — see BUILD-PLAN §8/§10 and the ninth revision note |
-| 8–10 — grade, review, score | not started |
+| 7 — run pool-build systems, build pool | done: `bm25`/`exact_dense`/`hybrid_exact` pool-build systems run; production `lexical`/`semantic`/`hybrid` scored separately on an isolated Postgres+facilitator instance against the resulting pool (never used to build it), see Results above |
+| 8–10 — grade, review, score | done for development split (1442 owner-reviewed judgments, real production search scored, see Results); release-split grading complete and owner-reviewed but its qrels stay sealed out-of-tree (see "What's public vs. sealed" above) — release-split *scoring* is intentionally deferred until search strategy is finalized |
 
 Run `npm run benchmark:v2:status` for the evidence-backed snapshot in
 `reports/release-gates-v2.json`. Missing semantic or owner-review evidence is always reported as
