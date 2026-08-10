@@ -46,7 +46,14 @@ search:
   lexical:
     enabled: true
     language: simple
-    weight: 0.7
+    # Tuned against the Stellar Bazaar v2 benchmark (handwritten-evals/):
+    # the prior 0.7/0.3 split averaged the strong semantic signal down toward
+    # the weaker lexical one, so shipped hybrid (nDCG@10 0.611) scored BELOW
+    # semantic alone (0.716). This weighting favors the stronger signal
+    # instead and beats every single-mode baseline (0.724). See
+    # handwritten-evals/reports/dev-evaluation-v2-simplified.json and
+    # handwritten-evals/reports/charts/chart_3_fusion_real_production.png.
+    weight: 0.2
     candidate_count: 250
   semantic:
     enabled: true
@@ -59,7 +66,7 @@ search:
     dimension: 1536
     pooling: cls
     normalization: l2
-    weight: 0.3
+    weight: 0.8
     timeout_ms: 5000
     candidate_count: 250
     max_distance: 0.9
@@ -76,7 +83,7 @@ search:
     fallback_to_hybrid: true
     remote_url_env: FACILITATOR_RERANKER_URL
     remote_api_key_env: FACILITATOR_RERANKER_API_KEY
-  rrf_k: 20
+  rrf_k: 6
   minimum_relevance_score: 0
   origin_diversity_limit: 3
   impressions:
