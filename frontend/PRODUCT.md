@@ -8,7 +8,7 @@ web
 
 ## Users
 
-People exploring the openx402 ecosystem use the public explorer to find services, networks, facilitators, and observed payment activity. The private analytics surface is for the project operator, currently `labsithaca@gmail.com`, to understand how the explorer is used.
+People exploring the openx402 ecosystem use the public explorer to find services, networks, facilitators, and observed payment activity. The analytics surface provides anonymous, aggregate insight into how the explorer is used.
 
 ## Product Purpose
 
@@ -20,13 +20,13 @@ The explorer combines a live Bazaar index with observed facilitator and payment 
 
 ## Operating Context
 
-Visitors browse, search, and inspect operational data across routes such as Discover, Marketplace, Networks, Facilitators, and Transactions. The operator reviews a private analytics route to compare anonymous page views, unique route visits, and content impressions over a selected reporting window.
+Visitors browse, search, and inspect operational data across routes such as Discover, Marketplace, Networks, Facilitators, and Transactions. Anyone can review the analytics route to compare anonymous page views, unique route visits, and content impressions over a selected reporting window.
 
 ## Capabilities and Constraints
 
 - The existing Next.js explorer renders the public routes and records site analytics through its own server-side Postgres connection.
 - Site analytics record only a random browser identifier, route path, event type, and timestamp. They do not collect email addresses, IP addresses, or page-content payloads.
-- Access to the analytics route is gated by a modal that accepts only `labsithaca@gmail.com` and establishes a signed, HTTP-only cookie. This is an access convenience gate, not verification that the visitor owns that address.
+- The analytics route and reporting endpoint are public; the data remains aggregate and anonymous.
 - `ANALYTICS_DATABASE_URL` is required in the frontend server environment; the site does not send traffic telemetry to the facilitator.
 - The analytics surface must preserve the established public explorer identity and remain hidden from primary navigation.
 

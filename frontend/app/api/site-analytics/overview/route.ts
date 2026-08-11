@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { hasAnalyticsAccess } from "@/lib/analytics-auth";
 import { loadFrontendAnalyticsOverview, SiteAnalyticsStorageError } from "@/lib/site-analytics-store";
 
 function reportingWindow(value: string | null) {
@@ -8,10 +7,6 @@ function reportingWindow(value: string | null) {
 }
 
 export async function GET(request: Request) {
-  if (!(await hasAnalyticsAccess())) {
-    return NextResponse.json({ message: "Operator access required." }, { status: 401 });
-  }
-
   try {
     const days = reportingWindow(new URL(request.url).searchParams.get("days"));
     return NextResponse.json(await loadFrontendAnalyticsOverview(days));
