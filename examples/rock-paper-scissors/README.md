@@ -64,14 +64,3 @@ RPC head trails the public RPC used by `@x402/stellar`; the seller still adverti
 the facilitator's 300-second testnet maximum.
 
 `purchases.public.json` records one Horizon-confirmed transaction per endpoint.
-
-For a resumable hosted-facilitator stress run with Horizon-confirmed public
-proofs and a persistent random target of 3–9 distinct buyers per service:
-
-```bash
-SELLER_ORIGIN=https://YOUR-NGROK-DOMAIN.ngrok-free.app npm run stress:200
-```
-
-The stress runner uses fixed irregular per-service transaction targets and also
-performs one settlement after a price change so Bazaar discovery refreshes the
-signed payment requirement.
