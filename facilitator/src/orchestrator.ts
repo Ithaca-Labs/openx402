@@ -1,4 +1,4 @@
-import { TransactionBuilder, rpc } from "@stellar/stellar-sdk";
+import { FeeBumpTransaction, TransactionBuilder, rpc } from "@stellar/stellar-sdk";
 import type { SettleResponse, VerifyResponse } from "@x402/core/types";
 import type { AppConfig, Mechanism, RequestEnvelope, SettlementOutcome, StellarNetwork } from "./types.js";
 import type { RuntimeRegistry } from "./runtime.js";
@@ -33,6 +33,17 @@ function failed(request: RequestEnvelope, reason: string, payer?: string, transa
     errorReason: reason,
     ...(payer ? { payer } : {}),
   };
+}
+
+export function persistedTransactionMaximumTime(envelopeXdr: string, network: StellarNetwork): bigint | undefined {
+  try {
+    const parsed = TransactionBuilder.fromXDR(envelopeXdr, networkPassphrase(network));
+    const transaction = parsed instanceof FeeBumpTransaction ? parsed.innerTransaction : parsed;
+    const maximumTime = transaction.timeBounds?.maxTime;
+    return maximumTime && maximumTime !== "0" ? BigInt(maximumTime) : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export class FacilitatorCore {
@@ -360,8 +371,24 @@ export class FacilitatorCore {
 
   private async pollRecordWithoutRequest(record: SettlementRecord): Promise<void> {
     const runtime = this.registry.networks.get(record.network)!;
-    const result = await this.poll(record.transactionHash!, runtime);
-    if (result === "UNKNOWN") return;
+    let result: "SUCCESS" | "FAILED" | "UNKNOWN" | "NOT_FOUND" =
+      await this.poll(record.transactionHash!, runtime);
+    if (result === "UNKNOWN") {
+      result = await this.horizonStatus(record.transactionHash!, runtime);
+      if (result === "UNKNOWN") return;
+      if (result === "NOT_FOUND") {
+        if (!await this.persistedTransactionExpired(record, runtime)) return;
+        const payer = record.payer ? { payer: record.payer } : {};
+        await this.state.complete(record.id, {
+          success: false,
+          transaction: record.transactionHash!,
+          network: record.network,
+          ...payer,
+          errorReason: "settle_stellar_transaction_expired_unconfirmed",
+        }, "failed");
+        return;
+      }
+    }
     const payer = record.payer ? { payer: record.payer } : {};
     const outcome: SettleResponse = result === "SUCCESS"
       ? {
@@ -381,5 +408,39 @@ export class FacilitatorCore {
           errorReason: "settle_stellar_transaction_failed",
         };
     await this.state.complete(record.id, outcome, result === "SUCCESS" ? "success" : "failed");
+  }
+
+  private async horizonStatus(
+    hash: string,
+    runtime: RuntimeRegistry["networks"] extends Map<unknown, infer T> ? T : never,
+  ): Promise<"SUCCESS" | "FAILED" | "NOT_FOUND" | "UNKNOWN"> {
+    try {
+      const endpoint = new URL(`/transactions/${encodeURIComponent(hash)}`, runtime.config.horizonUrl);
+      const response = await fetch(endpoint, { signal: AbortSignal.timeout(10_000) });
+      if (response.status === 404) return "NOT_FOUND";
+      if (!response.ok) return "UNKNOWN";
+      const body = await response.json() as { successful?: boolean };
+      if (body.successful === true) return "SUCCESS";
+      if (body.successful === false) return "FAILED";
+    } catch {
+      // Horizon is corroboration only; an unavailable archive must not release a channel.
+    }
+    return "UNKNOWN";
+  }
+
+  private async persistedTransactionExpired(
+    record: SettlementRecord,
+    runtime: RuntimeRegistry["networks"] extends Map<unknown, infer T> ? T : never,
+  ): Promise<boolean> {
+    if (!record.envelopeXdr) return false;
+    const maximumTime = persistedTransactionMaximumTime(record.envelopeXdr, runtime.config.id);
+    if (maximumTime === undefined) return false;
+    try {
+      const latest = await rpcServer(runtime).getLatestLedger();
+      return BigInt(latest.closeTime) > maximumTime;
+    } catch {
+      // Malformed state or an unavailable RPC is never sufficient to release a channel.
+      return false;
+    }
   }
 }
