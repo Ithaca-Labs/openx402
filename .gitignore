@@ -51,3 +51,5 @@ target/
 
 # Example apps pull their own dependencies
 /examples/*/node_modules/
+/examples/rock-paper-scissors/wallets.private.json
+/examples/rock-paper-scissors/.stress-inflight.private.json

@@ -6,13 +6,16 @@
   "scripts": {
     "server": "tsx index.ts",
     "client": "tsx client.ts",
+    "stress:200": "tsx stress.ts",
+    "wallets:setup": "tsx wallets.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@openx402/bazaar-sdk": "0.1.0",
+    "@openx402/bazaar-sdk": "file:../../packages/bazaar-sdk",
     "@x402/core": "2.20.0",
     "@x402/express": "2.20.0",
     "@x402/stellar": "2.20.0",
+    "@stellar/stellar-sdk": "16.2.0",
     "express": "5.1.0"
   },
   "devDependencies": {

@@ -1,4 +1,6 @@
-import { randomInt } from "node:crypto";
+import { randomBytes, randomInt, randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import express from "express";
 import { createX402Seller, resolveSellerPublicUrl } from "@openx402/bazaar-sdk";
 import { stellarAssets } from "@openx402/bazaar-sdk/stellar";
@@ -9,96 +11,108 @@ import { ExactStellarScheme } from "@x402/stellar/exact/server";
 const PORT = Number(process.env.PORT ?? 4788);
 const NETWORK = "stellar:testnet" as const;
 const FACILITATOR_URL = process.env.FACILITATOR_URL
-  ?? "https://facilitator-production-8430.up.railway.app";
-const PAY_TO = process.env.SELLER_PAY_TO;
+  ?? "https://facilitator.stellarx402.xyz";
+const WALLETS_FILE = fileURLToPath(new URL("./wallets.public.json", import.meta.url));
 
-if (!PAY_TO) throw new Error("SELLER_PAY_TO is required");
+type PublicWallet = { id: number; address: string };
+
+const wallets = JSON.parse(readFileSync(WALLETS_FILE, "utf8")) as PublicWallet[];
+if (wallets.length !== 10 || new Set(wallets.map(wallet => wallet.address)).size !== 10) {
+  throw new Error("wallets.public.json must contain ten distinct wallets; run npm run wallets:setup");
+}
+
+const definitions = [
+  ["/api/time", "UTC Time", "1200"],
+  ["/api/uuid", "Random UUID", "2700"],
+  ["/api/dice", "Dice Roll", "4300"],
+  ["/api/coin", "Coin Flip", "900"],
+  ["/api/number", "Random Number", "3100"],
+  ["/api/color", "Random Color", "1800"],
+  ["/api/quote", "Random Quote", "5200"],
+  ["/api/token", "Random Token", "2400"],
+  ["/api/status", "Service Status", "3700"],
+  ["/api/version", "API Version", "1500"],
+] as const;
 
 const seller = createX402Seller({
-  // SELLER_PUBLIC_URL (an https tunnel origin) or RAILWAY_PUBLIC_DOMAIN, if either is
-  // set; otherwise falls back to the local loopback origin below, which lets this demo
-  // run standalone but means the facilitator can't reach it to catalog the resource.
   publicUrl: resolveSellerPublicUrl({ localDevelopmentUrl: `http://127.0.0.1:${PORT}` }),
   network: NETWORK,
-  payTo: PAY_TO,
-  assets: {
-    // Stellar testnet native XLM SAC. Charging it keeps this self-contained because
-    // the existing test identities do not need a separate token faucet or trustline.
-    XLM: stellarAssets.testnet.XLM,
-  },
+  assets: { USDC: stellarAssets.testnet.USDC },
   defaults: {
     scheme: "exact",
-    maxTimeoutSeconds: 60,
+    // The client currently measures six-second ledgers while the hosted
+    // facilitator validates against five-second ledgers. Its testnet maximum
+    // provides enough tolerance for that estimate and RPC-head skew.
+    maxTimeoutSeconds: 300,
     feesSponsored: true,
   },
 });
 
-const play = seller.post("/play", {
-  payment: { asset: "XLM", amount: "1000" },
-  discovery: {
-    name: "Rock Paper Scissors",
-    description: "Plays one round of rock, paper, scissors against the server.",
-    tags: ["game", "rps", "random"],
-    body: {
-      move: {
-        type: "string",
-        description: "Player move: rock, paper, or scissors.",
-        enum: ["rock", "paper", "scissors"],
-        required: true,
-        example: "rock",
+const routes = definitions.map(([path, name, amount], index) =>
+  seller.get(path, {
+    payment: {
+      asset: "USDC",
+      amount,
+      payTo: wallets[index]!.address,
+    },
+    discovery: {
+      name,
+      description: `${name} test API`,
+      tags: ["demo", "x402", "stellar"],
+      output: {
+        description: `${name} JSON result`,
+        example: { result: "example" },
       },
     },
-    output: {
-      description: "The player move, server move, and round result.",
-      example: { player: "rock", server: "scissors", result: "win" },
-    },
-  },
-});
+  })
+);
 
 const facilitator = new HTTPFacilitatorClient({ url: FACILITATOR_URL });
 const resourceServer = new x402ResourceServer(facilitator)
   .register(NETWORK, new ExactStellarScheme());
 
 const app = express();
-app.use(express.json({ limit: "16kb" }));
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
+app.use(paymentMiddleware(
+  Object.assign({}, ...routes.map(route => route.paymentConfig)),
+  resourceServer,
+));
 
-app.use(paymentMiddleware(play.paymentConfig, resourceServer));
+const quotes = [
+  "Simplicity is the soul of efficiency.",
+  "Make it work, make it right, make it fast.",
+  "Programs must be written for people to read.",
+] as const;
 
-const moves = ["rock", "paper", "scissors"] as const;
-type Move = typeof moves[number];
+const results: ReadonlyArray<() => unknown> = [
+  () => new Date().toISOString(),
+  () => randomUUID(),
+  () => randomInt(1, 7),
+  () => randomInt(2) === 0 ? "heads" : "tails",
+  () => randomInt(1_000_000),
+  () => `#${randomBytes(3).toString("hex")}`,
+  () => quotes[randomInt(quotes.length)]!,
+  () => randomBytes(16).toString("hex"),
+  () => ({ status: "ok", uptimeSeconds: Math.floor(process.uptime()) }),
+  () => "0.1.0",
+];
 
-function isMove(value: unknown): value is Move {
-  return typeof value === "string" && moves.includes(value as Move);
-}
-
-function outcome(player: Move, server: Move): "win" | "lose" | "draw" {
-  if (player === server) return "draw";
-  if (
-    (player === "rock" && server === "scissors")
-    || (player === "paper" && server === "rock")
-    || (player === "scissors" && server === "paper")
-  ) return "win";
-  return "lose";
-}
-
-app.post(play.path, (req, res) => {
-  if (!isMove(req.body?.move)) {
-    res.status(400).json({ error: "move must be rock, paper, or scissors" });
-    return;
-  }
-  const server = moves[randomInt(moves.length)]!;
-  res.json({ player: req.body.move, server, result: outcome(req.body.move, server) });
+routes.forEach((route, index) => {
+  app.get(route.path, (_req, res) => res.json({ result: results[index]!() }));
 });
 
 app.listen(PORT, "127.0.0.1", () => {
   console.log(JSON.stringify({
     status: "listening",
-    localUrl: `http://127.0.0.1:${PORT}${play.path}`,
-    publicUrl: play.resourceUrl,
+    localOrigin: `http://127.0.0.1:${PORT}`,
+    publicOrigin: seller.config.publicUrl,
     facilitator: FACILITATOR_URL,
-    payTo: PAY_TO,
-    asset: stellarAssets.testnet.XLM,
-    amount: "1000",
+    network: NETWORK,
+    asset: stellarAssets.testnet.USDC,
+    resources: routes.map((route, index) => ({
+      path: route.path,
+      amount: definitions[index]![2],
+      payTo: wallets[index]!.address,
+    })),
   }, null, 2));
 });
