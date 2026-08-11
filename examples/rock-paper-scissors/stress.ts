@@ -9,7 +9,6 @@ const NETWORK = "stellar:testnet" as const;
 const FACILITATOR_URL = "https://facilitator.stellarx402.xyz";
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
 const RUN_ID = "hosted-usdc-200-v1";
-const TARGET_PER_PATH = 20;
 const SELLER_ORIGIN = process.env.SELLER_ORIGIN?.replace(/\/$/, "");
 const INTER_REQUEST_DELAY_MS = Number(process.env.INTER_REQUEST_DELAY_MS ?? 6_000);
 const WALLETS_FILE = fileURLToPath(new URL("./wallets.private.json", import.meta.url));
@@ -39,6 +38,18 @@ const AMOUNTS: Record<Path, string> = {
   token: "2400",
   status: "3700",
   version: "1500",
+};
+const TARGETS: Record<Path, number> = {
+  time: 31,
+  uuid: 29,
+  dice: 34,
+  coin: 23,
+  number: 27,
+  color: 25,
+  quote: 32,
+  token: 24,
+  status: 28,
+  version: 26,
 };
 type PrivateWallet = { id: number; address: string; secret: string };
 type Proof = {
@@ -93,12 +104,17 @@ async function horizon(transaction: string): Promise<{ ledger: number; createdAt
 }
 
 async function confirm(transaction: string): Promise<{ ledger: number; createdAt: string; successful: true }> {
+  let lastError: unknown;
   for (let attempt = 0; attempt < 12; attempt++) {
-    const confirmed = await horizon(transaction);
-    if (confirmed) return confirmed;
+    try {
+      const confirmed = await horizon(transaction);
+      if (confirmed) return confirmed;
+    } catch (error) {
+      lastError = error;
+    }
     await wait(Math.min(2_000 * (attempt + 1), 10_000));
   }
-  throw new Error(`transaction ${transaction} was not confirmed by Horizon`);
+  throw new Error(`transaction ${transaction} was not confirmed by Horizon`, { cause: lastError });
 }
 
 async function readProofs(): Promise<Proof[]> {
@@ -354,6 +370,7 @@ console.log(JSON.stringify({
   status: "starting",
   total: proofs.length,
   counts: Object.fromEntries(counts),
+  transactionTargets: TARGETS,
   buyerTargets: Object.fromEntries(paths.map(path => [path, plan[path].target])),
 }));
 
@@ -371,7 +388,7 @@ if (pending && imported.some(proof => proof.path === pending!.path && proof.buye
 }
 
 for (const path of paths) {
-  while ((counts.get(path) ?? 0) < TARGET_PER_PATH || buyerCounts(proofs, path).size < plan[path].target ||
+  while ((counts.get(path) ?? 0) < TARGETS[path] || buyerCounts(proofs, path).size < plan[path].target ||
          !hasCurrentPriceProof(proofs, path)) {
     let httpClient: x402HTTPClient;
     if (pending) {
@@ -420,7 +437,7 @@ for (const path of paths) {
 }
 
 counts = validateProofs(proofs);
-if ([...counts.values()].some(count => count < TARGET_PER_PATH) ||
+if (paths.some(path => (counts.get(path) ?? 0) < TARGETS[path]) ||
     paths.some(path => buyerCounts(proofs, path).size !== plan[path].target || !hasCurrentPriceProof(proofs, path))) {
   throw new Error("stress run did not reach its transaction and buyer targets");
 }

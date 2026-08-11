@@ -72,5 +72,6 @@ proofs and a persistent random target of 3–9 distinct buyers per service:
 SELLER_ORIGIN=https://YOUR-NGROK-DOMAIN.ngrok-free.app npm run stress:200
 ```
 
-The stress runner also performs one settlement after a price change so Bazaar
-discovery refreshes the signed payment requirement.
+The stress runner uses fixed irregular per-service transaction targets and also
+performs one settlement after a price change so Bazaar discovery refreshes the
+signed payment requirement.
