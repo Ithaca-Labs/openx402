@@ -135,7 +135,6 @@ export async function loadDashboardData(options: {
     if (!summary || detailUrls.has(summary.resource_url)) continue;
     detailUrls.add(summary.resource_url);
     detailsToFetch.push({ resource, summary });
-    if (detailsToFetch.length === 8) break;
   }
   const detailResults = await mapWithConcurrency(detailsToFetch, 3, async ({ summary }) => ({
     url: summary.resource_url,

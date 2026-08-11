@@ -135,6 +135,23 @@ describe("amount and count formatting", () => {
     expect(entity.paymentOptions).toHaveLength(2);
     expect(entity.price).toBe("0.0001 XLM");
   });
+
+  it("uses the latest observed payment for resource freshness", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-02T06:00:00.000Z"));
+    const entity = adaptEntity(baseResource, {
+      analyticsState: "success",
+      observability: {
+        calls_all_time: "20",
+        unique_buyers: "1",
+        latest_activity: "2026-08-02T05:59:00.000Z",
+      },
+    });
+    expect(entity.transactions).toBe("20");
+    expect(entity.buyers).toBe("1");
+    expect(entity.freshness).toBe("1m ago");
+    vi.useRealTimers();
+  });
 });
 
 describe("network states", () => {

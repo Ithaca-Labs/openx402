@@ -92,7 +92,7 @@ export function adaptEntity(
     transactions,
     buyers,
     network: humanNetwork(primary?.network),
-    freshness: relativeTime(resource.lastUpdated),
+    freshness: relativeTime(options.observability?.latest_activity ?? resource.lastUpdated),
     stale: options.summary?.status === "stale",
     accent: resource.type === "mcp" ? "yellow" : "graphite",
   };
