@@ -11,8 +11,8 @@ const INTER_REQUEST_DELAY_MS = Number(process.env.INTER_REQUEST_DELAY_MS ?? 6_00
 const WALLETS_FILE = fileURLToPath(new URL("./wallets.private.json", import.meta.url));
 
 if (!SELLER_ORIGIN) throw new Error("SELLER_ORIGIN is required");
-if (!Number.isInteger(START_INDEX) || START_INDEX < 0 || START_INDEX >= 10) {
-  throw new Error("START_INDEX must be an integer from 0 through 9");
+if (!Number.isInteger(START_INDEX) || START_INDEX < 0 || START_INDEX >= 15) {
+  throw new Error("START_INDEX must be an integer from 0 through 14");
 }
 if (!Number.isInteger(INTER_REQUEST_DELAY_MS) || INTER_REQUEST_DELAY_MS < 0 || INTER_REQUEST_DELAY_MS > 60_000) {
   throw new Error("INTER_REQUEST_DELAY_MS must be an integer from 0 through 60000");
@@ -23,11 +23,15 @@ type PrivateWallet = { id: number; address: string; secret: string };
 const paths = [
   "time", "uuid", "dice", "coin", "number",
   "color", "quote", "token", "status", "version",
+  "entropy", "temperature", "coordinate", "mood", "word",
 ] as const;
-const amounts = ["1200", "2700", "4300", "900", "3100", "1800", "5200", "2400", "3700", "1500"] as const;
+const amounts = [
+  "1200", "2700", "4300", "900", "3100", "1800", "5200", "2400", "3700", "1500",
+  "6600", "750", "4600", "2900", "6100",
+] as const;
 
 const wallets = JSON.parse(await readFile(WALLETS_FILE, "utf8")) as PrivateWallet[];
-if (wallets.length !== paths.length) throw new Error("wallets.private.json must contain ten wallets");
+if (wallets.length !== paths.length) throw new Error("wallets.private.json must contain fifteen wallets");
 
 const purchases = [];
 

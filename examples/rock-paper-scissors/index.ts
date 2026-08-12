@@ -17,8 +17,8 @@ const WALLETS_FILE = fileURLToPath(new URL("./wallets.public.json", import.meta.
 type PublicWallet = { id: number; address: string };
 
 const wallets = JSON.parse(readFileSync(WALLETS_FILE, "utf8")) as PublicWallet[];
-if (wallets.length !== 10 || new Set(wallets.map(wallet => wallet.address)).size !== 10) {
-  throw new Error("wallets.public.json must contain ten distinct wallets; run npm run wallets:setup");
+if (wallets.length !== 15 || new Set(wallets.map(wallet => wallet.address)).size !== 15) {
+  throw new Error("wallets.public.json must contain fifteen distinct wallets; run npm run wallets:setup");
 }
 
 const definitions = [
@@ -32,6 +32,11 @@ const definitions = [
   ["/api/token", "Token Generator", "2400"],
   ["/api/status", "Uptime Pulse", "3700"],
   ["/api/version", "Release Marker", "1500"],
+  ["/api/entropy", "Entropy Well", "6600"],
+  ["/api/temperature", "Thermal Glimpse", "750"],
+  ["/api/coordinate", "Coordinate Drop", "4600"],
+  ["/api/mood", "Mood Signal", "2900"],
+  ["/api/word", "Word Relay", "6100"],
 ] as const;
 
 const seller = createX402Seller({
@@ -95,6 +100,11 @@ const results: ReadonlyArray<() => unknown> = [
   () => randomBytes(16).toString("hex"),
   () => ({ status: "ok", uptimeSeconds: Math.floor(process.uptime()) }),
   () => "0.1.0",
+  () => randomBytes(24).toString("hex"),
+  () => Number((randomInt(-200, 451) / 10).toFixed(1)),
+  () => ({ latitude: randomInt(-9000, 9001) / 100, longitude: randomInt(-18000, 18001) / 100 }),
+  () => ["calm", "curious", "focused", "bright", "restless"][randomInt(5)]!,
+  () => ["ember", "harbor", "lattice", "orbit", "willow"][randomInt(5)]!,
 ];
 
 routes.forEach((route, index) => {

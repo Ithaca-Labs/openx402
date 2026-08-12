@@ -1,9 +1,9 @@
-# Ten cyclic Stellar x402 APIs
+# Fifteen cyclic Stellar x402 APIs
 
-One Express server exposes ten paid GET endpoints. Wallet `N` owns endpoint `N`;
-wallet `N-1` buys it, with wallet 10 buying wallet 1's endpoint. Payments use
+One Express server exposes fifteen paid GET endpoints. Wallet `N` owns endpoint `N`;
+wallet `N-1` buys it, with wallet 15 buying wallet 1's endpoint. Payments use
 canonical Circle USDC on Stellar testnet. Stable per-service prices range from
-`900` to `5200` atomic units (0.00009 to 0.00052 USDC).
+`750` to `6600` atomic units (0.000075 to 0.00066 USDC).
 
 ## 1. Create wallets, fund XLM, and add trustlines
 
@@ -14,7 +14,7 @@ npm run wallets:setup
 Secrets are written with owner-only permissions to gitignored
 `wallets.private.json`. The API server reads only `wallets.public.json`.
 
-Fund all ten addresses with testnet USDC using the Circle faucet, or distribute
+Fund all fifteen addresses with testnet USDC using the Circle faucet, or distribute
 one USDC to each from a disposable testnet wallet that already holds USDC:
 
 ```bash
@@ -54,7 +54,7 @@ SELLER_ORIGIN=https://YOUR-NGROK-DOMAIN.ngrok-free.app npm run client
 The client waits six seconds between successful settlements so facilitator
 channel sequences can advance. Set `INTER_REQUEST_DELAY_MS=0` for burst testing.
 
-The client requires all ten local secrets because each generated wallet signs one
+The client requires all fifteen local secrets because each generated wallet signs one
 purchase. It validates each advertised pay-to address, canonical USDC contract,
 amount, HTTP 200 response, and 64-character settlement transaction hash.
 
@@ -69,7 +69,7 @@ For a resumable hosted-facilitator stress run with Horizon-confirmed public
 proofs and a persistent random target of 3–9 distinct buyers per service:
 
 ```bash
-SELLER_ORIGIN=https://YOUR-NGROK-DOMAIN.ngrok-free.app npm run stress:200
+SELLER_ORIGIN=https://YOUR-NGROK-DOMAIN.ngrok-free.app npm run stress
 ```
 
 The stress runner uses fixed irregular per-service transaction targets and also

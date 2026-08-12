@@ -18,6 +18,7 @@ const FRIENDBOT_URL = "https://friendbot.stellar.org";
 const USDC_ISSUER = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5";
 const PRIVATE_FILE = fileURLToPath(new URL("./wallets.private.json", import.meta.url));
 const PUBLIC_FILE = fileURLToPath(new URL("./wallets.public.json", import.meta.url));
+const WALLET_COUNT = 15;
 const server = new Horizon.Server(HORIZON_URL);
 const usdc = new Asset("USDC", USDC_ISSUER);
 
@@ -33,8 +34,8 @@ async function exists(path: string): Promise<boolean> {
 }
 
 function validateWallets(wallets: PrivateWallet[]): void {
-  if (wallets.length !== 10) throw new Error("wallet file must contain exactly ten wallets");
-  if (new Set(wallets.map(wallet => wallet.address)).size !== 10) {
+  if (wallets.length !== WALLET_COUNT) throw new Error(`wallet file must contain exactly ${WALLET_COUNT} wallets`);
+  if (new Set(wallets.map(wallet => wallet.address)).size !== WALLET_COUNT) {
     throw new Error("wallet addresses must be distinct");
   }
   for (const [index, wallet] of wallets.entries()) {
@@ -49,8 +50,14 @@ async function loadOrCreateWallets(): Promise<PrivateWallet[]> {
   let wallets: PrivateWallet[];
   if (await exists(PRIVATE_FILE)) {
     wallets = JSON.parse(await readFile(PRIVATE_FILE, "utf8")) as PrivateWallet[];
+    if (wallets.length > WALLET_COUNT) throw new Error(`wallet file contains more than ${WALLET_COUNT} wallets`);
+    while (wallets.length < WALLET_COUNT) {
+      const keypair = Keypair.random();
+      wallets.push({ id: wallets.length + 1, address: keypair.publicKey(), secret: keypair.secret() });
+    }
+    await writeFile(PRIVATE_FILE, `${JSON.stringify(wallets, null, 2)}\n`, { mode: 0o600 });
   } else {
-    wallets = Array.from({ length: 10 }, (_, index) => {
+    wallets = Array.from({ length: WALLET_COUNT }, (_, index) => {
       const keypair = Keypair.random();
       return { id: index + 1, address: keypair.publicKey(), secret: keypair.secret() };
     });

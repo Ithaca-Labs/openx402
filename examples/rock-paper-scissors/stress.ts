@@ -25,6 +25,7 @@ if (!Number.isInteger(INTER_REQUEST_DELAY_MS) || INTER_REQUEST_DELAY_MS < 0 || I
 const paths = [
   "time", "uuid", "dice", "coin", "number",
   "color", "quote", "token", "status", "version",
+  "entropy", "temperature", "coordinate", "mood", "word",
 ] as const;
 type Path = typeof paths[number];
 const AMOUNTS: Record<Path, string> = {
@@ -38,18 +39,28 @@ const AMOUNTS: Record<Path, string> = {
   token: "2400",
   status: "3700",
   version: "1500",
+  entropy: "6600",
+  temperature: "750",
+  coordinate: "4600",
+  mood: "2900",
+  word: "6100",
 };
 const TARGETS: Record<Path, number> = {
-  time: 55,
-  uuid: 41,
-  dice: 48,
-  coin: 51,
-  number: 50,
-  color: 54,
-  quote: 52,
-  token: 46,
-  status: 53,
-  version: 39,
+  time: 65,
+  uuid: 50,
+  dice: 73,
+  coin: 72,
+  number: 77,
+  color: 79,
+  quote: 60,
+  token: 61,
+  status: 72,
+  version: 50,
+  entropy: 25,
+  temperature: 26,
+  coordinate: 13,
+  mood: 27,
+  word: 12,
 };
 type PrivateWallet = { id: number; address: string; secret: string };
 type Proof = {
@@ -78,7 +89,7 @@ type BuyerPlan = Record<Path, { target: number; buyers: string[] }>;
 type BuyerPlanFile = { runId: typeof RUN_ID; services: BuyerPlan };
 
 const wallets = JSON.parse(await readFile(WALLETS_FILE, "utf8")) as PrivateWallet[];
-if (wallets.length !== paths.length) throw new Error("wallets.private.json must contain ten wallets");
+if (wallets.length !== paths.length) throw new Error("wallets.private.json must contain fifteen wallets");
 
 const wait = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
 
@@ -223,11 +234,27 @@ function shuffled<T>(values: T[]): T[] {
 }
 
 async function loadBuyerPlan(proofs: Proof[]): Promise<BuyerPlan> {
+  const createEntry = (path: Path): BuyerPlan[Path] => {
+    const owner = wallets[paths.indexOf(path)]!;
+    const existing = [...buyerCounts(proofs, path).keys()];
+    if (existing.length > 9) throw new Error(`${path} already has more than nine buyers`);
+    const target = randomInt(Math.max(3, existing.length), 10);
+    const candidates = shuffled(wallets
+      .map(wallet => wallet.address)
+      .filter(address => address !== owner.address && !existing.includes(address)));
+    return { target, buyers: [...existing, ...candidates.slice(0, target - existing.length)] };
+  };
+
   try {
     const document = JSON.parse(await readFile(BUYER_PLAN_FILE, "utf8")) as BuyerPlanFile;
     if (document.runId !== RUN_ID) throw new Error("buyer plan belongs to another run");
     const plan = document.services;
+    let changed = false;
     for (const path of paths) {
+      if (!plan[path]) {
+        plan[path] = createEntry(path);
+        changed = true;
+      }
       const entry = plan[path];
       const owner = wallets[paths.indexOf(path)]!;
       if (!entry || entry.target < 3 || entry.target > 9 || entry.buyers.length !== entry.target ||
@@ -236,6 +263,9 @@ async function loadBuyerPlan(proofs: Proof[]): Promise<BuyerPlan> {
         throw new Error(`invalid buyer plan for ${path}`);
       }
     }
+    if (changed) {
+      await writeFile(BUYER_PLAN_FILE, `${JSON.stringify({ runId: RUN_ID, services: plan }, null, 2)}\n`, "utf8");
+    }
     return plan;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
@@ -243,14 +273,7 @@ async function loadBuyerPlan(proofs: Proof[]): Promise<BuyerPlan> {
 
   const plan = {} as BuyerPlan;
   for (const path of paths) {
-    const owner = wallets[paths.indexOf(path)]!;
-    const existing = [...buyerCounts(proofs, path).keys()];
-    if (existing.length > 9) throw new Error(`${path} already has more than nine buyers`);
-    const target = randomInt(Math.max(3, existing.length), 10);
-    const candidates = shuffled(wallets
-      .map(wallet => wallet.address)
-      .filter(address => address !== owner.address && !existing.includes(address)));
-    plan[path] = { target, buyers: [...existing, ...candidates.slice(0, target - existing.length)] };
+    plan[path] = createEntry(path);
   }
   await writeFile(BUYER_PLAN_FILE, `${JSON.stringify({ runId: RUN_ID, services: plan }, null, 2)}\n`, "utf8");
   return plan;

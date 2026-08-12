@@ -6,7 +6,7 @@
   "scripts": {
     "server": "tsx index.ts",
     "client": "tsx client.ts",
-    "stress:200": "tsx stress.ts",
+    "stress": "tsx stress.ts",
     "wallets:setup": "tsx wallets.ts",
     "typecheck": "tsc --noEmit"
   },
