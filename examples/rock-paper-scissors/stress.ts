@@ -40,16 +40,16 @@ const AMOUNTS: Record<Path, string> = {
   version: "1500",
 };
 const TARGETS: Record<Path, number> = {
-  time: 31,
-  uuid: 29,
-  dice: 34,
-  coin: 23,
-  number: 27,
-  color: 25,
-  quote: 32,
-  token: 24,
-  status: 28,
-  version: 26,
+  time: 55,
+  uuid: 41,
+  dice: 48,
+  coin: 51,
+  number: 50,
+  color: 54,
+  quote: 52,
+  token: 46,
+  status: 53,
+  version: 39,
 };
 type PrivateWallet = { id: number; address: string; secret: string };
 type Proof = {

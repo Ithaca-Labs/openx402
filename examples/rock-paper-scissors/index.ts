@@ -22,16 +22,16 @@ if (wallets.length !== 10 || new Set(wallets.map(wallet => wallet.address)).size
 }
 
 const definitions = [
-  ["/api/time", "UTC Time", "1200"],
-  ["/api/uuid", "Random UUID", "2700"],
-  ["/api/dice", "Dice Roll", "4300"],
-  ["/api/coin", "Coin Flip", "900"],
-  ["/api/number", "Random Number", "3100"],
-  ["/api/color", "Random Color", "1800"],
-  ["/api/quote", "Random Quote", "5200"],
-  ["/api/token", "Random Token", "2400"],
-  ["/api/status", "Service Status", "3700"],
-  ["/api/version", "API Version", "1500"],
+  ["/api/time", "Chrono Beacon", "1200"],
+  ["/api/uuid", "Identity Spark", "2700"],
+  ["/api/dice", "Dice Circuit", "4300"],
+  ["/api/coin", "Coin Oracle", "900"],
+  ["/api/number", "Number Forge", "3100"],
+  ["/api/color", "Color Prism", "1800"],
+  ["/api/quote", "Quote Capsule", "5200"],
+  ["/api/token", "Token Generator", "2400"],
+  ["/api/status", "Uptime Pulse", "3700"],
+  ["/api/version", "Release Marker", "1500"],
 ] as const;
 
 const seller = createX402Seller({
