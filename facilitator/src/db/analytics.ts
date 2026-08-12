@@ -33,6 +33,24 @@ function since(days: number): string {
 }
 
 const SETTLED = "stage = 'settled'";
+const OBSERVABILITY_WINDOWS = [1, 6, 24, 72, 168, 360, 720];
+
+function observabilitySelect(alias?: string): string {
+  const prefix = alias ? `${alias}.` : "";
+  const counted = alias ? `${alias}.id` : "*";
+  const windows = OBSERVABILITY_WINDOWS.map(hours =>
+    `count(${counted}) FILTER (WHERE ${prefix}occurred_at >= now() - (${hours} * interval '1 hour')) AS calls_${hours}h,
+     count(${counted}) FILTER (WHERE ${prefix}status = 'success' AND ${prefix}occurred_at >= now() - (${hours} * interval '1 hour')) AS success_${hours}h`,
+  ).join(",\n");
+  return `count(${counted}) AS calls_all_time,
+          count(${counted}) FILTER (WHERE ${prefix}status = 'success') AS success_all_time,
+          count(${counted}) FILTER (WHERE ${prefix}status = 'failed') AS failed_all_time,
+          count(${counted}) FILTER (WHERE ${prefix}status = 'unknown') AS unknown_all_time,
+          count(DISTINCT ${prefix}payer) AS unique_buyers,
+          COALESCE(sum(${prefix}amount) FILTER (WHERE ${prefix}status = 'success'), 0) AS total_amount,
+          max(${prefix}occurred_at) AS latest_activity,
+          ${windows}`;
+}
 
 export class AnalyticsStore {
   constructor(private readonly pool: Pool) {}
@@ -330,6 +348,32 @@ export class AnalyticsStore {
     return result.rows;
   }
 
+  /** Observability for exactly the catalog resources visible on a discovery page. */
+  async resourcesObservability(resourceUrls: string[]): Promise<Array<Record<string, unknown>>> {
+    if (resourceUrls.length === 0) return [];
+    const result = await this.pool.query<Record<string, unknown>>(
+      `WITH requested AS (
+         SELECT resource_url, ordinal
+         FROM unnest($1::text[]) WITH ORDINALITY AS page(resource_url, ordinal)
+       )
+       SELECT r.id, r.resource_url, r.type, r.status, r.last_seen,
+              ${observabilitySelect("e")}
+       FROM requested requested
+       JOIN LATERAL (
+         SELECT id, resource_url, type, status, last_seen
+         FROM catalog_resources
+         WHERE resource_url = requested.resource_url
+         ORDER BY id DESC
+         LIMIT 1
+       ) r ON true
+       LEFT JOIN payment_events e ON e.resource_id = r.id AND e.stage = 'settled'
+       GROUP BY requested.ordinal, r.id, r.resource_url, r.type, r.status, r.last_seen
+       ORDER BY requested.ordinal`,
+      [resourceUrls],
+    );
+    return result.rows;
+  }
+
   async origins(options: { limit: number; offset: number }): Promise<Array<Record<string, unknown>>> {
     const result = await this.pool.query<Record<string, unknown>>(
       `SELECT r.origin,
@@ -407,20 +451,8 @@ export class AnalyticsStore {
 
   /** Per-resource invocation counts and status classes derived from settlements. */
   async resourceObservability(resourceId: number): Promise<Record<string, unknown>> {
-    const windows = [1, 6, 24, 72, 168, 360, 720];
-    const columns = windows.map(hours =>
-      `count(*) FILTER (WHERE occurred_at >= now() - (${hours} * interval '1 hour')) AS calls_${hours}h,
-       count(*) FILTER (WHERE status = 'success' AND occurred_at >= now() - (${hours} * interval '1 hour')) AS success_${hours}h`,
-    ).join(",\n");
     const result = await this.pool.query<Record<string, unknown>>(
-      `SELECT count(*) AS calls_all_time,
-              count(*) FILTER (WHERE status = 'success') AS success_all_time,
-              count(*) FILTER (WHERE status = 'failed') AS failed_all_time,
-              count(*) FILTER (WHERE status = 'unknown') AS unknown_all_time,
-              count(DISTINCT payer) AS unique_buyers,
-              COALESCE(sum(amount) FILTER (WHERE status = 'success'), 0) AS total_amount,
-              max(occurred_at) AS latest_activity,
-              ${columns}
+      `SELECT ${observabilitySelect()}
        FROM payment_events WHERE resource_id = $1 AND stage = 'settled'`,
       [resourceId],
     );

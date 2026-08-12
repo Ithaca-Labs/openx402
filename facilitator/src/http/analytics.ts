@@ -217,6 +217,20 @@ export function createAnalyticsRouter(
     } catch (error) { next(error); }
   });
 
+  router.post("/resources/observability", async (req, res, next) => {
+    try {
+      const resourceUrls = req.body?.resourceUrls;
+      const maximum = Math.max(config.discovery.maxPageSize, config.search.maximumResultLimit);
+      if (!Array.isArray(resourceUrls) || resourceUrls.length > maximum ||
+          resourceUrls.some(value => typeof value !== "string" || value.length === 0 || value.length > 2048)) {
+        res.status(400).json({ error: "invalid_resource_urls" });
+        return;
+      }
+      const uniqueUrls = [...new Set(resourceUrls as string[])];
+      res.json({ items: await analytics.resourcesObservability(uniqueUrls) });
+    } catch (error) { next(error); }
+  });
+
   router.get("/resources/:id", async (req, res, next) => {
     try {
       const detail = await catalog.resourceDetail(Number(req.params.id));

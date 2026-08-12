@@ -149,6 +149,9 @@ export type ResourceObservabilityResponse = {
   latest_activity?: string;
 };
 
+export type PageResourceObservability = AnalyticsResource & ResourceObservabilityResponse;
+export type PageResourceObservabilityResponse = { items: PageResourceObservability[] };
+
 type JsonObject = Record<string, unknown>;
 
 function record(value: unknown): JsonObject | undefined {
@@ -491,6 +494,24 @@ export function parseAnalyticsResourcesResponse(input: unknown): Validation<Anal
       else partial = true;
     }
     items.push(value);
+  }
+  return { ok: true, partial, value: { items } };
+}
+
+export function parsePageResourceObservabilityResponse(input: unknown): Validation<PageResourceObservabilityResponse> {
+  const source = record(input);
+  if (!source || !Array.isArray(source.items)) return { ok: false };
+  const items: PageResourceObservability[] = [];
+  let partial = false;
+  for (const item of source.items) {
+    const resources = parseAnalyticsResourcesResponse({ items: [item] });
+    const observability = parseResourceObservabilityResponse(item);
+    if (!resources.ok || !observability.ok || !resources.value.items[0]) {
+      partial = true;
+      continue;
+    }
+    partial ||= resources.partial || observability.partial;
+    items.push({ ...resources.value.items[0], ...observability.value });
   }
   return { ok: true, partial, value: { items } };
 }

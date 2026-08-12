@@ -7,6 +7,7 @@ import {
   parseBrowseResponse,
   parseHealthReadyResponse,
   parseOverviewResponse,
+  parsePageResourceObservabilityResponse,
   parseResourceObservabilityResponse,
   parseSearchResponse,
   parseSupportedResponse,
@@ -17,6 +18,7 @@ import {
   type BrowseResponse,
   type HealthReadyResponse,
   type OverviewResponse,
+  type PageResourceObservabilityResponse,
   type ResourceObservabilityResponse,
   type SearchResponse,
   type SupportedResponse,
@@ -58,17 +60,20 @@ async function requestJson<T>(
   path: string,
   validate: (value: unknown) => Validation<T>,
   isEmpty: (value: T) => boolean,
-  timeoutMs = 8_000,
+  options: { timeoutMs?: number; method?: "GET" | "POST"; body?: unknown } = {},
 ): Promise<ApiResult<T>> {
   const headers = new Headers({ Accept: "application/json" });
   const apiKey = process.env.FACILITATOR_API_KEY;
   if (apiKey) headers.set("Authorization", `Bearer ${apiKey}`);
+  if (options.body !== undefined) headers.set("Content-Type", "application/json");
 
   try {
     const response = await fetch(new URL(path, facilitatorBaseUrl()), {
       headers,
+      method: options.method ?? "GET",
+      ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
       cache: "no-store",
-      signal: AbortSignal.timeout(timeoutMs),
+      signal: AbortSignal.timeout(options.timeoutMs ?? 8_000),
     });
     if (!response.ok) return { state: "unavailable" };
 
@@ -103,7 +108,7 @@ function discoveryParams(request: DiscoveryRequest): URLSearchParams {
 }
 
 export function getHealth(timeoutMs = 3_000): Promise<ApiResult<HealthReadyResponse>> {
-  return requestJson("/health/ready", parseHealthReadyResponse, () => false, timeoutMs);
+  return requestJson("/health/ready", parseHealthReadyResponse, () => false, { timeoutMs });
 }
 
 export function getSupported(): Promise<ApiResult<SupportedResponse>> {
@@ -155,4 +160,13 @@ export function getAnalyticsResources(limit: number): Promise<ApiResult<Analytic
 
 export function getResourceObservability(id: string): Promise<ApiResult<ResourceObservabilityResponse>> {
   return requestJson(`/analytics/v1/resources/${encodeURIComponent(id)}/observability`, parseResourceObservabilityResponse, value => Object.keys(value).length === 0);
+}
+
+export function getPageResourceObservability(resourceUrls: string[]): Promise<ApiResult<PageResourceObservabilityResponse>> {
+  return requestJson(
+    "/analytics/v1/resources/observability",
+    parsePageResourceObservabilityResponse,
+    value => value.items.length === 0,
+    { method: "POST", body: { resourceUrls } },
+  );
 }

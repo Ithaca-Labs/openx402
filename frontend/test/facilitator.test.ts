@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { adaptActivity, adaptEntity, adaptMetrics, adaptNetworks } from "@/lib/facilitator/adapters";
-import { getHealth } from "@/lib/facilitator/client";
+import { getHealth, getPageResourceObservability } from "@/lib/facilitator/client";
 import {
   parseBrowseResponse,
   parseSearchResponse,
@@ -230,6 +230,28 @@ describe("pagination, availability, and explorers", () => {
 
     await expect(getHealth(10)).resolves.toMatchObject({ state: "success", data: { status: "ready" } });
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe("https://facilitator-production-8430.up.railway.app/health/ready");
+  });
+
+  it("requests observability for exactly the resources on the current discovery page", async () => {
+    process.env.FACILITATOR_URL = "https://facilitator.example";
+    const resourceUrls = ["https://old.example/time", "https://old.example/uuid"];
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      items: resourceUrls.map((resource_url, index) => ({
+        id: String(index + 1), resource_url, type: "http", status: "active",
+        calls_all_time: String(index + 20), success_all_time: String(index + 20),
+        failed_all_time: "0", unknown_all_time: "0", unique_buyers: "3",
+      })),
+    }), { status: 200, headers: { "content-type": "application/json" } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await getPageResourceObservability(resourceUrls);
+    expect(result.state).toBe("success");
+    expect(result.data?.items).toHaveLength(2);
+    expect(result.data?.items[0]).toMatchObject({ resource_url: resourceUrls[0], calls_all_time: "20" });
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe("https://facilitator.example/analytics/v1/resources/observability");
+    const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    expect(request.method).toBe("POST");
+    expect(JSON.parse(String(request.body))).toEqual({ resourceUrls });
   });
 
   it("maps testnet and pubnet transaction hashes to the correct explorer", () => {

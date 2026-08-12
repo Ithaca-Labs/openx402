@@ -10,24 +10,17 @@ import {
   adaptNetworks,
 } from "./adapters";
 import {
-  getAnalyticsResources,
   getBreakdowns,
   getDiscovery,
   getHealth,
   getOverview,
-  getResourceObservability,
+  getPageResourceObservability,
   getSupported,
   getTimeseries,
   getTransactions,
   type ApiResult,
 } from "./client";
-import type {
-  AnalyticsResource,
-  BrowseResponse,
-  DiscoveryResource,
-  ResourceObservabilityResponse,
-  SearchResponse,
-} from "./contracts";
+import type { BrowseResponse, DiscoveryResource, SearchResponse } from "./contracts";
 import type { DashboardSearch } from "./query";
 
 export { pageHref, parseDashboardSearch } from "./query";
@@ -44,19 +37,6 @@ function combinedState(results: Array<ApiResult<unknown> | undefined>): DataStat
   if (states.includes("success")) return "success";
   if (states.includes("invalid")) return "invalid";
   return "unavailable";
-}
-
-async function mapWithConcurrency<T, R>(items: T[], concurrency: number, task: (item: T) => Promise<R>): Promise<R[]> {
-  const results = new Array<R>(items.length);
-  let next = 0;
-  async function worker() {
-    while (next < items.length) {
-      const index = next++;
-      results[index] = await task(items[index]!);
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
-  return results;
 }
 
 function discoveryRows(result: ApiResult<BrowseResponse | SearchResponse> | undefined): DiscoveryResource[] {
@@ -104,7 +84,7 @@ export async function loadDashboardData(options: {
   const needsBreakdowns = scope === "networks";
   const needsTransactions = scope === "transactions";
 
-  const [healthResult, supportedResult, overviewResult, timeseriesResult, breakdownsResult, transactionsResult, discoveryResult, analyticsResourcesResult] = await Promise.all([
+  const [healthResult, supportedResult, overviewResult, timeseriesResult, breakdownsResult, transactionsResult, discoveryResult] = await Promise.all([
     getHealth(),
     needsSupported ? getSupported() : Promise.resolve(undefined),
     needsOverview ? getOverview() : Promise.resolve(undefined),
@@ -122,38 +102,24 @@ export async function loadDashboardData(options: {
       ...(search.asset ? { asset: search.asset } : {}),
       ...(search.extensions ? { extensions: search.extensions } : {}),
     }) : Promise.resolve(undefined),
-    needsDiscovery ? getAnalyticsResources(20) : Promise.resolve(undefined),
   ]);
 
   const resources = discoveryRows(discoveryResult);
-  const summaries = analyticsResourcesResult?.data?.items ?? [];
-  const summaryByUrl = new Map(summaries.map(summary => [summary.resource_url, summary]));
-  const detailsToFetch: Array<{ resource: DiscoveryResource; summary: AnalyticsResource }> = [];
-  const detailUrls = new Set<string>();
-  for (const resource of resources) {
-    const summary = summaryByUrl.get(resource.resource);
-    if (!summary || detailUrls.has(summary.resource_url)) continue;
-    detailUrls.add(summary.resource_url);
-    detailsToFetch.push({ resource, summary });
-  }
-  const detailResults = await mapWithConcurrency(detailsToFetch, 3, async ({ summary }) => ({
-    url: summary.resource_url,
-    result: await getResourceObservability(summary.id),
-  }));
-  const observabilityByUrl = new Map<string, ResourceObservabilityResponse>();
-  for (const detail of detailResults) {
-    if (detail.result.data) observabilityByUrl.set(detail.url, detail.result.data);
-  }
+  const pageObservabilityResult = needsDiscovery && resources.length > 0
+    ? await getPageResourceObservability(resources.map(resource => resource.resource))
+    : undefined;
+  const pageObservability = pageObservabilityResult?.data?.items ?? [];
+  const observabilityByUrl = new Map(pageObservability.map(item => [item.resource_url, item]));
 
   const analyticsState = combinedState([
     overviewResult,
     timeseriesResult,
     breakdownsResult,
     transactionsResult,
-    analyticsResourcesResult,
+    pageObservabilityResult,
   ]);
   const entities = resources.map(resource => adaptEntity(resource, {
-    summary: summaryByUrl.get(resource.resource),
+    summary: observabilityByUrl.get(resource.resource),
     observability: observabilityByUrl.get(resource.resource),
     analyticsState,
   }));

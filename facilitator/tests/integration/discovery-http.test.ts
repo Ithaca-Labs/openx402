@@ -377,6 +377,51 @@ describe("internal analytics API", () => {
     await request(server).get("/analytics/v1/transactions/missing").expect(404);
   });
 
+  it("returns observability for the resources on the requested discovery page", async () => {
+    const created = [];
+    for (let index = 0; index < 25; index += 1) {
+      created.push(await catalogResource(`https://api.example.com/resource-${index}`));
+    }
+    const firstResourceId = created[0]?.resourceId;
+    if (!firstResourceId) throw new Error("expected the first resource to be cataloged");
+    for (const [index, payer] of ["payer-1", "payer-2"].entries()) {
+      await analytics.record({
+        stage: "settled", status: "success", network: "stellar:testnet", scheme: "exact",
+        asset: ASSET, payer, payTo: SELLER, maxAmount: "10000", amount: "10000",
+        transactionHash: `old-resource-hash-${index}`, facilitatorId: "sponsor",
+        resourceId: firstResourceId,
+      });
+    }
+
+    const server = app({ discovery: discoveryConfig({ defaultPageSize: 20, maxPageSize: 20 }) });
+    const recent = await request(server).get("/analytics/v1/resources?limit=20").expect(200);
+    expect(recent.body.items.some((item: { resource_url: string }) =>
+      item.resource_url === "https://api.example.com/resource-0")).toBe(false);
+
+    const pageUrls = Array.from({ length: 5 }, (_, index) => `https://api.example.com/resource-${index}`);
+    const response = await request(server)
+      .post("/analytics/v1/resources/observability")
+      .send({ resourceUrls: pageUrls })
+      .expect(200);
+
+    expect(response.body.items.map((item: { resource_url: string }) => item.resource_url)).toEqual(pageUrls);
+    expect(response.body.items[0]).toMatchObject({
+      resource_url: pageUrls[0], calls_all_time: "2", success_all_time: "2", unique_buyers: "2",
+    });
+    expect(response.body.items[1]).toMatchObject({ resource_url: pageUrls[1], calls_all_time: "0" });
+  });
+
+  it("bounds page observability requests to the configured discovery page size", async () => {
+    const server = app({
+      discovery: discoveryConfig({ defaultPageSize: 2, maxPageSize: 3 }),
+      search: searchConfig({ defaultResultLimit: 2, maximumResultLimit: 3 }),
+    });
+    await request(server)
+      .post("/analytics/v1/resources/observability")
+      .send({ resourceUrls: ["https://a.example", "https://b.example", "https://c.example", "https://d.example"] })
+      .expect(400, { error: "invalid_resource_urls" });
+  });
+
   it("redacts addresses when configured", async () => {
     await analytics.record({
       stage: "settled", status: "success", network: "stellar:testnet", scheme: "exact",

@@ -157,6 +157,8 @@ x402scan exposes concentration implicitly through its sorted leaderboards.
 - `GET /analytics/v1/transactions` — newest first by `occurred_at, id`.
 - `GET /analytics/v1/resources` — newest cataloged resources with status,
   ownership, verification, provenance and liveness timestamps.
+- `POST /analytics/v1/resources/observability` — batched metrics for the exact
+  resource URLs on one discovery page, preserving that page's order.
 - `GET /analytics/v1/volume/daily` — `payment_daily_totals`, maintained
   incrementally in the same transaction as each settlement fact and corrected
   (not double counted) when an `unknown` settlement later resolves.
