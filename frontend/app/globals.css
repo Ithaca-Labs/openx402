@@ -2150,6 +2150,14 @@ html[data-theme="dark"] .network-logo__image {
   opacity: 0.45;
 }
 
+.pagination__page-label {
+  display: inline-flex;
+  min-width: 54px;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+}
+
 .browse-toolbar {
   display: grid;
   grid-template-columns: minmax(250px, 1fr) auto auto auto;

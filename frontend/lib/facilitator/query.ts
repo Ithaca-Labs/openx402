@@ -2,14 +2,13 @@ export type RawSearchParams = Record<string, string | string[] | undefined>;
 
 export type DashboardSearch = {
   q?: string;
-  cursor?: string;
   type?: "http" | "mcp";
   network?: string;
   scheme?: string;
   payTo?: string;
   asset?: string;
   extensions?: string;
-  offset: number;
+  page: number;
   status?: "success" | "failed" | "unknown";
 };
 
@@ -25,18 +24,17 @@ function bounded(value: string | string[] | undefined, max: number): string | un
 export function parseDashboardSearch(params: RawSearchParams): DashboardSearch {
   const rawType = bounded(params.type, 8);
   const rawStatus = bounded(params.status, 16);
-  const rawOffset = first(params.offset);
-  const parsedOffset = rawOffset && /^\d+$/.test(rawOffset) ? Number(rawOffset) : 0;
+  const rawPage = first(params.page);
+  const parsedPage = rawPage && /^\d+$/.test(rawPage) ? Number(rawPage) : 1;
   return {
     ...(bounded(params.q, 512) ? { q: bounded(params.q, 512) } : {}),
-    ...(bounded(params.cursor, 4096) ? { cursor: bounded(params.cursor, 4096) } : {}),
     ...(rawType === "http" || rawType === "mcp" ? { type: rawType } : {}),
     ...(bounded(params.network, 128) ? { network: bounded(params.network, 128) } : {}),
     ...(bounded(params.scheme, 64) ? { scheme: bounded(params.scheme, 64) } : {}),
     ...(bounded(params.payTo, 128) ? { payTo: bounded(params.payTo, 128) } : {}),
     ...(bounded(params.asset, 128) ? { asset: bounded(params.asset, 128) } : {}),
     ...(bounded(params.extensions, 64) ? { extensions: bounded(params.extensions, 64) } : {}),
-    offset: Number.isSafeInteger(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0,
+    page: Number.isSafeInteger(parsedPage) && parsedPage > 0 && parsedPage <= 1_000 ? parsedPage : 1,
     ...(rawStatus === "success" || rawStatus === "failed" || rawStatus === "unknown" ? { status: rawStatus } : {}),
   };
 }
@@ -44,7 +42,7 @@ export function parseDashboardSearch(params: RawSearchParams): DashboardSearch {
 export function pageHref(
   pathname: string,
   search: DashboardSearch,
-  page: { cursor?: string; offset?: number },
+  page: number,
 ): string {
   const params = new URLSearchParams();
   if (search.q) params.set("q", search.q);
@@ -55,8 +53,7 @@ export function pageHref(
   if (search.asset) params.set("asset", search.asset);
   if (search.extensions) params.set("extensions", search.extensions);
   if (search.status) params.set("status", search.status);
-  if (page.cursor) params.set("cursor", page.cursor);
-  if (page.offset !== undefined && page.offset > 0) params.set("offset", String(page.offset));
+  if (page > 1) params.set("page", String(page));
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
 }

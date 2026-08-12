@@ -193,11 +193,13 @@ describe("untrusted resource metadata", () => {
 });
 
 describe("pagination, availability, and explorers", () => {
-  it("preserves opaque cursors without parsing or modification", () => {
-    const opaque = "eyJvZmZzZXQiOjIwfQ.signature/+=";
-    const search = parseDashboardSearch({ q: "weather", cursor: opaque });
-    const href = pageHref("/discover", search, { cursor: opaque });
-    expect(new URL(href, "https://dashboard.example").searchParams.get("cursor")).toBe(opaque);
+  it("uses human-readable page URLs without exposing facilitator cursors", () => {
+    const search = parseDashboardSearch({ q: "weather", page: "2", cursor: "opaque-internal-value" });
+    const href = pageHref("/discover", search, 3);
+    const params = new URL(href, "https://dashboard.example").searchParams;
+    expect(search.page).toBe(2);
+    expect(params.get("page")).toBe("3");
+    expect(params.has("cursor")).toBe(false);
   });
 
   it("returns unavailable when the facilitator cannot be reached", async () => {

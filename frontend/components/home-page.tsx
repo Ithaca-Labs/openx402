@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowRightIcon, ArrowUpRightIcon, ChevronDownIcon, CopyIcon, MoreIcon, SearchIcon } from "@/components/icons";
 import type { DashboardData, Entity } from "@/components/data";
 import { AppShell, EntityLogo, PageContainer } from "@/components/explorer-shell";
-import { HistoryBackButton } from "@/components/history-back-button";
 import { Card, Input } from "@/components/ui";
 import { pageHref, type DashboardSearch } from "@/lib/facilitator";
 
@@ -63,7 +62,9 @@ function ServicesGrid({ entities }: { entities: Entity[] }) {
 
 function FeaturedServicesTable({ data, entities, search }: { data: DashboardData; entities: Entity[]; search: DashboardSearch }) {
   const pagination = data.pagination;
-  const nextHref = pagination?.nextCursor ? pageHref("/discover", search, { cursor: pagination.nextCursor }) : undefined;
+  const currentPage = pagination?.page ?? 1;
+  const previousHref = currentPage > 1 ? pageHref("/discover", search, currentPage - 1) : undefined;
+  const nextHref = pagination?.nextCursor ? pageHref("/discover", search, currentPage + 1) : undefined;
   return (
     <div className="service-list" role="list">
       {entities.map(entity => <article className="service-row" key={`${entity.resource}:${entity.name}`} role="listitem">
@@ -78,7 +79,7 @@ function FeaturedServicesTable({ data, entities, search }: { data: DashboardData
           <button aria-label={`More options for ${entity.name}`} className="service-row__icon" type="button"><ChevronDownIcon size={15} /></button>
         </div>
       </article>)}
-      <div className="pagination directory-pagination"><span className="mono">{pagination?.total !== undefined ? `${pagination.total} indexed services` : `${entities.length} results on this page`}</span><div>{search.cursor ? <HistoryBackButton /> : <span aria-disabled="true" className="pagination__text-button pagination__text-button--disabled">Previous</span>}{nextHref ? <Link className="pagination__text-button" href={nextHref}>Next</Link> : <span aria-disabled="true" className="pagination__text-button pagination__text-button--disabled">Next</span>}</div></div>
+      <div className="pagination directory-pagination"><span className="mono">{pagination?.total !== undefined ? `${pagination.total} indexed services` : `${entities.length} results on this page`}</span><div>{previousHref ? <Link className="pagination__text-button" href={previousHref}>Previous</Link> : <span aria-disabled="true" className="pagination__text-button pagination__text-button--disabled">Previous</span>}<span aria-current="page" className="pagination__page-label mono">Page {currentPage}</span>{nextHref ? <Link className="pagination__text-button" href={nextHref}>Next</Link> : <span aria-disabled="true" className="pagination__text-button pagination__text-button--disabled">Next</span>}</div></div>
     </div>
   );
 }

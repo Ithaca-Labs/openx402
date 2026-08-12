@@ -80,6 +80,7 @@ export type EcosystemGroup = {
 export type PageInfo = {
   kind: "cursor" | "offset";
   limit: number;
+  page: number;
   nextCursor?: string;
   offset?: number;
   total?: number;

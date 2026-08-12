@@ -19,6 +19,7 @@ import {
   getTimeseries,
   getTransactions,
   type ApiResult,
+  type DiscoveryRequest,
 } from "./client";
 import type { BrowseResponse, DiscoveryResource, SearchResponse } from "./contracts";
 import type { DashboardSearch } from "./query";
@@ -44,13 +45,14 @@ function discoveryRows(result: ApiResult<BrowseResponse | SearchResponse> | unde
   return "items" in result.data ? result.data.items : result.data.resources;
 }
 
-function discoveryPage(result: ApiResult<BrowseResponse | SearchResponse> | undefined): PageInfo | undefined {
+function discoveryPage(result: ApiResult<BrowseResponse | SearchResponse> | undefined, page: number): PageInfo | undefined {
   if (!result?.data) return undefined;
   const pagination = result.data.pagination;
   if ("offset" in pagination) {
     return {
       kind: "cursor",
       limit: pagination.limit,
+      page,
       offset: pagination.offset,
       total: pagination.total,
       ...(pagination.cursor ? { nextCursor: pagination.cursor } : {}),
@@ -59,8 +61,40 @@ function discoveryPage(result: ApiResult<BrowseResponse | SearchResponse> | unde
   return {
     kind: "cursor",
     limit: pagination.limit,
+    page,
     ...(pagination.cursor ? { nextCursor: pagination.cursor } : {}),
   };
+}
+
+function discoveryRequest(search: DashboardSearch, cursor?: string): DiscoveryRequest {
+  return {
+    limit: 20,
+    ...(search.q ? { query: search.q } : {}),
+    ...(cursor ? { cursor } : {}),
+    ...(search.type ? { type: search.type } : {}),
+    ...(search.network ? { network: search.network } : {}),
+    ...(search.scheme ? { scheme: search.scheme } : {}),
+    ...(search.payTo ? { payTo: search.payTo } : {}),
+    ...(search.asset ? { asset: search.asset } : {}),
+    ...(search.extensions ? { extensions: search.extensions } : {}),
+  };
+}
+
+async function getDiscoveryPage(search: DashboardSearch): Promise<{
+  page: number;
+  result: ApiResult<BrowseResponse | SearchResponse>;
+}> {
+  let page = 1;
+  let result = await getDiscovery(discoveryRequest(search));
+
+  while (page < search.page) {
+    const cursor = result.data?.pagination.cursor;
+    if (!cursor) break;
+    result = await getDiscovery(discoveryRequest(search, cursor));
+    page += 1;
+  }
+
+  return { page, result };
 }
 
 function upstreamPartial(result: ApiResult<BrowseResponse | SearchResponse> | undefined): boolean {
@@ -76,7 +110,7 @@ export async function loadDashboardData(options: {
   search?: DashboardSearch;
 } = {}): Promise<DashboardData> {
   const scope = options.scope ?? "all";
-  const search = options.search ?? { offset: 0 };
+  const search = options.search ?? { page: 1 };
   const needsDiscovery = ["discover", "all", "marketplace", "ecosystem"].includes(scope);
   const needsOverview = ["discover", "all", "marketplace", "facilitators"].includes(scope);
   const needsTimeseries = ["discover", "all", "marketplace"].includes(scope);
@@ -84,25 +118,16 @@ export async function loadDashboardData(options: {
   const needsBreakdowns = scope === "networks";
   const needsTransactions = scope === "transactions";
 
-  const [healthResult, supportedResult, overviewResult, timeseriesResult, breakdownsResult, transactionsResult, discoveryResult] = await Promise.all([
+  const [healthResult, supportedResult, overviewResult, timeseriesResult, breakdownsResult, transactionsResult, discoveryLookup] = await Promise.all([
     getHealth(),
     needsSupported ? getSupported() : Promise.resolve(undefined),
     needsOverview ? getOverview() : Promise.resolve(undefined),
     needsTimeseries ? getTimeseries() : Promise.resolve(undefined),
     needsBreakdowns ? getBreakdowns() : Promise.resolve(undefined),
-    needsTransactions ? getTransactions({ limit: 20, offset: search.offset, ...(search.status ? { status: search.status } : {}) }) : Promise.resolve(undefined),
-    needsDiscovery ? getDiscovery({
-      limit: 20,
-      ...(search.q ? { query: search.q } : {}),
-      ...(search.cursor ? { cursor: search.cursor } : {}),
-      ...(search.type ? { type: search.type } : {}),
-      ...(search.network ? { network: search.network } : {}),
-      ...(search.scheme ? { scheme: search.scheme } : {}),
-      ...(search.payTo ? { payTo: search.payTo } : {}),
-      ...(search.asset ? { asset: search.asset } : {}),
-      ...(search.extensions ? { extensions: search.extensions } : {}),
-    }) : Promise.resolve(undefined),
+    needsTransactions ? getTransactions({ limit: 20, offset: (search.page - 1) * 20, ...(search.status ? { status: search.status } : {}) }) : Promise.resolve(undefined),
+    needsDiscovery ? getDiscoveryPage(search) : Promise.resolve(undefined),
   ]);
+  const discoveryResult = discoveryLookup?.result;
 
   const resources = discoveryRows(discoveryResult);
   const pageObservabilityResult = needsDiscovery && resources.length > 0
@@ -129,10 +154,11 @@ export async function loadDashboardData(options: {
     ? {
         kind: "offset" as const,
         limit: transactionsResult.data.pagination.limit,
+        page: Math.floor(transactionsResult.data.pagination.offset / transactionsResult.data.pagination.limit) + 1,
         offset: transactionsResult.data.pagination.offset,
         total: transactionsResult.data.pagination.total,
       }
-    : discoveryPage(discoveryResult);
+    : discoveryPage(discoveryResult, discoveryLookup?.page ?? 1);
 
   return {
     metrics: adaptMetrics(overviewResult?.data, timeseriesResult?.data),

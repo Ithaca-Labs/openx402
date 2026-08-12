@@ -25,7 +25,6 @@ import {
   SectionHeading,
   StatusBadge,
 } from "@/components/explorer-shell";
-import { HistoryBackButton } from "@/components/history-back-button";
 import { Badge, Card, Input, SelectField, cn } from "@/components/ui";
 import { pageHref, type DashboardSearch } from "@/lib/facilitator";
 
@@ -288,16 +287,16 @@ function ResourceIdentity({ entity }: { entity: Entity }) {
 function Pagination({ data, label, pathname, search }: { data: DashboardData; label: string; pathname: string; search: DashboardSearch }) {
   const pagination = data.pagination;
   if (!pagination) return <div className="pagination"><span className="mono">{label}</span></div>;
+  const currentPage = pagination.page;
   const offset = pagination.offset ?? 0;
-  const previousHref = pagination.kind === "offset" && offset > 0
-    ? pageHref(pathname, search, { offset: Math.max(0, offset - pagination.limit) })
-    : undefined;
+  const previousHref = currentPage > 1 ? pageHref(pathname, search, currentPage - 1) : undefined;
   const hasNextOffset = pagination.kind === "offset" && pagination.total !== undefined && offset + pagination.limit < pagination.total;
   const nextHref = pagination.kind === "cursor" && pagination.nextCursor
-    ? pageHref(pathname, search, { cursor: pagination.nextCursor })
-    : hasNextOffset ? pageHref(pathname, search, { offset: offset + pagination.limit }) : undefined;
+    ? pageHref(pathname, search, currentPage + 1)
+    : hasNextOffset ? pageHref(pathname, search, currentPage + 1) : undefined;
   return <div className="pagination"><span className="mono">{label}</span><div>
-    {pagination.kind === "cursor" && search.cursor ? <HistoryBackButton /> : previousHref ? <Link className="pagination__text-button" href={previousHref}>Previous</Link> : <span aria-disabled="true" className="pagination__text-button pagination__text-button--disabled">Previous</span>}
+    {previousHref ? <Link className="pagination__text-button" href={previousHref}>Previous</Link> : <span aria-disabled="true" className="pagination__text-button pagination__text-button--disabled">Previous</span>}
+    <span aria-current="page" className="pagination__page-label mono">Page {currentPage}</span>
     {nextHref ? <Link className="pagination__text-button" href={nextHref}>Next</Link> : <span aria-disabled="true" className="pagination__text-button pagination__text-button--disabled">Next</span>}
   </div></div>;
 }
