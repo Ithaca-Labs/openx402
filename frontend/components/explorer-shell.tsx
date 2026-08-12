@@ -80,7 +80,7 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="header-inner">
-        <Link className="brand-lockup" href="/" onClick={() => setMenuOpen(false)}>
+        <Link className="brand-lockup" href="/discover" onClick={() => setMenuOpen(false)}>
           <Image
             alt="openx402"
             className="brand-lockup__image brand-lockup__image--light"

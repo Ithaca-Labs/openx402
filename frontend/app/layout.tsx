@@ -49,7 +49,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html className={`${archivo.variable} ${plexMono.variable}`} lang="en">
+    <html className={`${archivo.variable} ${plexMono.variable}`} data-theme="dark" lang="en">
       <body>{children}</body>
     </html>
   );
