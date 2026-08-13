@@ -36,10 +36,11 @@ const plexMono = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://www.stellarx402.xyz"),
   title: "openx402 — Stellar payment discovery",
   description: "Explore Bazaar resources and Stellar x402 settlement activity observed by openx402.",
   icons: {
-    icon: "/brand/favicon/favicon.svg",
+    icon: [{ url: "/brand/favicon/favicon.svg", type: "image/svg+xml" }],
   },
 };
 
