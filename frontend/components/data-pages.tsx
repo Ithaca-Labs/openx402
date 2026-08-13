@@ -19,6 +19,7 @@ import type { Activity, DashboardData, DataState, Entity } from "@/components/da
 import {
   AppShell,
   EntityLogo,
+  MetricSparkline,
   PageContainer,
   PageHeader,
   SectionHeading,
@@ -42,20 +43,29 @@ function AllActivityLayout({ data, search }: { data: DashboardData; search: Dash
   return (
     <div className="all-activity-directory">
       <section aria-label="Activity summary" className="all-activity-main">
+        <input className="metric-view-input" defaultChecked id="metric-view-curve" name="metric-view" type="radio" value="curve" />
+        <input className="metric-view-input" id="metric-view-bars" name="metric-view" type="radio" value="bars" />
         <div className="all-activity-summary">
+          <div className="metric-view-bar">
+            <div className="metric-view-toggle" role="group" aria-label="Chart style">
+              <label className="metric-view-button" htmlFor="metric-view-curve">Curve</label>
+              <label className="metric-view-button" htmlFor="metric-view-bars">Bars</label>
+            </div>
+          </div>
           <div className="all-activity-summary__metrics">
-            {data.metrics.map(metric => <article key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.context}</small></article>)}
+            {data.metrics.map(metric => <article key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong><MetricSparkline label={metric.label} points={metric.bars} /><small>{metric.context}</small></article>)}
           </div>
         </div>
         <section className="all-activity-ledger" aria-labelledby="indexed-services-title">
           <div className="all-activity-ledger__heading"><div><h2 id="indexed-services-title">Indexed services</h2><p>Seller-declared services in the facilitator&apos;s returned order.</p></div><span className="mono">{data.entities.length} SHOWN</span></div>
           {data.entities.length ? <>
-            <div className="all-activity-ledger__labels" aria-hidden="true"><span>Service</span><span>Type</span><span>Primary option</span><span>Payments</span><span>Buyers</span><span>Latest</span><span /></div>
+            <div className="all-activity-ledger__labels" aria-hidden="true"><span>Service</span><span>Type</span><span>Primary option</span><span>Volume</span><span>Payments</span><span>Buyers</span><span>Latest</span><span /></div>
             <div className="all-activity-ledger__rows">
               {data.entities.map(entity => <article className="all-activity-ledger__row" key={`${entity.resource}:${entity.name}`}>
                 <ResourceIdentity entity={entity} />
                 <span className="ledger-type">{entity.category}</span>
                 <strong className="table-price">{entity.price}</strong>
+                <strong className="table-figure">{entity.volume}</strong>
                 <strong className="table-figure">{entity.transactions}</strong>
                 <strong className="table-figure">{entity.buyers}</strong>
                 <span className="table-freshness">{entity.freshness}{entity.stale ? " · stale" : ""}</span>
@@ -67,7 +77,6 @@ function AllActivityLayout({ data, search }: { data: DashboardData; search: Dash
         </section>
       </section>
       <aside className="all-activity-aside" aria-label="Activity scope">
-        <div className="all-activity-aside__status"><span className={data.connected ? "all-activity-aside__signal all-activity-aside__signal--active" : "all-activity-aside__signal"} /><div><strong>{data.connected ? "Live data connected" : "Live data unavailable"}</strong><p>Activity is assembled from the facilitator&apos;s published sources.</p></div></div>
         <dl><div><dt>Window</dt><dd>Last 30 days</dd></div><div><dt>Resources</dt><dd>{data.entities.length} on this page</dd></div><div><dt>Networks</dt><dd>{data.networks.length} observed</dd></div></dl>
       </aside>
     </div>

@@ -116,7 +116,9 @@ export async function loadDashboardData(options: {
   const needsOverview = ["discover", "all", "marketplace", "facilitators", "transactions"].includes(scope);
   const needsTimeseries = ["discover", "all", "marketplace"].includes(scope);
   const needsSupported = ["facilitators", "networks", "ecosystem"].includes(scope);
-  const needsBreakdowns = scope === "networks" || scope === "transactions";
+  // Metric scopes need it too: settled volume is only nameable once the asset
+  // breakdown confirms a single asset behind the total.
+  const needsBreakdowns = ["networks", "transactions", "discover", "all", "marketplace"].includes(scope);
   const needsTransactions = scope === "transactions";
 
   const [healthResult, supportedResult, overviewResult, timeseriesResult, breakdownsResult, transactionsResult, discoveryLookup] = await Promise.all([
@@ -162,7 +164,7 @@ export async function loadDashboardData(options: {
     : discoveryPage(discoveryResult, discoveryLookup?.page ?? 1);
 
   return {
-    metrics: adaptMetrics(overviewResult?.data, timeseriesResult?.data),
+    metrics: adaptMetrics(overviewResult?.data, timeseriesResult?.data, breakdownsResult?.data),
     transactionTotals: adaptTransactionTotals(overviewResult?.data, breakdownsResult?.data),
     entities,
     activity: (transactionsResult?.data?.items ?? []).map(adaptActivity),

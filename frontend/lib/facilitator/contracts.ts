@@ -69,6 +69,8 @@ export type OverviewResponse = {
   total_transactions?: string;
   successful_transactions?: string;
   failed_transactions?: string;
+  /** Settled value across every observed payment, in atomic units. */
+  total_amount?: string;
   unique_buyers?: string;
   unique_sellers?: string;
   unique_networks?: string;
@@ -81,6 +83,7 @@ export type OverviewResponse = {
 export type TimeseriesPoint = {
   bucket_start: string;
   total_transactions?: string;
+  total_amount?: string;
   unique_buyers?: string;
 };
 
@@ -146,6 +149,8 @@ export type ResourceObservabilityResponse = {
   failed_all_time?: string;
   unknown_all_time?: string;
   unique_buyers?: string;
+  /** Settled value across all observed payments, in the asset's atomic units. */
+  total_amount?: string;
   latest_activity?: string;
 };
 
@@ -386,7 +391,7 @@ export function parseOverviewResponse(input: unknown): Validation<OverviewRespon
   if (!source) return { ok: false };
   const value: JsonObject = {};
   let partial = false;
-  const decimals = ["total_transactions", "successful_transactions", "failed_transactions", "unique_buyers", "unique_sellers", "unique_networks", "cataloged_resources", "active_resources", "stale_resources"];
+  const decimals = ["total_transactions", "successful_transactions", "failed_transactions", "total_amount", "unique_buyers", "unique_sellers", "unique_networks", "cataloged_resources", "active_resources", "stale_resources"];
   for (const key of decimals) partial ||= optionalDecimal(source, key, value);
   partial ||= optionalString(source, "latest_activity", value);
   if (Object.keys(value).length === 0 && Object.keys(source).length > 0) return { ok: false };
@@ -420,6 +425,7 @@ export function parseTimeseriesResponse(input: unknown): Validation<TimeseriesRe
     if (!row || !bucketStart) { partial = true; continue; }
     const value: JsonObject = { bucket_start: bucketStart };
     partial ||= optionalDecimal(row, "total_transactions", value);
+    partial ||= optionalDecimal(row, "total_amount", value);
     partial ||= optionalDecimal(row, "unique_buyers", value);
     series.push(value as TimeseriesPoint);
   }
@@ -521,7 +527,7 @@ export function parseResourceObservabilityResponse(input: unknown): Validation<R
   if (!source) return { ok: false };
   const value: JsonObject = {};
   let partial = false;
-  for (const key of ["calls_all_time", "success_all_time", "failed_all_time", "unknown_all_time", "unique_buyers"]) partial ||= optionalDecimal(source, key, value);
+  for (const key of ["calls_all_time", "success_all_time", "failed_all_time", "unknown_all_time", "unique_buyers", "total_amount"]) partial ||= optionalDecimal(source, key, value);
   partial ||= optionalString(source, "latest_activity", value);
   if (Object.keys(value).length === 0 && Object.keys(source).length > 0) return { ok: false };
   return { ok: true, partial, value: value as ResourceObservabilityResponse };

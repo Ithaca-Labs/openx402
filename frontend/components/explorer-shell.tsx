@@ -319,6 +319,97 @@ export function Sparkline({
   );
 }
 
+/**
+ * Monotone cubic interpolation: tangents are clamped so the curve never
+ * overshoots a data point. A plain Catmull-Rom spline would invent peaks the
+ * underlying series does not contain, which on a metric chart reads as data.
+ */
+/**
+ * Values sit at band centres rather than spanning edge to edge, so each bar has
+ * room either side and the curve passes through the middle of its own bar.
+ */
+function metricPoints(values: number[], width: number, height: number, padding: number) {
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+  const band = width / values.length;
+  return {
+    band,
+    points: values.map((value, index) => ({
+      x: (index + 0.5) * band,
+      y: height - padding - ((value - min) / range) * (height - padding * 2),
+    })),
+  };
+}
+
+function smoothPath(points: Array<{ x: number; y: number }>): string {
+  if (points.length === 0) return "";
+  if (points.length === 1) return `M0 ${points[0]!.y.toFixed(2)} L100 ${points[0]!.y.toFixed(2)}`;
+  if (points.length === 2) return `M${points[0]!.x.toFixed(2)} ${points[0]!.y.toFixed(2)} L${points[1]!.x.toFixed(2)} ${points[1]!.y.toFixed(2)}`;
+
+  const slopes = points.map((point, index) => {
+    const previous = points[index - 1];
+    const next = points[index + 1];
+    if (!previous || !next) {
+      const neighbour = next ?? previous!;
+      return (neighbour.y - point.y) / (neighbour.x - point.x);
+    }
+    const left = (point.y - previous.y) / (point.x - previous.x);
+    const right = (next.y - point.y) / (next.x - point.x);
+    // A local extremum gets a flat tangent, which is what prevents overshoot.
+    return left * right <= 0 ? 0 : (left + right) / 2;
+  });
+
+  let path = `M${points[0]!.x.toFixed(2)} ${points[0]!.y.toFixed(2)}`;
+  for (let index = 1; index < points.length; index += 1) {
+    const start = points[index - 1]!;
+    const end = points[index]!;
+    const third = (end.x - start.x) / 3;
+    const c1x = start.x + third;
+    const c1y = start.y + slopes[index - 1]! * third;
+    const c2x = end.x - third;
+    const c2y = end.y - slopes[index]! * third;
+    path += ` C${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+  }
+  return path;
+}
+
+/**
+ * Smooth trend line for a metric box. A metric with no series still reserves the
+ * slot, so numbers stay on one baseline across the row instead of drifting in
+ * whichever box happens to lack a chart.
+ */
+export function MetricSparkline({ points, label }: { points: number[]; label: string }) {
+  if (points.length === 0) return <div aria-hidden="true" className="metric-sparkline metric-sparkline--empty" />;
+  const width = 100;
+  const height = 34;
+  const { band, points: plotted } = metricPoints(points, width, height, 4);
+  const line = smoothPath(plotted);
+  const barWidth = Math.max(band * 0.5, 0.8);
+
+  return (
+    <svg
+      className="metric-sparkline"
+      preserveAspectRatio="none"
+      role="img"
+      aria-label={`${label} trend`}
+      viewBox={`0 0 ${width} ${height}`}
+    >
+      {plotted.map((point, index) => (
+        <rect
+          className="metric-sparkline__bar"
+          height={Math.max(height - point.y, 0.6)}
+          key={index}
+          width={barWidth}
+          x={point.x - barWidth / 2}
+          y={point.y}
+        />
+      ))}
+      <path className="metric-sparkline__line" d={line} />
+    </svg>
+  );
+}
+
 export function EntityLogo({
   name,
   accent = "yellow",

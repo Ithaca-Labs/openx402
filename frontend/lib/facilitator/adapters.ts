@@ -31,20 +31,39 @@ import {
   transactionExplorerUrl,
 } from "./format";
 
-export function adaptTransactionTotals(overview?: OverviewResponse, breakdowns?: BreakdownsResponse): { totalTransactions: string; totalAmount: string; activeServices: string } {
+/**
+ * Settled value carries no asset of its own, so it is only meaningful once the
+ * breakdown shows a single asset behind it. Totals across different assets are
+ * not summable and are reported as such.
+ */
+function assetTotal(amount: string | undefined, breakdowns?: BreakdownsResponse): string {
   const assets = (breakdowns?.assets ?? []).filter(asset => asset.total_amount !== undefined);
-  const totalAmount = assets.length === 1
-    ? formatAtomicAmount(assets[0]?.total_amount, assets[0]?.key)
-    : assets.length > 1 ? "Multiple assets" : "Amount unavailable";
+  if (assets.length === 1) return formatAtomicAmount(amount ?? assets[0]?.total_amount, assets[0]?.key);
+  return assets.length > 1 ? "Multiple assets" : "Amount unavailable";
+}
+
+/**
+ * Splits "0.18907 USDC" into number and unit. The metric boxes render the value
+ * at display size, where a trailing symbol wraps to a second line and knocks the
+ * number off the baseline its neighbours sit on; the unit belongs with the
+ * context caption instead.
+ */
+function assetTotalParts(amount: string | undefined, breakdowns?: BreakdownsResponse): { value: string; unit?: string } {
+  const formatted = assetTotal(amount, breakdowns);
+  const match = /^(-?[\d.,]+)\s+(.+)$/.exec(formatted);
+  return match ? { value: match[1]!, unit: match[2]! } : { value: formatted };
+}
+
+export function adaptTransactionTotals(overview?: OverviewResponse, breakdowns?: BreakdownsResponse): { totalTransactions: string; totalAmount: string; activeServices: string } {
   return {
     totalTransactions: compactDecimalString(overview?.total_transactions),
-    totalAmount,
+    totalAmount: assetTotal(undefined, breakdowns),
     activeServices: compactDecimalString(overview?.active_resources),
   };
 }
 
 function unavailableMetrics(): Metric[] {
-  return ["Payments observed", "Unique buyers", "Active services", "Networks observed"].map(label => ({
+  return ["Payments observed", "Unique buyers", "Active services", "Volume"].map(label => ({
     label,
     value: "Unavailable",
     delta: "unavailable",
@@ -54,23 +73,21 @@ function unavailableMetrics(): Metric[] {
   }));
 }
 
-export function adaptMetrics(overview?: OverviewResponse, timeseries?: TimeseriesResponse): Metric[] {
+export function adaptMetrics(overview?: OverviewResponse, timeseries?: TimeseriesResponse, breakdowns?: BreakdownsResponse): Metric[] {
   if (!overview) return unavailableMetrics();
-  const transactionValues = (timeseries?.series ?? []).flatMap(row => {
-    const value = chartNumber(row.total_transactions);
-    return value === undefined ? [] : [value];
-  });
-  const buyerValues = (timeseries?.series ?? []).flatMap(row => {
-    const value = chartNumber(row.unique_buyers);
-    return value === undefined ? [] : [value];
-  });
+  const seriesValues = (key: "total_transactions" | "total_amount" | "unique_buyers") =>
+    (timeseries?.series ?? []).flatMap(row => {
+      const value = chartNumber(row[key]);
+      return value === undefined ? [] : [value];
+    });
   const observed = { delta: "observed", context: "last 30 days", trend: "flat" as const };
   const snapshot = { delta: "current", context: "catalog snapshot", trend: "flat" as const, bars: [] };
+  const volume = assetTotalParts(overview.total_amount, breakdowns);
   return [
-    { label: "Payments observed", value: compactDecimalString(overview.total_transactions), ...observed, bars: transactionValues },
-    { label: "Unique buyers", value: compactDecimalString(overview.unique_buyers), ...observed, bars: buyerValues },
+    { label: "Payments observed", value: compactDecimalString(overview.total_transactions), ...observed, bars: seriesValues("total_transactions") },
+    { label: "Unique buyers", value: compactDecimalString(overview.unique_buyers), ...observed, bars: seriesValues("unique_buyers") },
     { label: "Active services", value: compactDecimalString(overview.active_resources), ...snapshot },
-    { label: "Networks observed", value: compactDecimalString(overview.unique_networks), ...snapshot },
+    { label: "Volume", value: volume.value, ...observed, context: volume.unit ? `${volume.unit} · last 30 days` : observed.context, bars: seriesValues("total_amount") },
   ];
 }
 
@@ -91,6 +108,10 @@ export function adaptEntity(
   const buyers = options.observability
     ? compactDecimalString(options.observability.unique_buyers)
     : noObservation ? "No observations yet" : "Unavailable";
+  // Settled value is reported in atomic units of the resource's own asset.
+  const volume = options.observability
+    ? formatAtomicAmount(options.observability.total_amount, primary?.asset)
+    : noObservation ? "No observations yet" : "Unavailable";
   return {
     name: resource.serviceName || resourceLabel(resource.resource, resource.type),
     category: resource.type === "mcp" ? "MCP" : "HTTP",
@@ -102,6 +123,7 @@ export function adaptEntity(
     paymentOptions,
     optionCount: paymentOptions.length,
     transactions,
+    volume,
     buyers,
     network: humanNetwork(primary?.network),
     freshness: relativeTime(options.observability?.latest_activity ?? resource.lastUpdated),

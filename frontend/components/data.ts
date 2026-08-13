@@ -27,6 +27,7 @@ export type Entity = {
   paymentOptions: string[];
   optionCount: number;
   transactions: string;
+  volume: string;
   buyers: string;
   network: string;
   freshness: string;
