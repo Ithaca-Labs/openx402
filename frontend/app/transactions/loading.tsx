@@ -1,2 +1,2 @@
 import { LoadingPage } from "@/components/loading-page";
-export default function Loading() { return <LoadingPage title="Transactions" />; }
+export default function Loading() { return <LoadingPage title="Transactions" variant="transactions" />; }

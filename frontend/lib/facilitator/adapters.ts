@@ -31,6 +31,18 @@ import {
   transactionExplorerUrl,
 } from "./format";
 
+export function adaptTransactionTotals(overview?: OverviewResponse, breakdowns?: BreakdownsResponse): { totalTransactions: string; totalAmount: string; activeServices: string } {
+  const assets = (breakdowns?.assets ?? []).filter(asset => asset.total_amount !== undefined);
+  const totalAmount = assets.length === 1
+    ? formatAtomicAmount(assets[0]?.total_amount, assets[0]?.key)
+    : assets.length > 1 ? "Multiple assets" : "Amount unavailable";
+  return {
+    totalTransactions: compactDecimalString(overview?.total_transactions),
+    totalAmount,
+    activeServices: compactDecimalString(overview?.active_resources),
+  };
+}
+
 function unavailableMetrics(): Metric[] {
   return ["Payments observed", "Unique buyers", "Active services", "Networks observed"].map(label => ({
     label,

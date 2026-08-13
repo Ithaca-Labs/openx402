@@ -88,6 +88,11 @@ export type PageInfo = {
 
 export type DashboardData = {
   metrics: Metric[];
+  transactionTotals: {
+    totalTransactions: string;
+    totalAmount: string;
+    activeServices: string;
+  };
   entities: Entity[];
   activity: Activity[];
   facilitators: FacilitatorSummary[];

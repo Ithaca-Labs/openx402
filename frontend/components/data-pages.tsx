@@ -19,7 +19,6 @@ import type { Activity, DashboardData, DataState, Entity } from "@/components/da
 import {
   AppShell,
   EntityLogo,
-  MetricCard,
   PageContainer,
   PageHeader,
   SectionHeading,
@@ -31,36 +30,57 @@ import { pageHref, type DashboardSearch } from "@/lib/facilitator";
 export function AllPage({ data, search }: { data: DashboardData; search: DashboardSearch }) {
   return (
     <AppShell>
-      <PageContainer className="data-page">
-        <PageHeader description="Aggregate activity across services, payments, facilitators, and networks." title="All activity" />
-        <PartialNotice data={data} />
-        <section className="section-block section-block--compact" aria-labelledby="overall-title">
-          <SectionHeading title="Overall stats" description="Observed over the last 30 days unless marked as a current catalog value." />
-          <div className="metric-grid">{data.metrics.map(metric => <MetricCard key={metric.label} metric={metric} />)}</div>
-        </section>
-        <section className="section-block" aria-labelledby="indexed-services-title">
-          <SectionHeading title="Indexed services" description="Seller-declared services in the facilitator's returned order." />
-          {data.entities.length
-            ? <EntityTable data={data} entities={data.entities} pathname="/all" search={search} />
-            : <DiscoveryState pathname="/all" query={search.q} state={data.states.discovery} />}
-        </section>
+      <PageContainer className="data-page directory-page directory-page--all">
+        <PageHeader description="Aggregate activity across services, payments, facilitators, and networks." pixelTitle title="All activity" />
+        <AllActivityLayout data={data} search={search} />
       </PageContainer>
     </AppShell>
+  );
+}
+
+function AllActivityLayout({ data, search }: { data: DashboardData; search: DashboardSearch }) {
+  return (
+    <div className="all-activity-directory">
+      <section aria-label="Activity summary" className="all-activity-main">
+        <div className="all-activity-summary">
+          <div className="all-activity-summary__metrics">
+            {data.metrics.map(metric => <article key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.context}</small></article>)}
+          </div>
+        </div>
+        <section className="all-activity-ledger" aria-labelledby="indexed-services-title">
+          <div className="all-activity-ledger__heading"><div><h2 id="indexed-services-title">Indexed services</h2><p>Seller-declared services in the facilitator&apos;s returned order.</p></div><span className="mono">{data.entities.length} SHOWN</span></div>
+          {data.entities.length ? <>
+            <div className="all-activity-ledger__labels" aria-hidden="true"><span>Service</span><span>Type</span><span>Primary option</span><span>Payments</span><span>Buyers</span><span>Latest</span><span /></div>
+            <div className="all-activity-ledger__rows">
+              {data.entities.map(entity => <article className="all-activity-ledger__row" key={`${entity.resource}:${entity.name}`}>
+                <ResourceIdentity entity={entity} />
+                <span className="ledger-type">{entity.category}</span>
+                <strong className="table-price">{entity.price}</strong>
+                <strong className="table-figure">{entity.transactions}</strong>
+                <strong className="table-figure">{entity.buyers}</strong>
+                <span className="table-freshness">{entity.freshness}{entity.stale ? " · stale" : ""}</span>
+                {entity.href ? <ArrowUpRightIcon size={16} /> : <span />}
+              </article>)}
+            </div>
+            <Pagination data={data} label={paginationLabel(data, data.entities.length, "indexed services")} pathname="/all" search={search} />
+          </> : <DiscoveryState pathname="/all" query={search.q} state={data.states.discovery} />}
+        </section>
+      </section>
+      <aside className="all-activity-aside" aria-label="Activity scope">
+        <div className="all-activity-aside__status"><span className={data.connected ? "all-activity-aside__signal all-activity-aside__signal--active" : "all-activity-aside__signal"} /><div><strong>{data.connected ? "Live data connected" : "Live data unavailable"}</strong><p>Activity is assembled from the facilitator&apos;s published sources.</p></div></div>
+        <dl><div><dt>Window</dt><dd>Last 30 days</dd></div><div><dt>Resources</dt><dd>{data.entities.length} on this page</dd></div><div><dt>Networks</dt><dd>{data.networks.length} observed</dd></div></dl>
+      </aside>
+    </div>
   );
 }
 
 export function MarketplacePage({ data, search }: { data: DashboardData; search: DashboardSearch }) {
   return (
     <AppShell>
-      <PageContainer className="data-page">
-        <PageHeader description="Browse services and merchants tracked by the live Bazaar index." title="Marketplace" />
-        <PartialNotice data={data} />
-        <section className="section-block section-block--compact" aria-labelledby="marketplace-pulse-title">
-          <SectionHeading title="Marketplace stats" description="Observed activity across services currently in the index." />
-          <div className="metric-grid metric-grid--three">{data.metrics.slice(0, 3).map(metric => <MetricCard key={metric.label} metric={metric} />)}</div>
-        </section>
-        <section className="section-block" aria-labelledby="browse-title">
-          <SectionHeading title="Services & merchants" description="Search and filters run against the complete server-side Bazaar catalog." />
+      <PageContainer className="data-page directory-page directory-page--marketplace">
+        <PageHeader description="Browse services and merchants tracked by the live Bazaar index." pixelTitle title="Marketplace" />
+        <section className="marketplace-catalog" aria-labelledby="browse-title">
+          <div className="marketplace-catalog__heading"><div><h2 id="browse-title">Services & merchants</h2><p>Search the complete server-side Bazaar catalog.</p></div><span className="mono">{data.entities.length} LISTED</span></div>
           <DiscoveryForm action="/marketplace" search={search} visibleCount={data.entities.length} />
           {data.entities.length ? (
             <>
@@ -77,7 +97,7 @@ export function MarketplacePage({ data, search }: { data: DashboardData; search:
 export function TransactionsPage({ data, search }: { data: DashboardData; search: DashboardSearch }) {
   return (
     <AppShell>
-      <PageContainer className="data-page">
+      <PageContainer className="data-page directory-page directory-page--transactions">
         <PageHeader
           actions={(
             <Form action="/transactions" className="control-cluster">
@@ -91,17 +111,23 @@ export function TransactionsPage({ data, search }: { data: DashboardData; search
             </Form>
           )}
           description="Inspect tracked payments and settlement receipts."
+          pixelTitle
           title="Transactions"
         />
-        <section className="section-block section-block--compact" aria-labelledby="transaction-pulse-title">
-          <div className="transaction-callout">
+        <section className="transaction-desk" aria-labelledby="transaction-pulse-title">
+          <div className="transaction-desk__bar">
             <div className="transaction-callout__icon"><ActivityIcon size={22} /></div>
-            <div><strong>Live settlement window</strong><span>Receipts are loaded from the facilitator&apos;s settlement index.</span></div>
+            <div><strong id="transaction-pulse-title">Live settlement window</strong><span>Receipts are loaded from the facilitator&apos;s settlement index.</span></div>
             <Badge tone={data.connected ? "success" : "neutral"}><span className="status-badge__dot" /> {data.connected ? "ready" : "unavailable"}</Badge>
           </div>
+          <div className="transaction-desk__stats">
+            <span><small>Total transactions</small><strong>{data.transactionTotals.totalTransactions}</strong><em>Last 30 days</em></span>
+            <span><small>Total amount</small><strong>{data.transactionTotals.totalAmount}</strong><em>Settled volume</em></span>
+            <span><small>Active services</small><strong>{data.transactionTotals.activeServices}</strong><em>Catalog snapshot</em></span>
+          </div>
         </section>
-        <section className="section-block" aria-labelledby="ledger-title">
-          <SectionHeading title="Latest receipts" description="Hashes link to Stellar Expert only when a submitted transaction exists." />
+        <section className="transaction-ledger" aria-labelledby="ledger-title">
+          <div className="transaction-ledger__heading"><div><h2 id="ledger-title">Latest receipts</h2><p>Hashes open Stellar Expert when a submitted transaction exists.</p></div><span className="mono">SETTLEMENT LOG</span></div>
           {data.activity.length
             ? <ActivityTable data={data} pathname="/transactions" rows={data.activity} search={search} />
             : <AnalyticsState pathname="/transactions" state={data.states.analytics} />}
@@ -184,11 +210,10 @@ export function NetworksPage({ data }: { data: DashboardData }) {
 export function EcosystemPage({ data, search }: { data: DashboardData; search: DashboardSearch }) {
   return (
     <AppShell>
-      <PageContainer className="data-page">
-        <PageHeader description="Live resources, networks, and facilitator capabilities returned by the deployed APIs." title="Ecosystem" />
-        <PartialNotice data={data} />
-        <section className="section-block section-block--compact" aria-labelledby="ecosystem-groups-title">
-          <SectionHeading title="Ecosystem categories" description="Groups are derived from live HTTP, MCP, network, and facilitator data." />
+      <PageContainer className="data-page directory-page directory-page--ecosystem">
+        <PageHeader description="Live resources, networks, and facilitator capabilities returned by the deployed APIs." pixelTitle title="Ecosystem" />
+        <section className="ecosystem-atlas" aria-labelledby="ecosystem-groups-title">
+          <div className="ecosystem-atlas__heading"><div><h2 id="ecosystem-groups-title">Connected surfaces</h2><p>Resources, networks, and facilitator capabilities published to the live index.</p></div><span className="mono">{data.networks.length} NETWORKS</span></div>
           <div className="ecosystem-groups">
             {data.ecosystemGroups.map((group, index) => (
               <Card className="ecosystem-group" key={group.category}>
@@ -200,8 +225,8 @@ export function EcosystemPage({ data, search }: { data: DashboardData; search: D
             ))}
           </div>
         </section>
-        <section className="section-block" aria-labelledby="directory-title">
-          <SectionHeading title="Directory" description="Seller-authored metadata is rendered as inert text." />
+        <section className="ecosystem-directory-section" aria-labelledby="directory-title">
+          <div className="ecosystem-directory-section__heading"><div><h2 id="directory-title">Resource directory</h2><p>Seller-authored metadata is rendered as inert text.</p></div><span className="mono">{data.entities.length} RESOURCES</span></div>
           <div className="ecosystem-directory">{data.entities.map(entity => <DirectoryRow entity={entity} key={`${entity.resource}:${entity.name}`} />)}</div>
           {!data.entities.length && <DiscoveryState pathname="/ecosystem" state={data.states.discovery} />}
           {data.entities.length > 0 && <Pagination data={data} label={`${data.entities.length} resources on this page`} pathname="/ecosystem" search={search} />}
@@ -227,21 +252,6 @@ function DiscoveryForm({ action, search, visibleCount }: { action: string; searc
       <button className="control-button" type="submit">Search</button>
       <span className="toolbar-count mono">{String(visibleCount).padStart(2, "0")} SHOWN</span>
     </Form>
-  );
-}
-
-function EntityTable({ data, entities, pathname, search }: { data: DashboardData; entities: Entity[]; pathname: string; search: DashboardSearch }) {
-  return (
-    <Card className="table-card">
-      <div className="table-scroll"><table className="data-table">
-        <caption className="sr-only">Indexed services in the openx402 catalog</caption>
-        <thead><tr><th scope="col">Service</th><th scope="col">Type</th><th scope="col">Primary option</th><th scope="col">Payments</th><th scope="col">Buyers</th><th scope="col">Latest</th><th aria-label="Open resource" scope="col" /></tr></thead>
-        <tbody>{entities.map(entity => <tr key={`${entity.resource}:${entity.name}`}>
-          <td><ResourceIdentity entity={entity} /></td><td><span className="table-muted">{entity.category}</span></td><td><strong className="table-number">{entity.price}{entity.optionCount > 1 ? ` (+${entity.optionCount - 1})` : ""}</strong></td><td><span className="mono table-muted">{entity.transactions}</span></td><td><span className="mono table-muted">{entity.buyers}</span></td><td><span className="table-muted">{entity.freshness}{entity.stale ? " · stale" : ""}</span></td><td>{entity.href ? <ArrowUpRightIcon size={17} /> : null}</td>
-        </tr>)}</tbody>
-      </table></div>
-      <Pagination data={data} label={paginationLabel(data, entities.length, "indexed services")} pathname={pathname} search={search} />
-    </Card>
   );
 }
 
@@ -307,11 +317,6 @@ function paginationLabel(data: DashboardData, visible: number, noun: string): st
 
 function CapabilityRow({ label, values }: { label: string; values: boolean[] }) {
   return <div className="capability-row"><span>{label}</span>{values.map((value, index) => <span className={cn("capability-cell", value ? "capability-cell--yes" : "capability-cell--no")} key={`${label}-${index}`}>{value ? <CheckIcon size={15} /> : "—"}</span>)}</div>;
-}
-
-function PartialNotice({ data }: { data: DashboardData }) {
-  if (!data.partialResults) return null;
-  return <div className="data-notice" role="status"><ActivityIcon size={17} /><span><strong>Partial data</strong> Some upstream results or optional records were unavailable; usable live data is still shown.</span></div>;
 }
 
 function DiscoveryState({ pathname, query, state }: { pathname: string; query?: string; state: DataState }) {

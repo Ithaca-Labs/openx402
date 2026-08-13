@@ -22,6 +22,41 @@ import { Badge, Card, cn } from "@/components/ui";
 
 type Theme = "dark" | "light";
 
+const PIXEL_GLYPHS: Record<string, readonly string[]> = {
+  A: ["01110", "10001", "11111", "10001", "10001"],
+  C: ["01111", "10000", "10000", "10000", "01111"],
+  E: ["11111", "10000", "11110", "10000", "11111"],
+  I: ["11111", "00100", "00100", "00100", "11111"],
+  K: ["10001", "10010", "11100", "10010", "10001"],
+  L: ["10000", "10000", "10000", "10000", "11111"],
+  M: ["10001", "11011", "10101", "10001", "10001"],
+  N: ["10001", "11001", "10101", "10011", "10001"],
+  O: ["01110", "10001", "10001", "10001", "01110"],
+  P: ["11110", "10001", "11110", "10000", "10000"],
+  R: ["11110", "10001", "11110", "10010", "10001"],
+  S: ["01111", "10000", "01110", "00001", "11110"],
+  T: ["11111", "00100", "00100", "00100", "00100"],
+  V: ["10001", "10001", "10001", "01010", "00100"],
+  Y: ["10001", "01010", "00100", "00100", "00100"],
+};
+
+export function PixelTitle({ title, className }: { title: string; className?: string }) {
+  const letters = Array.from(title.toUpperCase());
+  const width = letters.length * 6 - 1;
+
+  return (
+    <svg aria-hidden="true" className={cn("pixel-title", className)} preserveAspectRatio="none" viewBox={`0 0 ${width} 5`} xmlns="http://www.w3.org/2000/svg">
+      {letters.flatMap((letter, letterIndex) => {
+        const glyph = PIXEL_GLYPHS[letter];
+        if (!glyph) return [];
+        return glyph.flatMap((row, rowIndex) => Array.from(row).flatMap((pixel, pixelIndex) => (
+          pixel === "1" ? <rect fill="currentColor" height="0.78" key={`${letterIndex}-${rowIndex}-${pixelIndex}`} width="0.94" x={letterIndex * 6 + pixelIndex} y={rowIndex + 0.11} /> : []
+        )));
+      })}
+    </svg>
+  );
+}
+
 const ENTITY_AVATAR_API = "https://api.dicebear.com/10.x/identicon/svg";
 
 const themeListeners = new Set<() => void>();
@@ -159,15 +194,18 @@ export function PageHeader({
   title,
   description,
   actions,
+  pixelTitle = false,
 }: {
   title: string;
   description: string;
   actions?: ReactNode;
+  pixelTitle?: boolean;
 }) {
   return (
     <section className="page-header" aria-labelledby="page-title">
       <div>
-        <h1 id="page-title">{title}</h1>
+        {pixelTitle ? <PixelTitle title={title} /> : null}
+        <h1 className={pixelTitle ? "sr-only" : undefined} id="page-title">{title}</h1>
         <p>{description}</p>
       </div>
       {actions ? <div className="page-header__actions">{actions}</div> : null}

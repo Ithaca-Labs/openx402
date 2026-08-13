@@ -8,6 +8,7 @@ import {
   adaptFacilitators,
   adaptMetrics,
   adaptNetworks,
+  adaptTransactionTotals,
 } from "./adapters";
 import {
   getBreakdowns,
@@ -112,10 +113,10 @@ export async function loadDashboardData(options: {
   const scope = options.scope ?? "all";
   const search = options.search ?? { page: 1 };
   const needsDiscovery = ["discover", "all", "marketplace", "ecosystem"].includes(scope);
-  const needsOverview = ["discover", "all", "marketplace", "facilitators"].includes(scope);
+  const needsOverview = ["discover", "all", "marketplace", "facilitators", "transactions"].includes(scope);
   const needsTimeseries = ["discover", "all", "marketplace"].includes(scope);
   const needsSupported = ["facilitators", "networks", "ecosystem"].includes(scope);
-  const needsBreakdowns = scope === "networks";
+  const needsBreakdowns = scope === "networks" || scope === "transactions";
   const needsTransactions = scope === "transactions";
 
   const [healthResult, supportedResult, overviewResult, timeseriesResult, breakdownsResult, transactionsResult, discoveryLookup] = await Promise.all([
@@ -162,6 +163,7 @@ export async function loadDashboardData(options: {
 
   return {
     metrics: adaptMetrics(overviewResult?.data, timeseriesResult?.data),
+    transactionTotals: adaptTransactionTotals(overviewResult?.data, breakdownsResult?.data),
     entities,
     activity: (transactionsResult?.data?.items ?? []).map(adaptActivity),
     facilitators,
