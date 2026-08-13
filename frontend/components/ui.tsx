@@ -1,7 +1,7 @@
 import type {
   ButtonHTMLAttributes,
+  ComponentProps,
   HTMLAttributes,
-  InputHTMLAttributes,
   ReactNode,
   SelectHTMLAttributes,
 } from "react";
@@ -77,7 +77,7 @@ export function Card({
   );
 }
 
-export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+export function Input({ className, ...props }: ComponentProps<"input">) {
   return <input className={cn("ui-input", className)} {...props} />;
 }
 

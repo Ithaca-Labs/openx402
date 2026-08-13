@@ -4296,6 +4296,14 @@ html[data-theme="dark"] .discover-page {
   display: flex;
   min-width: 220px;
   flex: 1;
+  align-items: center;
+  gap: 16px;
+}
+
+.toolbar-search-field {
+  position: relative;
+  min-width: 0;
+  flex: 1;
 }
 
 .toolbar-search {
@@ -4335,6 +4343,117 @@ html[data-theme="dark"] .discover-page {
   opacity: 1;
 }
 
+/* The toolbar supplies its own clear control. */
+.toolbar-search .ui-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.toolbar-search__clear {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+.toolbar-search__clear:hover {
+  color: var(--color-text);
+}
+
+.search-suggestions {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-background);
+  box-shadow: 0 18px 40px rgb(0 0 0 / 12%);
+}
+
+.search-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.search-suggestion:last-child {
+  border-bottom: 0;
+}
+
+.search-suggestion--active,
+.search-suggestion:hover {
+  background: var(--color-surface-muted);
+}
+
+.search-suggestion__text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.search-suggestion__text strong {
+  overflow: hidden;
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-suggestion__text small {
+  overflow: hidden;
+  color: var(--color-text-subtle);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-suggestion__category {
+  flex: 0 0 auto;
+  color: var(--color-text-subtle);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.search-suggestion--all {
+  justify-content: space-between;
+  border-top: 1px solid var(--color-border-strong);
+  color: var(--color-text-subtle);
+}
+
+.search-suggestion--all.search-suggestion--active,
+.search-suggestion--all:hover {
+  color: var(--color-text);
+}
+
+.search-suggestion__all-label {
+  font-size: 0.7rem;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.search-suggestion__state {
+  margin: 0;
+  padding: 14px;
+  color: var(--color-text-subtle);
+  font-family: "MPP Geist Mono", var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
 .directory-filter,
 .directory-learn-more,
 .directory-view-button {
@@ -4362,6 +4481,23 @@ html[data-theme="dark"] .discover-page {
 .directory-learn-more:hover {
   border-color: var(--color-border-strong);
   background: var(--color-surface-muted);
+}
+
+/* The filter keeps the button chrome; the select itself is chromeless. */
+.directory-filter select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.directory-filter select:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
 }
 
 .directory-view-toggle {
@@ -4398,6 +4534,9 @@ html[data-theme="dark"] .discover-page {
 #directory-view-grid:checked ~ .service-list { display: none; }
 
 #directory-view-list:checked ~ .service-grid { display: none; }
+
+/* The column header belongs to the list layout only. */
+#directory-view-grid:checked ~ .services-list-heading { display: none; }
 
 .directory-grid-icon {
   display: block;

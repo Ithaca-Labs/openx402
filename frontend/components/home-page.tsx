@@ -1,11 +1,11 @@
-import Form from "next/form";
 import Image from "next/image";
 import Link from "next/link";
 
-import { ArrowRightIcon, ArrowUpRightIcon, ChevronDownIcon, CopyIcon, MoreIcon, SearchIcon } from "@/components/icons";
+import { ArrowUpRightIcon, ChevronDownIcon, CopyIcon } from "@/components/icons";
 import type { DashboardData, Entity } from "@/components/data";
+import { DiscoverToolbar } from "@/components/discover-toolbar";
 import { AppShell, EntityLogo, PageContainer } from "@/components/explorer-shell";
-import { Card, Input } from "@/components/ui";
+import { Card } from "@/components/ui";
 import { pageHref, type DashboardSearch } from "@/lib/facilitator";
 
 export default function DiscoverPage({ data, search }: { data: DashboardData; search: DashboardSearch }) {
@@ -22,17 +22,7 @@ export default function DiscoverPage({ data, search }: { data: DashboardData; se
           <section className="discover-services" aria-labelledby="featured-services-title">
             <input className="directory-view-input" defaultChecked id="directory-view-list" name="directory-view" type="radio" value="list" />
             <input className="directory-view-input" id="directory-view-grid" name="directory-view" type="radio" value="grid" />
-            <div className="discover-toolbar">
-              <Form action="/discover" className="discover-search-form">
-                <label className="toolbar-search"><SearchIcon size={16} /><span className="sr-only">Search Bazaar resources</span><Input defaultValue={query} maxLength={512} name="q" placeholder="Search services" type="search" /></label>
-              </Form>
-              <button className="directory-filter" type="button">Showing all <ChevronDownIcon size={15} /></button>
-              <div className="directory-view-toggle" aria-label="View options">
-                <label aria-label="List view" className="directory-view-button" htmlFor="directory-view-list"><MoreIcon size={17} /></label>
-                <label aria-label="Grid view" className="directory-view-button" htmlFor="directory-view-grid"><span className="directory-grid-icon" /></label>
-              </div>
-              <a className="directory-learn-more" href="https://docs.stellarx402.xyz/" rel="noreferrer noopener" target="_blank">Learn more <ArrowRightIcon size={15} /></a>
-            </div>
+            <DiscoverToolbar search={search} />
             <div className="services-list-heading" aria-hidden="true"><span>Provider</span><span>Description</span><span>Service URL</span></div>
             <h2 className="sr-only" id="featured-services-title">{query ? `Results for “${query}”` : "Indexed services"}</h2>
             {data.entities.length ? <><FeaturedServicesTable data={data} entities={data.entities} search={search} /><ServicesGrid entities={data.entities} /></> : (
