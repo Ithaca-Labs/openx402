@@ -5958,12 +5958,38 @@ html[data-theme="dark"] .directory-page {
   text-transform: uppercase;
 }
 
+/* Height must match CHART_HEIGHT so the curve's units line up with the bars. */
 .metric-sparkline {
+  position: relative;
+  width: 100%;
+  height: 54px;
+  margin: 16px 0 6px;
+}
+
+.metric-sparkline__curve {
   display: block;
   width: 100%;
-  height: 34px;
-  margin: 10px 0 2px;
+  height: 100%;
   overflow: visible;
+  /*
+    Wiping a clip rather than animating stroke-dashoffset. The stroke is
+    non-scaling while the viewBox is stretched horizontally, so a dash is
+    measured in device space and no authored dash length matches the painted
+    path — it renders as a line with a gap punched through it.
+  */
+  clip-path: inset(-4px 100% -4px -4px);
+  animation: metric-line-draw 900ms cubic-bezier(0.85, 0, 0.15, 1) forwards;
+}
+
+/* Bars share the curve's band centres, so switching does not shift the data. */
+.metric-sparkline__bars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 5px;
+  padding-top: 6px;
 }
 
 /* Holds the row's baseline for a metric that has no series behind it. */
@@ -5980,8 +6006,23 @@ html[data-theme="dark"] .directory-page {
 }
 
 .metric-sparkline__bar {
-  fill: color-mix(in srgb, var(--color-accent) 26%, transparent);
-  stroke: none;
+  min-width: 0;
+  max-width: 30px;
+  flex: 1 1 0;
+  border-radius: 4px 4px 0 0;
+  background: color-mix(in srgb, var(--color-accent) 42%, transparent);
+  transform-origin: center bottom;
+  animation: metric-bar-rise 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Both replay on toggle: display:none to shown restarts a CSS animation. */
+@keyframes metric-bar-rise {
+  from { opacity: 0; transform: scaleY(0.04); }
+  to { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes metric-line-draw {
+  to { clip-path: inset(-4px -4px -4px -4px); }
 }
 
 /* Chart style is a CSS-only toggle, matching the list/grid switch on /discover. */
@@ -5992,15 +6033,6 @@ html[data-theme="dark"] .directory-page {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-}
-
-.metric-view-bar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  min-height: 40px;
-  padding: 0 14px;
-  border-bottom: 1px solid var(--directory-rule);
 }
 
 .metric-view-toggle {
@@ -6027,21 +6059,21 @@ html[data-theme="dark"] .directory-page {
   color: var(--color-text);
 }
 
-#metric-view-curve:checked ~ .all-activity-summary label[for="metric-view-curve"],
-#metric-view-bars:checked ~ .all-activity-summary label[for="metric-view-bars"] {
-  border-color: var(--directory-rule);
+#metric-view-curve:checked ~ .page-header label[for="metric-view-curve"],
+#metric-view-bars:checked ~ .page-header label[for="metric-view-bars"] {
+  border-color: var(--color-border-strong);
   color: var(--color-text);
 }
 
-#metric-view-curve:focus-visible ~ .all-activity-summary label[for="metric-view-curve"],
-#metric-view-bars:focus-visible ~ .all-activity-summary label[for="metric-view-bars"] {
+#metric-view-curve:focus-visible ~ .page-header label[for="metric-view-curve"],
+#metric-view-bars:focus-visible ~ .page-header label[for="metric-view-bars"] {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-#metric-view-curve:checked ~ .all-activity-summary .metric-sparkline__bar { display: none; }
+#metric-view-curve:checked ~ .all-activity-directory .metric-sparkline__bars { display: none; }
 
-#metric-view-bars:checked ~ .all-activity-summary .metric-sparkline__line { display: none; }
+#metric-view-bars:checked ~ .all-activity-directory .metric-sparkline__curve { display: none; }
 
 .all-activity-ledger {
   margin-top: 54px;

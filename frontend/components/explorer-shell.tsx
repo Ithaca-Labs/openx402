@@ -319,29 +319,37 @@ export function Sparkline({
   );
 }
 
+/** Kept 1:1 with the CSS height so vertical user units are device pixels. */
+const CHART_HEIGHT = 54;
+
+/**
+ * Values sit at band centres rather than spanning edge to edge, so each bar has
+ * room either side and the curve passes through the middle of its own bar.
+ *
+ * Heights are measured from zero, not from the smallest value in the series.
+ * Normalising to the range would put the lowest reading flat on the baseline —
+ * a bar of no height, reading as "nothing happened" when it may be most of the
+ * largest bar.
+ */
+function metricPoints(values: number[], width: number, height: number, padTop: number, padBottom: number) {
+  const max = Math.max(...values, 0);
+  const plot = height - padTop - padBottom;
+  const band = width / values.length;
+  return {
+    band,
+    baseline: height - padBottom,
+    points: values.map((value, index) => ({
+      x: (index + 0.5) * band,
+      y: max > 0 ? padTop + (1 - value / max) * plot : height - padBottom,
+    })),
+  };
+}
+
 /**
  * Monotone cubic interpolation: tangents are clamped so the curve never
  * overshoots a data point. A plain Catmull-Rom spline would invent peaks the
  * underlying series does not contain, which on a metric chart reads as data.
  */
-/**
- * Values sit at band centres rather than spanning edge to edge, so each bar has
- * room either side and the curve passes through the middle of its own bar.
- */
-function metricPoints(values: number[], width: number, height: number, padding: number) {
-  const max = Math.max(...values);
-  const min = Math.min(...values);
-  const range = max - min || 1;
-  const band = width / values.length;
-  return {
-    band,
-    points: values.map((value, index) => ({
-      x: (index + 0.5) * band,
-      y: height - padding - ((value - min) / range) * (height - padding * 2),
-    })),
-  };
-}
-
 function smoothPath(points: Array<{ x: number; y: number }>): string {
   if (points.length === 0) return "";
   if (points.length === 1) return `M0 ${points[0]!.y.toFixed(2)} L100 ${points[0]!.y.toFixed(2)}`;
@@ -382,31 +390,42 @@ function smoothPath(points: Array<{ x: number; y: number }>): string {
 export function MetricSparkline({ points, label }: { points: number[]; label: string }) {
   if (points.length === 0) return <div aria-hidden="true" className="metric-sparkline metric-sparkline--empty" />;
   const width = 100;
-  const height = 34;
-  const { band, points: plotted } = metricPoints(points, width, height, 4);
+  const height = CHART_HEIGHT;
+  const { points: plotted } = metricPoints(points, width, height, 6, 4);
   const line = smoothPath(plotted);
-  const barWidth = Math.max(band * 0.5, 0.8);
+  const max = Math.max(...points, 0);
 
   return (
-    <svg
-      className="metric-sparkline"
-      preserveAspectRatio="none"
-      role="img"
-      aria-label={`${label} trend`}
-      viewBox={`0 0 ${width} ${height}`}
-    >
-      {plotted.map((point, index) => (
-        <rect
-          className="metric-sparkline__bar"
-          height={Math.max(height - point.y, 0.6)}
-          key={index}
-          width={barWidth}
-          x={point.x - barWidth / 2}
-          y={point.y}
-        />
-      ))}
-      <path className="metric-sparkline__line" d={line} />
-    </svg>
+    <div aria-label={`${label} trend`} className="metric-sparkline" role="img">
+      <svg
+        aria-hidden="true"
+        className="metric-sparkline__curve"
+        preserveAspectRatio="none"
+        viewBox={`0 0 ${width} ${height}`}
+      >
+        <path className="metric-sparkline__line" d={line} />
+      </svg>
+      {/*
+        Bars are laid out by flexbox rather than drawn in the SVG. The viewBox is
+        stretched horizontally to fill a box of unknown width, which squashes a
+        corner radius into an oval and makes a rect's width impossible to pin in
+        device units. CSS gives proportional widths and a true radius for free.
+      */}
+      <div aria-hidden="true" className="metric-sparkline__bars">
+        {points.map((value, index) => (
+          <span
+            className="metric-sparkline__bar"
+            key={index}
+            style={{
+              height: max > 0 ? `${(value / max) * 100}%` : "0%",
+              // Stagger tightens as the series grows so a full month still
+              // finishes rising in about the same beat as a couple of days.
+              animationDelay: `${index * Math.min(70, 240 / points.length)}ms`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
