@@ -1,11 +1,11 @@
 import Link from "next/link";
 
+import { Cta } from "./landing-cta";
 import styles from "./initia-landing.module.css";
 
 const ASSET = "https://initia.xyz";
 function PixelGlyph({className=""}:{className?:string}){return <svg aria-hidden="true" className={className} viewBox="0 0 48 48" fill="currentColor"><path d="M20 2h8v4h-8zM16 6h16v4H16zM12 10h8v4h-8zM28 10h8v4h-8zM8 14h8v4H8zM32 14h8v4h-8zM4 18h8v12H4zM36 18h8v12h-8zM8 30h8v4H8zM32 30h8v4h-8zM12 34h8v4h-8zM28 34h8v4h-8zM16 38h16v4H16zM20 42h8v4h-8zM18 18h12v12H18z"/></svg>}
 function Arrow(){return <svg aria-hidden="true" viewBox="0 0 16 16" fill="currentColor"><path d="M12 7 0 .072v13.856L12 7Z"/></svg>}
-function Cta({href,children}:{href:string;children:string}){const external=href.startsWith("http");return <a className={styles.cta} href={href} target={external?"_blank":undefined} rel={external?"noreferrer":undefined}><span>{children}</span><Arrow/></a>}
 function FeatureCard({title,image,href,tone}:{title:string;image:string;href:string;tone:"discover"|"economy"}){return <a className={`${styles.featureCard} ${styles[`featureCard--${tone}`]}`} href={href}><span className={styles.featureFront}><img src={`${ASSET}/images/decoration/${image}`} alt=""/><span className={styles.featureShade}/><PixelGlyph className={styles.featureGlyph}/><span className={styles.featureTitle}><em>openx402</em><strong>{title}</strong></span></span></a>}
 function Socials(){return <nav className={styles.socials} aria-label="openx402 social links"><a aria-label="Follow openx402 on X" href="https://x.com/openx402stellar" target="_blank" rel="noreferrer"><b>𝕏</b><span>@openx402stellar</span></a></nav>}
 
