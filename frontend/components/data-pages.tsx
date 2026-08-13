@@ -6,7 +6,9 @@ import {
   ActivityIcon,
   ArrowRightIcon,
   ArrowUpRightIcon,
+  BarsIcon,
   CheckIcon,
+  CurveIcon,
   DatabaseIcon,
   ExternalLinkIcon,
   FilterIcon,
@@ -34,13 +36,17 @@ export function AllPage({ data, search }: { data: DashboardData; search: Dashboa
       <PageContainer className="data-page directory-page directory-page--all">
         {/* Sits above both the header and the metrics so the CSS-only toggle can
             style the labels in one and the charts in the other. */}
-        <input className="metric-view-input" defaultChecked id="metric-view-curve" name="metric-view" type="radio" value="curve" />
-        <input className="metric-view-input" id="metric-view-bars" name="metric-view" type="radio" value="bars" />
+        <input className="metric-view-input" id="metric-view-curve" name="metric-view" type="radio" value="curve" />
+        <input className="metric-view-input" defaultChecked id="metric-view-bars" name="metric-view" type="radio" value="bars" />
         <PageHeader
           actions={
             <div className="metric-view-toggle" role="group" aria-label="Chart style">
-              <label className="metric-view-button" htmlFor="metric-view-curve">Curve</label>
-              <label className="metric-view-button" htmlFor="metric-view-bars">Bars</label>
+              <label className="metric-view-button" htmlFor="metric-view-bars" title="Bars">
+                <BarsIcon size={15} /><span className="sr-only">Bars</span>
+              </label>
+              <label className="metric-view-button" htmlFor="metric-view-curve" title="Curve">
+                <CurveIcon size={15} /><span className="sr-only">Curve</span>
+              </label>
             </div>
           }
           description="Aggregate activity across services, payments, facilitators, and networks."
@@ -133,7 +139,7 @@ export function TransactionsPage({ data, search }: { data: DashboardData; search
           <div className="transaction-desk__bar">
             <div className="transaction-callout__icon"><ActivityIcon size={22} /></div>
             <div><strong id="transaction-pulse-title">Live settlement window</strong><span>Receipts are loaded from the facilitator&apos;s settlement index.</span></div>
-            <Badge tone={data.connected ? "success" : "neutral"}><span className="status-badge__dot" /> {data.connected ? "ready" : "unavailable"}</Badge>
+            <Badge className="status-badge" tone={data.connected ? "success" : "neutral"}><span aria-hidden="true" className="status-badge__dot" /> {data.connected ? "ready" : "unavailable"}</Badge>
           </div>
           <div className="transaction-desk__stats">
             <span><small>Total transactions</small><strong>{data.transactionTotals.totalTransactions}</strong><em>Last 30 days</em></span>

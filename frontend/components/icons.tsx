@@ -225,3 +225,27 @@ export function MoreIcon(props: IconProps) {
     </Icon>
   );
 }
+
+export function CurveIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path
+        d="M3.5 16.5c3-0.4 4.6-5.6 7.4-5.6 2.6 0 3.4 3.2 5 3.2 1.7 0 3-2.6 4.6-6.6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.9"
+      />
+    </Icon>
+  );
+}
+
+export function BarsIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect fill="currentColor" height="7" rx="1" width="4" x="3.5" y="13.5" />
+      <rect fill="currentColor" height="13" rx="1" width="4" x="10" y="7.5" />
+      <rect fill="currentColor" height="10" rx="1" width="4" x="16.5" y="10.5" />
+    </Icon>
+  );
+}

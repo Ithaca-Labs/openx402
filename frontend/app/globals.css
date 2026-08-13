@@ -1455,8 +1455,50 @@ html[data-theme="dark"] .brand-lockup__image--dark {
   font-size: 0.58rem;
 }
 
+/*
+ * Status reads as data, not as a component. The bordered, tinted, fully-rounded
+ * pill was the only chrome in a table of bare mono text, so it sat on top of the
+ * row rather than in it. Colour moves to a small square marker; the label stays
+ * muted so a column of "settled" reads calm and a failure is the thing that
+ * catches the eye.
+ */
 .status-badge {
   justify-self: end;
+}
+
+.ui-badge.status-badge {
+  min-height: 0;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--color-text-muted);
+  letter-spacing: 0.09em;
+}
+
+.ui-badge.status-badge .status-badge__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: var(--status-marker, var(--color-text-subtle));
+}
+
+.ui-badge--success.status-badge {
+  --status-marker: var(--color-success);
+}
+
+.ui-badge--signal.status-badge {
+  --status-marker: var(--color-accent);
+}
+
+.ui-badge--danger.status-badge {
+  --status-marker: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.ui-badge--neutral.status-badge {
+  --status-marker: var(--color-text-subtle);
 }
 
 .activity-panel__footer {
@@ -6042,17 +6084,15 @@ html[data-theme="dark"] .directory-page {
 
 .metric-view-button {
   display: inline-flex;
-  height: 24px;
+  width: 28px;
+  height: 26px;
   align-items: center;
-  padding: 0 10px;
+  justify-content: center;
   border: 1px solid transparent;
+  border-radius: 6px;
   color: var(--color-text-muted);
   cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  transition: color 160ms ease, border-color 160ms ease;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
 .metric-view-button:hover {
@@ -6062,6 +6102,7 @@ html[data-theme="dark"] .directory-page {
 #metric-view-curve:checked ~ .page-header label[for="metric-view-curve"],
 #metric-view-bars:checked ~ .page-header label[for="metric-view-bars"] {
   border-color: var(--color-border-strong);
+  background: var(--color-surface-muted);
   color: var(--color-text);
 }
 
@@ -6222,10 +6263,17 @@ html[data-theme="dark"] .directory-page {
   letter-spacing: 0.02em;
 }
 
+/*
+ * No min-width or centring: the badge hugs its label so every row's text starts
+ * at the same x. With a shared minimum the shorter "MCP" gets more slack than
+ * "HTTP" and the column reads ragged.
+ */
 .ledger-type {
   display: inline-flex;
-  min-width: 42px;
-  justify-content: center;
+  justify-content: flex-start;
+  /* Pulled left by its own padding + border so the label, not the box, lines
+     up with the column heading. */
+  margin-left: -7px;
   padding: 4px 6px;
   border: 1px solid var(--directory-rule);
   border-radius: 6px;
