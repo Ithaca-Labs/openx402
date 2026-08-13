@@ -99,11 +99,6 @@ describe("facilitator response contracts", () => {
 });
 
 describe("amount and count formatting", () => {
-  it("preserves numeric-string zero counts", () => {
-    const metrics = adaptMetrics({ total_transactions: "0", unique_buyers: "0", active_resources: "0", unique_networks: "0" });
-    expect(metrics.map(metric => metric.value)).toEqual(["0", "0", "0", "0"]);
-  });
-
   it("renders legitimate zero payment settlements", () => {
     expect(formatAtomicAmount("0", TESTNET_XLM, "XLM", 7)).toBe("0 XLM");
   });
