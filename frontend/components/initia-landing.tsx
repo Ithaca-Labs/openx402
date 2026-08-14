@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { AsciiChainBackground } from "./ascii-chain-background";
+import { AsciiPlanetBackground } from "./ascii-planet-background";
 import { Cta } from "./landing-cta";
 import { FeatureCard } from "./landing-feature-card";
 import styles from "./initia-landing.module.css";
@@ -12,7 +12,7 @@ function Socials(){return <nav className={styles.socials} aria-label="openx402 s
 export default function InitiaLanding(){return <div className={styles.page}>
   <header className={styles.header}><Link className={styles.logo} href="/" aria-label="openx402 home"><img src="/brand/logo/lockup-primary-dark.svg" alt="openx402"/></Link></header>
   <main className={styles.shell}><div className={styles.inner}><div className={styles.contentGrid}>
-    <section className={styles.hero}><AsciiChainBackground/><div className={styles.heroContent}><h1>The x402 suite for everyone</h1><p>openx402 makes x402 on Stellar yours to run, yours to discover through, and yours to build on.</p><div className={styles.actions}><Cta href="https://docs.stellarx402.xyz/">Build</Cta><Cta href="/discover">Start</Cta></div></div><a className={styles.diamond} href="/discover" aria-label="Discover openx402 services"><img src="/brand/logo/mark-yellow.svg" alt=""/></a></section>
+    <section className={styles.hero}><AsciiPlanetBackground/><div className={styles.heroContent}><h1>The x402 suite for everyone</h1><p>openx402 makes x402 on Stellar yours to run, yours to discover through, and yours to build on.</p><div className={styles.actions}><Cta href="https://docs.stellarx402.xyz/">Build</Cta><Cta href="/discover">Start</Cta></div></div><a className={styles.diamond} href="/discover" aria-label="Discover openx402 services"><img src="/brand/logo/mark-yellow.svg" alt=""/></a></section>
     <a className={styles.mobileEcosystem} href="/discover"><img src="/brand/logo/mark-yellow.svg" alt=""/><strong>openx402</strong><Arrow/></a><Socials/>
     <aside className={styles.rail} aria-label="Explore openx402"><div className={styles.cards}><FeatureCard title="Discover" src={`${ASSET}/images/decoration/card-bg-stack.png`} href="/discover" tone="discover"/><FeatureCard title="Economy" src={`${ASSET}/images/decoration/card-bg-economy.png`} href="/ecosystem" tone="economy"/></div><div className={styles.railBottom}><Socials/><div className={styles.motionMark}><img src={`${ASSET}/images/decoration/line-bg.svg`} alt=""/><img src="/brand/logo/mark-yellow.svg" alt="openx402 mark"/></div></div></aside>
   </div><footer className={styles.footer}><div className={styles.brandLine}><img src="/brand/logo/lockup-primary-dark.svg" alt="openx402"/><span>open source</span><span>Stellar</span><span>x402</span></div><div className={styles.legal}><a href="/privacy-policy">Privacy Policy</a><a href="/terms-of-use">Terms of Use</a></div></footer></div></main>

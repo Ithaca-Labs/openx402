@@ -35,27 +35,14 @@ export function DiscoverToolbar({ search }: { search: DashboardSearch }) {
   useEffect(() => {
     if (!touched) return;
     const query = value.trim();
-    if (query.length < MIN_QUERY_LENGTH) {
-      setItems([]);
-      setOpen(false);
-      setLoading(false);
-      return;
-    }
+    if (query.length < MIN_QUERY_LENGTH) return;
 
     const cacheKey = `${type} ${query}`;
-    const cached = cache.current.get(cacheKey);
-    if (cached) {
-      setItems(cached);
-      setActive(-1);
-      setOpen(true);
-      setLoading(false);
-      return;
-    }
+    if (cache.current.has(cacheKey)) return;
 
     // Each keystroke aborts the request in flight, so a slow response can never
     // overwrite the results of a newer query.
     const controller = new AbortController();
-    setLoading(true);
     const timer = setTimeout(async () => {
       const params = new URLSearchParams({ q: query });
       if (type) params.set("type", type);
@@ -100,9 +87,29 @@ export function DiscoverToolbar({ search }: { search: DashboardSearch }) {
     inputRef.current?.focus();
     // Drop ?q= but keep any active type filter.
     if (search.q) {
-      const { q: _clearedQuery, ...rest } = search;
+      const rest = { ...search };
+      delete rest.q;
       router.replace(pageHref("/discover", { ...rest, page: 1 }, 1));
     }
+  }
+
+  function changeQuery(nextValue: string) {
+    const query = nextValue.trim();
+    setTouched(true);
+    setValue(nextValue);
+    setActive(-1);
+
+    if (query.length < MIN_QUERY_LENGTH) {
+      setItems([]);
+      setOpen(false);
+      setLoading(false);
+      return;
+    }
+
+    const cached = cache.current.get(`${type} ${query}`);
+    setItems(cached ?? []);
+    setOpen(true);
+    setLoading(!cached);
   }
 
   function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
@@ -134,7 +141,8 @@ export function DiscoverToolbar({ search }: { search: DashboardSearch }) {
 
   const showOverlay = open && (loading || items.length > 0 || value.trim().length >= MIN_QUERY_LENGTH);
   // Drop the URL's own type so the live selection wins, including "all".
-  const { type: _urlType, ...searchWithoutType } = search;
+  const searchWithoutType = { ...search };
+  delete searchWithoutType.type;
   const allResultsHref = pageHref("/discover", {
     ...searchWithoutType,
     q: value.trim(),
@@ -157,7 +165,7 @@ export function DiscoverToolbar({ search }: { search: DashboardSearch }) {
               autoComplete="off"
               maxLength={512}
               name="q"
-              onChange={event => { setTouched(true); setValue(event.target.value); }}
+              onChange={event => changeQuery(event.target.value)}
               onFocus={() => { if (items.length > 0) setOpen(true); }}
               onKeyDown={onKeyDown}
               placeholder="Search services"
@@ -221,7 +229,12 @@ export function DiscoverToolbar({ search }: { search: DashboardSearch }) {
           <select
             aria-label="Filter by resource type"
             name="type"
-            onChange={event => { setType(event.target.value); event.currentTarget.form?.requestSubmit(); }}
+            onChange={event => {
+              setType(event.target.value);
+              setOpen(false);
+              setLoading(false);
+              event.currentTarget.form?.requestSubmit();
+            }}
             value={type}
           >
             <option value="">Showing all</option>
