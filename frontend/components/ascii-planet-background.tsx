@@ -536,9 +536,9 @@ export function AsciiPlanetBackground() {
         pointerCurrent.lerp(pointerTarget, 0.025);
       }
 
-      celestial.planet.rotation.y = motionTime * 0.065;
-      celestial.ringGroup.rotation.z = VISUAL_CONFIG.ringRotationZ + Math.sin(motionTime * 0.16) * 0.009;
-      celestial.ringParticles.rotation.z = motionTime * 0.04;
+      celestial.planet.rotation.y = motionTime * 0.082;
+      celestial.ringGroup.rotation.z = VISUAL_CONFIG.ringRotationZ + Math.sin(motionTime * 0.2) * 0.009;
+      celestial.ringParticles.rotation.z = motionTime * 0.052;
       celestial.saturnSystem.rotation.x = pointerCurrent.x;
       celestial.saturnSystem.rotation.y = pointerCurrent.y;
       celestial.saturnSystem.position.set(
