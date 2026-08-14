@@ -41,6 +41,14 @@ type MoonSpec = {
   speed: number;
 };
 
+type MeteorTrail = {
+  curve: THREE.CatmullRomCurve3;
+  geometry: THREE.BufferGeometry;
+  phase: number;
+  seed: number;
+  speed: number;
+};
+
 const MOONS: readonly MoonSpec[] = [
   { base: [1.62, 3.08, 0.55], brightness: 0.62, orbitRadius: 0.12, phase: 0.2, radius: 0.17, speed: 0.045 },
   { base: [4.85, 3.38, -0.15], brightness: 0.32, orbitRadius: 0.16, phase: 1.7, radius: 0.15, speed: -0.032 },
@@ -55,23 +63,27 @@ const MOONS: readonly MoonSpec[] = [
 const TRAILS = [
   {
     controls: [[2.95, 2.62, 0.8], [3.4, 2.88, 0.92], [4.02, 3.08, 1.04], [4.72, 3.28, 1.12]],
-    count: 82,
-    headAtStart: true,
+    phase: 0.12,
     seed: 31,
+    speed: 0.105,
   },
   {
     controls: [[-4.7, 1.12, 1.2], [-4.05, 1.42, 1.08], [-3.35, 1.78, 0.96], [-2.7, 2.05, 0.84]],
-    count: 74,
-    headAtStart: true,
+    phase: 0.48,
     seed: 61,
+    speed: 0.085,
   },
   {
     controls: [[3.08, -1.82, 1.16], [3.58, -1.58, 1.04], [4.18, -1.22, 0.9], [4.9, -0.86, 0.72]],
-    count: 88,
-    headAtStart: true,
+    phase: 0.75,
     seed: 97,
+    speed: 0.095,
   },
 ] as const;
+
+const METEORS_PER_TRAIL = 2;
+const METEOR_TRAIL_POINTS = 20;
+const METEOR_POINT_SPACING = 0.028;
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -309,42 +321,46 @@ function createRingParticles() {
   return { geometry, material, points: new THREE.Points(geometry, material) };
 }
 
-function createCurveTrail(
+function createMeteorTrail(
   controls: readonly (readonly number[])[],
-  count: number,
   seed: number,
-  headAtStart: boolean,
+  phase: number,
+  speed: number,
 ) {
   const curve = new THREE.CatmullRomCurve3(
     controls.map(([x, y, z]) => new THREE.Vector3(x, y, z)),
   );
-  const positions: number[] = [];
-  const colors: number[] = [];
+  const pointCount = METEORS_PER_TRAIL * METEOR_TRAIL_POINTS;
+  const positions = new Float32Array(pointCount * 3);
+  const colors = new Float32Array(pointCount * 3);
 
-  for (let index = 0; index < count; index += 1) {
-    const progress = index / (count - 1);
-    const headDistance = headAtStart ? progress : 1 - progress;
-    const density = THREE.MathUtils.lerp(0.94, 0.34, headDistance);
-    if (hash(index + seed * 19) > density) continue;
-
-    const point = curve.getPoint(progress);
-    const jitter = (hash(index + seed * 43) - 0.5) * 0.035;
-    const intensity = THREE.MathUtils.lerp(0.8, 0.035, Math.pow(headDistance, 0.68));
-    positions.push(point.x, point.y + jitter, point.z + jitter * 0.6);
-    colors.push(intensity, intensity, intensity);
+  for (let meteor = 0; meteor < METEORS_PER_TRAIL; meteor += 1) {
+    for (let trail = 0; trail < METEOR_TRAIL_POINTS; trail += 1) {
+      const index = meteor * METEOR_TRAIL_POINTS + trail;
+      const progress = trail / (METEOR_TRAIL_POINTS - 1);
+      const visible = trail < 3 || hash(index + seed * 19) < THREE.MathUtils.lerp(0.94, 0.4, progress);
+      const intensity = visible
+        ? THREE.MathUtils.lerp(0.92, 0.035, Math.pow(progress, 0.72))
+        : 0;
+      colors[index * 3] = intensity;
+      colors[index * 3 + 1] = intensity;
+      colors[index * 3 + 2] = intensity;
+    }
   }
 
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-  geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   const material = new THREE.PointsMaterial({
-    opacity: 0.78,
-    size: 0.065,
+    opacity: 0.88,
+    size: 0.072,
     sizeAttenuation: true,
     transparent: true,
     vertexColors: true,
   });
-  return { geometry, material, points: new THREE.Points(geometry, material) };
+  const points = new THREE.Points(geometry, material);
+  points.frustumCulled = false;
+  return { curve, geometry, material, phase, points, seed, speed };
 }
 
 function createOrbitPath(
@@ -390,6 +406,7 @@ function createPlanetSystem() {
   const saturnSystem = new THREE.Group();
   const geometries: THREE.BufferGeometry[] = [];
   const materials: THREE.Material[] = [];
+  const meteors: MeteorTrail[] = [];
   const textures: THREE.Texture[] = [];
 
   const planetTexture = createPlanetTexture();
@@ -466,10 +483,16 @@ function createPlanetSystem() {
   materials.push(moonMaterial);
 
   TRAILS.forEach((trail) => {
-    const result = createCurveTrail(trail.controls, trail.count, trail.seed, trail.headAtStart);
+    const result = createMeteorTrail(
+      trail.controls,
+      trail.seed,
+      trail.phase,
+      trail.speed,
+    );
     saturnSystem.add(result.points);
     geometries.push(result.geometry);
     materials.push(result.material);
+    meteors.push(result);
   });
 
   [
@@ -484,6 +507,7 @@ function createPlanetSystem() {
   return {
     geometries,
     materials,
+    meteors,
     moons,
     planet,
     ringGroup,
@@ -563,6 +587,7 @@ export function AsciiPlanetBackground() {
     const pointerTarget = new THREE.Vector2();
     const pointerCurrent = new THREE.Vector2();
     const dummy = new THREE.Object3D();
+    const meteorPoint = new THREE.Vector3();
     let animationFrame = 0;
     let baseX: number = VISUAL_CONFIG.systemX;
     let baseY: number = VISUAL_CONFIG.systemY;
@@ -592,6 +617,37 @@ export function AsciiPlanetBackground() {
       celestial.moons.instanceMatrix.needsUpdate = true;
     };
 
+    const updateMeteors = (time: number) => {
+      celestial.meteors.forEach((meteor) => {
+        const positions = meteor.geometry.getAttribute("position") as THREE.BufferAttribute;
+
+        for (let copy = 0; copy < METEORS_PER_TRAIL; copy += 1) {
+          const headProgress = 1 - ((meteor.phase + copy / METEORS_PER_TRAIL + time * meteor.speed) % 1);
+
+          for (let trail = 0; trail < METEOR_TRAIL_POINTS; trail += 1) {
+            const index = copy * METEOR_TRAIL_POINTS + trail;
+            const progress = headProgress + trail * METEOR_POINT_SPACING;
+
+            if (progress > 1) {
+              positions.setXYZ(index, 1000, 1000, 1000);
+              continue;
+            }
+
+            meteor.curve.getPoint(progress, meteorPoint);
+            const jitter = (hash(index + meteor.seed * 43) - 0.5) * 0.032;
+            positions.setXYZ(
+              index,
+              meteorPoint.x,
+              meteorPoint.y + jitter,
+              meteorPoint.z + jitter * 0.6,
+            );
+          }
+        }
+
+        positions.needsUpdate = true;
+      });
+    };
+
     const render = (timestamp: number, animate: boolean) => {
       if (!contextAvailable) return;
 
@@ -602,9 +658,9 @@ export function AsciiPlanetBackground() {
         pointerCurrent.lerp(pointerTarget, 0.025);
       }
 
-      celestial.planet.rotation.y = motionTime * 0.018;
-      celestial.ringGroup.rotation.z = VISUAL_CONFIG.ringRotationZ + Math.sin(motionTime * 0.035) * 0.004;
-      celestial.ringParticles.rotation.z = motionTime * 0.006;
+      celestial.planet.rotation.y = motionTime * 0.065;
+      celestial.ringGroup.rotation.z = VISUAL_CONFIG.ringRotationZ + Math.sin(motionTime * 0.16) * 0.009;
+      celestial.ringParticles.rotation.z = motionTime * 0.04;
       celestial.saturnSystem.rotation.x = pointerCurrent.x;
       celestial.saturnSystem.rotation.y = pointerCurrent.y;
       celestial.saturnSystem.position.set(
@@ -613,6 +669,7 @@ export function AsciiPlanetBackground() {
         0,
       );
       updateMoons(motionTime);
+      updateMeteors(motionTime);
 
       renderer.setRenderTarget(renderTarget);
       renderer.setClearColor(0x000000, 1);
