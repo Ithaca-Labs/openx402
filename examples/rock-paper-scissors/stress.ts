@@ -8,7 +8,7 @@ import { ShortAuthExactStellarScheme } from "./short-auth-exact.js";
 const NETWORK = "stellar:testnet" as const;
 const FACILITATOR_URL = "https://facilitator.stellarx402.xyz";
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
-const RUN_ID = "hosted-usdc-200-v1";
+const RUN_ID = "hosted-usdc-245-v1";
 const SELLER_ORIGIN = process.env.SELLER_ORIGIN?.replace(/\/$/, "");
 const INTER_REQUEST_DELAY_MS = Number(process.env.INTER_REQUEST_DELAY_MS ?? 6_000);
 const WALLETS_FILE = fileURLToPath(new URL("./wallets.private.json", import.meta.url));
@@ -46,22 +46,27 @@ const AMOUNTS: Record<Path, string> = {
   word: "6100",
 };
 const TARGETS: Record<Path, number> = {
-  time: 65,
-  uuid: 50,
-  dice: 73,
-  coin: 72,
-  number: 77,
-  color: 79,
-  quote: 60,
-  token: 61,
-  status: 72,
-  version: 50,
-  entropy: 25,
-  temperature: 26,
+  time: 8,
+  uuid: 17,
+  dice: 16,
+  coin: 24,
+  number: 26,
+  color: 15,
+  quote: 11,
+  token: 9,
+  status: 28,
+  version: 22,
+  entropy: 10,
+  temperature: 21,
   coordinate: 13,
-  mood: 27,
-  word: 12,
+  mood: 7,
+  word: 18,
 };
+const TOTAL_TRANSACTIONS = Object.values(TARGETS).reduce((sum, target) => sum + target, 0);
+if (TOTAL_TRANSACTIONS !== 245 || new Set(Object.values(TARGETS)).size !== paths.length ||
+    Object.values(TARGETS).some(target => target < 3)) {
+  throw new Error("transaction targets must be fifteen distinct positive counts totaling 245");
+}
 type PrivateWallet = { id: number; address: string; secret: string };
 type Proof = {
   runId: typeof RUN_ID;
@@ -131,7 +136,9 @@ async function confirm(transaction: string): Promise<{ ledger: number; createdAt
 async function readProofs(): Promise<Proof[]> {
   try {
     const text = await readFile(PROOF_FILE, "utf8");
-    return text.split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line) as Proof);
+    return text.split(/\r?\n/).filter(Boolean)
+      .map(line => JSON.parse(line) as Proof)
+      .filter(proof => proof.runId === RUN_ID);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
     throw error;
@@ -238,16 +245,21 @@ async function loadBuyerPlan(proofs: Proof[]): Promise<BuyerPlan> {
     const owner = wallets[paths.indexOf(path)]!;
     const existing = [...buyerCounts(proofs, path).keys()];
     if (existing.length > 9) throw new Error(`${path} already has more than nine buyers`);
-    const target = randomInt(Math.max(3, existing.length), 10);
+    const target = randomInt(Math.max(3, existing.length), Math.min(9, TARGETS[path]) + 1);
     const candidates = shuffled(wallets
       .map(wallet => wallet.address)
       .filter(address => address !== owner.address && !existing.includes(address)));
     return { target, buyers: [...existing, ...candidates.slice(0, target - existing.length)] };
   };
 
+  let document: BuyerPlanFile | undefined;
   try {
-    const document = JSON.parse(await readFile(BUYER_PLAN_FILE, "utf8")) as BuyerPlanFile;
-    if (document.runId !== RUN_ID) throw new Error("buyer plan belongs to another run");
+    document = JSON.parse(await readFile(BUYER_PLAN_FILE, "utf8")) as BuyerPlanFile;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+
+  if (document?.runId === RUN_ID) {
     const plan = document.services;
     let changed = false;
     for (const path of paths) {
@@ -257,7 +269,7 @@ async function loadBuyerPlan(proofs: Proof[]): Promise<BuyerPlan> {
       }
       const entry = plan[path];
       const owner = wallets[paths.indexOf(path)]!;
-      if (!entry || entry.target < 3 || entry.target > 9 || entry.buyers.length !== entry.target ||
+      if (!entry || entry.target < 3 || entry.target > Math.min(9, TARGETS[path]) || entry.buyers.length !== entry.target ||
           new Set(entry.buyers).size !== entry.target || entry.buyers.includes(owner.address) ||
           entry.buyers.some(address => !wallets.some(wallet => wallet.address === address))) {
         throw new Error(`invalid buyer plan for ${path}`);
@@ -267,8 +279,6 @@ async function loadBuyerPlan(proofs: Proof[]): Promise<BuyerPlan> {
       await writeFile(BUYER_PLAN_FILE, `${JSON.stringify({ runId: RUN_ID, services: plan }, null, 2)}\n`, "utf8");
     }
     return plan;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
 
   const plan = {} as BuyerPlan;
@@ -277,6 +287,26 @@ async function loadBuyerPlan(proofs: Proof[]): Promise<BuyerPlan> {
   }
   await writeFile(BUYER_PLAN_FILE, `${JSON.stringify({ runId: RUN_ID, services: plan }, null, 2)}\n`, "utf8");
   return plan;
+}
+
+function canFinishWithoutAdjacentRepeat(remaining: Map<Path, number>, previous: Path): boolean {
+  const total = [...remaining.values()].reduce((sum, count) => sum + count, 0);
+  return paths.every(path => {
+    const count = remaining.get(path) ?? 0;
+    const other = total - count;
+    return count <= other + (path === previous ? 0 : 1);
+  });
+}
+
+function chooseNextPath(counts: Map<Path, number>, previous?: Path): Path {
+  const candidates = paths.filter(path => path !== previous && (counts.get(path) ?? 0) < TARGETS[path]);
+  const valid = candidates.filter(candidate => {
+    const remaining = new Map(paths.map(path => [path, TARGETS[path] - (counts.get(path) ?? 0)]));
+    remaining.set(candidate, (remaining.get(candidate) ?? 0) - 1);
+    return canFinishWithoutAdjacentRepeat(remaining, candidate);
+  });
+  if (valid.length === 0) throw new Error("no non-adjacent stress schedule remains");
+  return valid[randomInt(valid.length)]!;
 }
 
 function settlement(httpClient: x402HTTPClient, response: Response, body: unknown): Record<string, unknown> {
@@ -410,59 +440,59 @@ if (pending && imported.some(proof => proof.path === pending!.path && proof.buye
   pending = undefined;
 }
 
-for (const path of paths) {
-  while ((counts.get(path) ?? 0) < TARGETS[path] || buyerCounts(proofs, path).size < plan[path].target ||
-         !hasCurrentPriceProof(proofs, path)) {
-    let httpClient: x402HTTPClient;
-    if (pending) {
-      if (pending.path !== path) throw new Error(`resume ${pending.path} before ${path}`);
-      httpClient = await clientForInflight(pending);
-    } else {
-      const usage = buyerCounts(proofs, path);
-      const buyer = [...plan[path].buyers].sort((left, right) =>
-        (usage.get(left) ?? 0) - (usage.get(right) ?? 0))[0]!;
-      ({ inflight: pending, httpClient } = await createInflight(path, buyer));
-    }
-    try {
-      const paid = await pay(pending, httpClient);
-      const chain = await confirm(paid.transaction);
-      if (proofs.some(proof => proof.transaction === paid.transaction)) {
-        await clearInflight();
-        pending = undefined;
-        counts = validateProofs(proofs);
-        console.log(JSON.stringify({ status: "recovered", total: proofs.length, path, transaction: paid.transaction }));
-        continue;
-      }
-      const proof: Proof = {
-        runId: RUN_ID, path, buyer: pending.buyer, payTo: pending.payTo,
-        amount: AMOUNTS[path], asset: USDC_TESTNET_ADDRESS, transaction: paid.transaction,
-        ...chain, source: "stress",
-      };
-      await appendProof(proof);
-      proofs.push(proof);
+while (proofs.length < TOTAL_TRANSACTIONS) {
+  const path = pending?.path ?? chooseNextPath(counts, proofs.at(-1)?.path);
+  let httpClient: x402HTTPClient;
+  if (pending) {
+    httpClient = await clientForInflight(pending);
+  } else {
+    const usage = buyerCounts(proofs, path);
+    const buyer = [...plan[path].buyers].sort((left, right) =>
+      (usage.get(left) ?? 0) - (usage.get(right) ?? 0))[0]!;
+    ({ inflight: pending, httpClient } = await createInflight(path, buyer));
+  }
+  try {
+    const paid = await pay(pending, httpClient);
+    const chain = await confirm(paid.transaction);
+    if (proofs.some(proof => proof.transaction === paid.transaction)) {
       await clearInflight();
       pending = undefined;
-      counts.set(path, (counts.get(path) ?? 0) + 1);
-      console.log(JSON.stringify({
-        status: "success", total: proofs.length, path, count: counts.get(path),
-        buyers: buyerCounts(proofs, path).size, buyerTarget: plan[path].target,
-        transaction: proof.transaction,
-      }));
-      await wait(INTER_REQUEST_DELAY_MS);
-    } catch (error) {
-      if (!String(error).includes("fresh_payload_required:")) throw error;
-      console.warn(JSON.stringify({ path, refreshing: String(error) }));
-      await clearInflight();
-      pending = undefined;
-      await wait(INTER_REQUEST_DELAY_MS);
+      counts = validateProofs(proofs);
+      console.log(JSON.stringify({ status: "recovered", total: proofs.length, path, transaction: paid.transaction }));
+      continue;
     }
+    const proof: Proof = {
+      runId: RUN_ID, path, buyer: pending.buyer, payTo: pending.payTo,
+      amount: AMOUNTS[path], asset: USDC_TESTNET_ADDRESS, transaction: paid.transaction,
+      ...chain, source: "stress",
+    };
+    await appendProof(proof);
+    proofs.push(proof);
+    await clearInflight();
+    pending = undefined;
+    counts.set(path, (counts.get(path) ?? 0) + 1);
+    console.log(JSON.stringify({
+      status: "success", total: proofs.length, path, count: counts.get(path),
+      buyers: buyerCounts(proofs, path).size, buyerTarget: plan[path].target,
+      transaction: proof.transaction,
+    }));
+    await wait(INTER_REQUEST_DELAY_MS);
+  } catch (error) {
+    if (!String(error).includes("fresh_payload_required:")) throw error;
+    console.warn(JSON.stringify({ path, refreshing: String(error) }));
+    await clearInflight();
+    pending = undefined;
+    await wait(INTER_REQUEST_DELAY_MS);
   }
 }
 
 counts = validateProofs(proofs);
-if (paths.some(path => (counts.get(path) ?? 0) < TARGETS[path]) ||
+if (proofs.length !== 245 || paths.some(path => (counts.get(path) ?? 0) !== TARGETS[path]) ||
     paths.some(path => buyerCounts(proofs, path).size !== plan[path].target || !hasCurrentPriceProof(proofs, path))) {
   throw new Error("stress run did not reach its transaction and buyer targets");
+}
+if (proofs.some((proof, index) => index > 0 && proof.path === proofs[index - 1]!.path)) {
+  throw new Error("stress run contains adjacent payments to the same endpoint");
 }
 console.log(JSON.stringify({
   status: "complete",

@@ -22,21 +22,21 @@ if (wallets.length !== 15 || new Set(wallets.map(wallet => wallet.address)).size
 }
 
 const definitions = [
-  ["/api/time", "Chrono Beacon", "1200"],
-  ["/api/uuid", "Identity Spark", "2700"],
-  ["/api/dice", "Dice Circuit", "4300"],
-  ["/api/coin", "Coin Oracle", "900"],
-  ["/api/number", "Number Forge", "3100"],
-  ["/api/color", "Color Prism", "1800"],
-  ["/api/quote", "Quote Capsule", "5200"],
-  ["/api/token", "Token Generator", "2400"],
-  ["/api/status", "Uptime Pulse", "3700"],
-  ["/api/version", "Release Marker", "1500"],
-  ["/api/entropy", "Entropy Well", "6600"],
-  ["/api/temperature", "Thermal Glimpse", "750"],
-  ["/api/coordinate", "Coordinate Drop", "4600"],
-  ["/api/mood", "Mood Signal", "2900"],
-  ["/api/word", "Word Relay", "6100"],
+  ["/api/time", "Meridian Clock", "1200"],
+  ["/api/uuid", "Nova Identifier", "2700"],
+  ["/api/dice", "Chance Engine", "4300"],
+  ["/api/coin", "Binary Toss", "900"],
+  ["/api/number", "Integer Bloom", "3100"],
+  ["/api/color", "Chroma Sample", "1800"],
+  ["/api/quote", "Axiom Fragment", "5200"],
+  ["/api/token", "Cipher Seed", "2400"],
+  ["/api/status", "Service Heartbeat", "3700"],
+  ["/api/version", "Build Signature", "1500"],
+  ["/api/entropy", "Noise Reservoir", "6600"],
+  ["/api/temperature", "Climate Pulse", "750"],
+  ["/api/coordinate", "Atlas Point", "4600"],
+  ["/api/mood", "Sentiment Echo", "2900"],
+  ["/api/word", "Lexicon Drift", "6100"],
 ] as const;
 
 const seller = createX402Seller({
