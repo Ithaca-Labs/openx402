@@ -115,7 +115,7 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="header-inner">
-        <Link className="brand-lockup" href="/discover" onClick={() => setMenuOpen(false)}>
+        <Link className="brand-lockup" href="/" onClick={() => setMenuOpen(false)}>
           <Image
             alt="openx402"
             className="brand-lockup__image brand-lockup__image--light"
@@ -501,14 +501,16 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="footer-inner">
-        <div className="footer-brand">
+        <Link className="footer-brand" href="/">
           <Image alt="" height={22} src="/brand/logo/mark-yellow.svg" width={22} />
           <span>openx402</span>
-        </div>
+        </Link>
         <div className="footer-note">Ecosystem explorer for open payment infrastructure.</div>
         <div className="footer-links">
           <a href="https://github.com" rel="noreferrer noopener" target="_blank">Repository <ArrowRightIcon size={14} /></a>
           <a href="https://stellar.org" rel="noreferrer noopener" target="_blank">Stellar <ArrowRightIcon size={14} /></a>
+          <Link href="/privacy-policy">Privacy</Link>
+          <Link href="/terms-of-use">Terms</Link>
         </div>
       </div>
       <div className="footer-bottom">

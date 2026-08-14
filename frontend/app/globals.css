@@ -2910,6 +2910,10 @@ html[data-theme="dark"] .network-logo__image {
   font-weight: 700;
 }
 
+.footer-brand:hover {
+  color: var(--color-accent);
+}
+
 .footer-note {
   color: color-mix(in srgb, var(--color-paper) 52%, transparent);
   font-size: 0.7rem;

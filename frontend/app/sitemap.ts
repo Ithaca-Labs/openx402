@@ -9,6 +9,8 @@ const publicRoutes = [
   "/facilitators",
   "/networks",
   "/ecosystem",
+  "/privacy-policy",
+  "/terms-of-use",
 ] as const;
 
 function siteUrl() {
