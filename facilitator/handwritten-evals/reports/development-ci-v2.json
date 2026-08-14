@@ -1,0 +1,3417 @@
+{
+  "schema_version": "2.0.0",
+  "generated_at": "2026-08-14T05:11:29.520Z",
+  "split": "development",
+  "dataset_manifest_sha256": "32906ba61dcf78853ff7b010670aed9da492f2ea0575b15b8fb99d5fe6ed8eba",
+  "input_hashes": {
+    "qrels": "sha256:48f23ed1e259be1d1ff69595901a77524b34b0e62d2ca59933c4ca0162b51c10",
+    "system_runs": {
+      "lexical": "sha256:9ca04ed185b34014be13c91cd29c38e7edae928c22b7208e3b5d10f6e4c0fa99",
+      "semantic": "sha256:96ad33c42da2dbc8a69d171ba0d43a07e82ad1f00b129e66d5cbd441ff6f541e",
+      "hybrid": "sha256:372d5577a46791821dca02565c9dd31904c4825601beb587d64a6f24a136c854",
+      "bm25": "sha256:c1836b9df0804cffa858fc1b0bb26f15d1fb2d38d5b2d169ebcee3d74ac18e08"
+    }
+  },
+  "query_count": 50,
+  "qrel_count": 1442,
+  "baseline": "lexical",
+  "relevance_thresholds": {
+    "mrr": 2,
+    "recall_at_k": 2,
+    "bpref": 2,
+    "judged_at_k": "any_judgment"
+  },
+  "ndcg_gains": [
+    0,
+    1,
+    3,
+    7
+  ],
+  "systems": {
+    "lexical": {
+      "primary": {
+        "ndcg_at_10": {
+          "value": 0.5333790845443516,
+          "support": 49
+        },
+        "judged_at_10": {
+          "value": 0.736,
+          "support": 50
+        },
+        "mrr": {
+          "value": 0.6120881433381433,
+          "support": 48
+        },
+        "bpref": {
+          "value": 0.506837703104275,
+          "support": 48
+        }
+      },
+      "secondary": {
+        "recall_at_20": {
+          "value": 0.6827598905723905,
+          "support": 48
+        },
+        "violations_at_10": 18,
+        "no_result_accuracy": 0,
+        "has_result_rate": 1,
+        "latency_ms": {
+          "p50": 24,
+          "p95": 69,
+          "p99": 151,
+          "mean": 32.02
+        }
+      },
+      "by_query_class": {
+        "capability": {
+          "queries": 15,
+          "rankingQueries": 15,
+          "ndcg": {
+            "1": {
+              "value": 0.7523809523809523,
+              "support": 15
+            },
+            "3": {
+              "value": 0.7819929802343819,
+              "support": 15
+            },
+            "5": {
+              "value": 0.7763261353403857,
+              "support": 15
+            },
+            "10": {
+              "value": 0.7770618389978132,
+              "support": 15
+            },
+            "20": {
+              "value": 0.7877110983943347,
+              "support": 15
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.4671717171717171,
+              "support": 15
+            },
+            "3": {
+              "value": 0.6792929292929293,
+              "support": 15
+            },
+            "5": {
+              "value": 0.8075757575757575,
+              "support": 15
+            },
+            "10": {
+              "value": 0.8414141414141414,
+              "support": 15
+            },
+            "20": {
+              "value": 0.8535353535353536,
+              "support": 15
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 15
+            },
+            "3": {
+              "value": 1,
+              "support": 15
+            },
+            "5": {
+              "value": 0.9600000000000001,
+              "support": 15
+            },
+            "10": {
+              "value": 0.9133333333333333,
+              "support": 15
+            },
+            "20": {
+              "value": 0.7733333333333333,
+              "support": 15
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 2,
+            "5": 3,
+            "10": 8,
+            "20": 17
+          },
+          "mrr": {
+            "value": 0.9666666666666667,
+            "support": 15
+          },
+          "bpref": {
+            "value": 0.7660812672176308,
+            "support": 15
+          },
+          "noResultAccuracy": null
+        },
+        "semantic": {
+          "queries": 7,
+          "rankingQueries": 7,
+          "ndcg": {
+            "1": {
+              "value": 0.061224489795918366,
+              "support": 7
+            },
+            "3": {
+              "value": 0.1965191203671876,
+              "support": 7
+            },
+            "5": {
+              "value": 0.18850760977247688,
+              "support": 7
+            },
+            "10": {
+              "value": 0.21948921926681964,
+              "support": 7
+            },
+            "20": {
+              "value": 0.24619359195006818,
+              "support": 7
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.07142857142857142,
+              "support": 7
+            },
+            "3": {
+              "value": 0.16865079365079366,
+              "support": 7
+            },
+            "5": {
+              "value": 0.2202380952380952,
+              "support": 7
+            },
+            "10": {
+              "value": 0.38095238095238093,
+              "support": 7
+            },
+            "20": {
+              "value": 0.4682539682539683,
+              "support": 7
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 0.8571428571428571,
+              "support": 7
+            },
+            "3": {
+              "value": 0.8095238095238095,
+              "support": 7
+            },
+            "5": {
+              "value": 0.7428571428571428,
+              "support": 7
+            },
+            "10": {
+              "value": 0.7000000000000001,
+              "support": 7
+            },
+            "20": {
+              "value": 0.6214285714285716,
+              "support": 7
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 1,
+            "5": 2,
+            "10": 5,
+            "20": 7
+          },
+          "mrr": {
+            "value": 0.40244279529993815,
+            "support": 7
+          },
+          "bpref": {
+            "value": 0.2035383597883598,
+            "support": 7
+          },
+          "noResultAccuracy": null
+        },
+        "structured": {
+          "queries": 7,
+          "rankingQueries": 7,
+          "ndcg": {
+            "1": {
+              "value": 0.47619047619047616,
+              "support": 7
+            },
+            "3": {
+              "value": 0.42952322220086653,
+              "support": 7
+            },
+            "5": {
+              "value": 0.4772245443465764,
+              "support": 7
+            },
+            "10": {
+              "value": 0.474186045235523,
+              "support": 7
+            },
+            "20": {
+              "value": 0.47983483085869766,
+              "support": 7
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.42857142857142855,
+              "support": 7
+            },
+            "3": {
+              "value": 0.42857142857142855,
+              "support": 7
+            },
+            "5": {
+              "value": 0.5714285714285714,
+              "support": 7
+            },
+            "10": {
+              "value": 0.5714285714285714,
+              "support": 7
+            },
+            "20": {
+              "value": 0.5714285714285714,
+              "support": 7
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 0.5714285714285714,
+              "support": 7
+            },
+            "3": {
+              "value": 0.47619047619047616,
+              "support": 7
+            },
+            "5": {
+              "value": 0.5142857142857143,
+              "support": 7
+            },
+            "10": {
+              "value": 0.4571428571428572,
+              "support": 7
+            },
+            "20": {
+              "value": 0.35,
+              "support": 7
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 1,
+            "10": 1,
+            "20": 4
+          },
+          "mrr": {
+            "value": 0.4571428571428572,
+            "support": 7
+          },
+          "bpref": {
+            "value": 0.5714285714285714,
+            "support": 7
+          },
+          "noResultAccuracy": null
+        },
+        "price_category": {
+          "queries": 4,
+          "rankingQueries": 4,
+          "ndcg": {
+            "1": {
+              "value": 0.5,
+              "support": 4
+            },
+            "3": {
+              "value": 0.4916107720987323,
+              "support": 4
+            },
+            "5": {
+              "value": 0.4734961857119628,
+              "support": 4
+            },
+            "10": {
+              "value": 0.4743667177932171,
+              "support": 4
+            },
+            "20": {
+              "value": 0.5250331988571648,
+              "support": 4
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.375,
+              "support": 4
+            },
+            "3": {
+              "value": 0.5,
+              "support": 4
+            },
+            "5": {
+              "value": 0.5,
+              "support": 4
+            },
+            "10": {
+              "value": 0.5,
+              "support": 4
+            },
+            "20": {
+              "value": 0.75,
+              "support": 4
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 4
+            },
+            "3": {
+              "value": 0.9166666666666666,
+              "support": 4
+            },
+            "5": {
+              "value": 0.65,
+              "support": 4
+            },
+            "10": {
+              "value": 0.44999999999999996,
+              "support": 4
+            },
+            "20": {
+              "value": 0.45,
+              "support": 4
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 0,
+            "20": 4
+          },
+          "mrr": {
+            "value": 0.5138888888888888,
+            "support": 4
+          },
+          "bpref": {
+            "value": 0.5,
+            "support": 4
+          },
+          "noResultAccuracy": null
+        },
+        "mcp": {
+          "queries": 5,
+          "rankingQueries": 5,
+          "ndcg": {
+            "1": {
+              "value": 0.4,
+              "support": 5
+            },
+            "3": {
+              "value": 0.5983679818510209,
+              "support": 5
+            },
+            "5": {
+              "value": 0.5897066673928691,
+              "support": 5
+            },
+            "10": {
+              "value": 0.5964592513308791,
+              "support": 5
+            },
+            "20": {
+              "value": 0.5964592513308791,
+              "support": 5
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.4,
+              "support": 5
+            },
+            "3": {
+              "value": 0.8,
+              "support": 5
+            },
+            "5": {
+              "value": 0.8,
+              "support": 5
+            },
+            "10": {
+              "value": 0.8,
+              "support": 5
+            },
+            "20": {
+              "value": 0.8,
+              "support": 5
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 0.4,
+              "support": 5
+            },
+            "3": {
+              "value": 0.4666666666666666,
+              "support": 5
+            },
+            "5": {
+              "value": 0.4,
+              "support": 5
+            },
+            "10": {
+              "value": 0.5,
+              "support": 5
+            },
+            "20": {
+              "value": 0.36,
+              "support": 5
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 0,
+            "20": 1
+          },
+          "mrr": {
+            "value": 0.5666666666666667,
+            "support": 5
+          },
+          "bpref": {
+            "value": 0.6,
+            "support": 5
+          },
+          "noResultAccuracy": null
+        },
+        "adversarial": {
+          "queries": 4,
+          "rankingQueries": 4,
+          "ndcg": {
+            "1": {
+              "value": 0.6428571428571429,
+              "support": 4
+            },
+            "3": {
+              "value": 0.7210000149733394,
+              "support": 4
+            },
+            "5": {
+              "value": 0.715753983514287,
+              "support": 4
+            },
+            "10": {
+              "value": 0.6867831587527822,
+              "support": 4
+            },
+            "20": {
+              "value": 0.7334751007779046,
+              "support": 4
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.3229166666666667,
+              "support": 4
+            },
+            "3": {
+              "value": 0.4458333333333333,
+              "support": 4
+            },
+            "5": {
+              "value": 0.6,
+              "support": 4
+            },
+            "10": {
+              "value": 0.65,
+              "support": 4
+            },
+            "20": {
+              "value": 0.7729166666666667,
+              "support": 4
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 4
+            },
+            "3": {
+              "value": 1,
+              "support": 4
+            },
+            "5": {
+              "value": 1,
+              "support": 4
+            },
+            "10": {
+              "value": 0.95,
+              "support": 4
+            },
+            "20": {
+              "value": 0.8875,
+              "support": 4
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 3,
+            "20": 5
+          },
+          "mrr": {
+            "value": 0.8333333333333334,
+            "support": 4
+          },
+          "bpref": {
+            "value": 0.5630555555555555,
+            "support": 4
+          },
+          "noResultAccuracy": null
+        },
+        "cold_start": {
+          "queries": 3,
+          "rankingQueries": 3,
+          "ndcg": {
+            "1": {
+              "value": 0.1111111111111111,
+              "support": 3
+            },
+            "3": {
+              "value": 0.2706431343674205,
+              "support": 3
+            },
+            "5": {
+              "value": 0.28451835799586217,
+              "support": 3
+            },
+            "10": {
+              "value": 0.28774193168135165,
+              "support": 3
+            },
+            "20": {
+              "value": 0.30785243024495895,
+              "support": 3
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0,
+              "support": 3
+            },
+            "3": {
+              "value": 0.06666666666666667,
+              "support": 3
+            },
+            "5": {
+              "value": 0.06666666666666667,
+              "support": 3
+            },
+            "10": {
+              "value": 0.13333333333333333,
+              "support": 3
+            },
+            "20": {
+              "value": 0.19999999999999998,
+              "support": 3
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 3
+            },
+            "3": {
+              "value": 0.8888888888888888,
+              "support": 3
+            },
+            "5": {
+              "value": 0.9333333333333332,
+              "support": 3
+            },
+            "10": {
+              "value": 0.9666666666666667,
+              "support": 3
+            },
+            "20": {
+              "value": 0.8973684210526316,
+              "support": 3
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 0,
+            "20": 2
+          },
+          "mrr": {
+            "value": 0.16666666666666666,
+            "support": 3
+          },
+          "bpref": {
+            "value": 0.05333333333333334,
+            "support": 3
+          },
+          "noResultAccuracy": null
+        },
+        "no_result": {
+          "queries": 5,
+          "rankingQueries": 3,
+          "ndcg": {
+            "1": {
+              "value": 0.16666666666666666,
+              "support": 4
+            },
+            "3": {
+              "value": 0.1894809365170495,
+              "support": 4
+            },
+            "5": {
+              "value": 0.285390248064286,
+              "support": 4
+            },
+            "10": {
+              "value": 0.2834497870767952,
+              "support": 4
+            },
+            "20": {
+              "value": 0.3392956576657476,
+              "support": 4
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0,
+              "support": 3
+            },
+            "3": {
+              "value": 0,
+              "support": 3
+            },
+            "5": {
+              "value": 0,
+              "support": 3
+            },
+            "10": {
+              "value": 0,
+              "support": 3
+            },
+            "20": {
+              "value": 0.6666666666666666,
+              "support": 3
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 5
+            },
+            "3": {
+              "value": 0.8666666666666666,
+              "support": 5
+            },
+            "5": {
+              "value": 0.8800000000000001,
+              "support": 5
+            },
+            "10": {
+              "value": 0.8,
+              "support": 5
+            },
+            "20": {
+              "value": 0.7518181818181817,
+              "support": 5
+            }
+          },
+          "violations": {
+            "1": 1,
+            "3": 1,
+            "5": 1,
+            "10": 1,
+            "20": 2
+          },
+          "mrr": {
+            "value": 0.046969696969696974,
+            "support": 3
+          },
+          "bpref": {
+            "value": 0,
+            "support": 3
+          },
+          "noResultAccuracy": 0
+        }
+      }
+    },
+    "semantic": {
+      "primary": {
+        "ndcg_at_10": {
+          "value": 0.715954156486589,
+          "support": 49
+        },
+        "judged_at_10": {
+          "value": 0.642,
+          "support": 50
+        },
+        "mrr": {
+          "value": 0.8324784301346803,
+          "support": 48
+        },
+        "bpref": {
+          "value": 0.6837347193526172,
+          "support": 48
+        }
+      },
+      "secondary": {
+        "recall_at_20": {
+          "value": 0.8421664562289561,
+          "support": 48
+        },
+        "violations_at_10": 19,
+        "no_result_accuracy": 0,
+        "has_result_rate": 1,
+        "latency_ms": {
+          "p50": 86,
+          "p95": 163,
+          "p99": 4295,
+          "mean": 174.76
+        }
+      },
+      "by_query_class": {
+        "capability": {
+          "queries": 15,
+          "rankingQueries": 15,
+          "ndcg": {
+            "1": {
+              "value": 0.8380952380952381,
+              "support": 15
+            },
+            "3": {
+              "value": 0.8116432572524509,
+              "support": 15
+            },
+            "5": {
+              "value": 0.7899723786949507,
+              "support": 15
+            },
+            "10": {
+              "value": 0.782841589550863,
+              "support": 15
+            },
+            "20": {
+              "value": 0.807620123314331,
+              "support": 15
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.45050505050505046,
+              "support": 15
+            },
+            "3": {
+              "value": 0.695959595959596,
+              "support": 15
+            },
+            "5": {
+              "value": 0.7909090909090908,
+              "support": 15
+            },
+            "10": {
+              "value": 0.8303030303030302,
+              "support": 15
+            },
+            "20": {
+              "value": 0.896969696969697,
+              "support": 15
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 15
+            },
+            "3": {
+              "value": 0.9777777777777777,
+              "support": 15
+            },
+            "5": {
+              "value": 0.84,
+              "support": 15
+            },
+            "10": {
+              "value": 0.7200000000000001,
+              "support": 15
+            },
+            "20": {
+              "value": 0.5766666666666665,
+              "support": 15
+            }
+          },
+          "violations": {
+            "1": 1,
+            "3": 2,
+            "5": 5,
+            "10": 7,
+            "20": 14
+          },
+          "mrr": {
+            "value": 0.9166666666666666,
+            "support": 15
+          },
+          "bpref": {
+            "value": 0.711145546372819,
+            "support": 15
+          },
+          "noResultAccuracy": null
+        },
+        "semantic": {
+          "queries": 7,
+          "rankingQueries": 7,
+          "ndcg": {
+            "1": {
+              "value": 0.9183673469387755,
+              "support": 7
+            },
+            "3": {
+              "value": 0.6696491568326054,
+              "support": 7
+            },
+            "5": {
+              "value": 0.6641527693721645,
+              "support": 7
+            },
+            "10": {
+              "value": 0.6344690148068203,
+              "support": 7
+            },
+            "20": {
+              "value": 0.6687190052999911,
+              "support": 7
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.4027777777777778,
+              "support": 7
+            },
+            "3": {
+              "value": 0.503968253968254,
+              "support": 7
+            },
+            "5": {
+              "value": 0.6428571428571429,
+              "support": 7
+            },
+            "10": {
+              "value": 0.6785714285714286,
+              "support": 7
+            },
+            "20": {
+              "value": 0.7301587301587302,
+              "support": 7
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 7
+            },
+            "3": {
+              "value": 0.9523809523809524,
+              "support": 7
+            },
+            "5": {
+              "value": 0.8285714285714284,
+              "support": 7
+            },
+            "10": {
+              "value": 0.6857142857142857,
+              "support": 7
+            },
+            "20": {
+              "value": 0.5428571428571428,
+              "support": 7
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 3,
+            "20": 6
+          },
+          "mrr": {
+            "value": 1,
+            "support": 7
+          },
+          "bpref": {
+            "value": 0.5982142857142857,
+            "support": 7
+          },
+          "noResultAccuracy": null
+        },
+        "structured": {
+          "queries": 7,
+          "rankingQueries": 7,
+          "ndcg": {
+            "1": {
+              "value": 0.7142857142857143,
+              "support": 7
+            },
+            "3": {
+              "value": 0.7341528749838911,
+              "support": 7
+            },
+            "5": {
+              "value": 0.721398497877123,
+              "support": 7
+            },
+            "10": {
+              "value": 0.7123401992182338,
+              "support": 7
+            },
+            "20": {
+              "value": 0.7179889848414084,
+              "support": 7
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.7142857142857143,
+              "support": 7
+            },
+            "3": {
+              "value": 0.8571428571428571,
+              "support": 7
+            },
+            "5": {
+              "value": 0.8571428571428571,
+              "support": 7
+            },
+            "10": {
+              "value": 0.8571428571428571,
+              "support": 7
+            },
+            "20": {
+              "value": 0.8571428571428571,
+              "support": 7
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 0.7142857142857143,
+              "support": 7
+            },
+            "3": {
+              "value": 0.5238095238095238,
+              "support": 7
+            },
+            "5": {
+              "value": 0.5142857142857143,
+              "support": 7
+            },
+            "10": {
+              "value": 0.4142857142857143,
+              "support": 7
+            },
+            "20": {
+              "value": 0.32142857142857145,
+              "support": 7
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 2,
+            "20": 3
+          },
+          "mrr": {
+            "value": 0.7857142857142857,
+            "support": 7
+          },
+          "bpref": {
+            "value": 0.8571428571428571,
+            "support": 7
+          },
+          "noResultAccuracy": null
+        },
+        "price_category": {
+          "queries": 4,
+          "rankingQueries": 4,
+          "ndcg": {
+            "1": {
+              "value": 0.75,
+              "support": 4
+            },
+            "3": {
+              "value": 0.8592030591045134,
+              "support": 4
+            },
+            "5": {
+              "value": 0.828619421986068,
+              "support": 4
+            },
+            "10": {
+              "value": 0.8365710900110431,
+              "support": 4
+            },
+            "20": {
+              "value": 0.8424859953550812,
+              "support": 4
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.625,
+              "support": 4
+            },
+            "3": {
+              "value": 1,
+              "support": 4
+            },
+            "5": {
+              "value": 1,
+              "support": 4
+            },
+            "10": {
+              "value": 1,
+              "support": 4
+            },
+            "20": {
+              "value": 1,
+              "support": 4
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 0.75,
+              "support": 4
+            },
+            "3": {
+              "value": 0.6666666666666666,
+              "support": 4
+            },
+            "5": {
+              "value": 0.55,
+              "support": 4
+            },
+            "10": {
+              "value": 0.325,
+              "support": 4
+            },
+            "20": {
+              "value": 0.22499999999999998,
+              "support": 4
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 1,
+            "10": 2,
+            "20": 2
+          },
+          "mrr": {
+            "value": 0.875,
+            "support": 4
+          },
+          "bpref": {
+            "value": 1,
+            "support": 4
+          },
+          "noResultAccuracy": null
+        },
+        "mcp": {
+          "queries": 5,
+          "rankingQueries": 5,
+          "ndcg": {
+            "1": {
+              "value": 0.8,
+              "support": 5
+            },
+            "3": {
+              "value": 0.8963360499647633,
+              "support": 5
+            },
+            "5": {
+              "value": 0.8868940667927993,
+              "support": 5
+            },
+            "10": {
+              "value": 0.8936466507308092,
+              "support": 5
+            },
+            "20": {
+              "value": 0.8993617124426627,
+              "support": 5
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.8,
+              "support": 5
+            },
+            "3": {
+              "value": 1,
+              "support": 5
+            },
+            "5": {
+              "value": 1,
+              "support": 5
+            },
+            "10": {
+              "value": 1,
+              "support": 5
+            },
+            "20": {
+              "value": 1,
+              "support": 5
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 0.8,
+              "support": 5
+            },
+            "3": {
+              "value": 0.8666666666666666,
+              "support": 5
+            },
+            "5": {
+              "value": 0.8,
+              "support": 5
+            },
+            "10": {
+              "value": 0.72,
+              "support": 5
+            },
+            "20": {
+              "value": 0.52,
+              "support": 5
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 3,
+            "20": 4
+          },
+          "mrr": {
+            "value": 0.9,
+            "support": 5
+          },
+          "bpref": {
+            "value": 1,
+            "support": 5
+          },
+          "noResultAccuracy": null
+        },
+        "adversarial": {
+          "queries": 4,
+          "rankingQueries": 4,
+          "ndcg": {
+            "1": {
+              "value": 0.7857142857142857,
+              "support": 4
+            },
+            "3": {
+              "value": 0.7820762796663956,
+              "support": 4
+            },
+            "5": {
+              "value": 0.7569124712673116,
+              "support": 4
+            },
+            "10": {
+              "value": 0.7152855834395302,
+              "support": 4
+            },
+            "20": {
+              "value": 0.7231637597360867,
+              "support": 4
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.3229166666666667,
+              "support": 4
+            },
+            "3": {
+              "value": 0.4875,
+              "support": 4
+            },
+            "5": {
+              "value": 0.55,
+              "support": 4
+            },
+            "10": {
+              "value": 0.63125,
+              "support": 4
+            },
+            "20": {
+              "value": 0.73125,
+              "support": 4
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 4
+            },
+            "3": {
+              "value": 0.9166666666666666,
+              "support": 4
+            },
+            "5": {
+              "value": 0.9,
+              "support": 4
+            },
+            "10": {
+              "value": 0.775,
+              "support": 4
+            },
+            "20": {
+              "value": 0.6,
+              "support": 4
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 2,
+            "20": 2
+          },
+          "mrr": {
+            "value": 0.875,
+            "support": 4
+          },
+          "bpref": {
+            "value": 0.5578125,
+            "support": 4
+          },
+          "noResultAccuracy": null
+        },
+        "cold_start": {
+          "queries": 3,
+          "rankingQueries": 3,
+          "ndcg": {
+            "1": {
+              "value": 0.7777777777777777,
+              "support": 3
+            },
+            "3": {
+              "value": 0.6364161514766865,
+              "support": 3
+            },
+            "5": {
+              "value": 0.5894249766165914,
+              "support": 3
+            },
+            "10": {
+              "value": 0.601618015540078,
+              "support": 3
+            },
+            "20": {
+              "value": 0.6320386858803966,
+              "support": 3
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.17777777777777778,
+              "support": 3
+            },
+            "3": {
+              "value": 0.24444444444444446,
+              "support": 3
+            },
+            "5": {
+              "value": 0.24444444444444446,
+              "support": 3
+            },
+            "10": {
+              "value": 0.3111111111111111,
+              "support": 3
+            },
+            "20": {
+              "value": 0.6444444444444444,
+              "support": 3
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 3
+            },
+            "3": {
+              "value": 1,
+              "support": 3
+            },
+            "5": {
+              "value": 0.9333333333333332,
+              "support": 3
+            },
+            "10": {
+              "value": 0.8000000000000002,
+              "support": 3
+            },
+            "20": {
+              "value": 0.6,
+              "support": 3
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 0,
+            "20": 1
+          },
+          "mrr": {
+            "value": 0.6875,
+            "support": 3
+          },
+          "bpref": {
+            "value": 0.24444444444444446,
+            "support": 3
+          },
+          "noResultAccuracy": null
+        },
+        "no_result": {
+          "queries": 5,
+          "rankingQueries": 3,
+          "ndcg": {
+            "1": {
+              "value": 0.25,
+              "support": 4
+            },
+            "3": {
+              "value": 0.28818327780967334,
+              "support": 4
+            },
+            "5": {
+              "value": 0.3014191658633164,
+              "support": 4
+            },
+            "10": {
+              "value": 0.35773783308199164,
+              "support": 4
+            },
+            "20": {
+              "value": 0.4302076667053032,
+              "support": 4
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0,
+              "support": 3
+            },
+            "3": {
+              "value": 0,
+              "support": 3
+            },
+            "5": {
+              "value": 0,
+              "support": 3
+            },
+            "10": {
+              "value": 0,
+              "support": 3
+            },
+            "20": {
+              "value": 0.6666666666666666,
+              "support": 3
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 5
+            },
+            "3": {
+              "value": 0.8666666666666666,
+              "support": 5
+            },
+            "5": {
+              "value": 0.8400000000000001,
+              "support": 5
+            },
+            "10": {
+              "value": 0.6399999999999999,
+              "support": 5
+            },
+            "20": {
+              "value": 0.4800000000000001,
+              "support": 5
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 0,
+            "20": 0
+          },
+          "mrr": {
+            "value": 0.04882154882154882,
+            "support": 3
+          },
+          "bpref": {
+            "value": 0,
+            "support": 3
+          },
+          "noResultAccuracy": 0
+        }
+      }
+    },
+    "hybrid": {
+      "primary": {
+        "ndcg_at_10": {
+          "value": 0.7240755954782977,
+          "support": 49
+        },
+        "judged_at_10": {
+          "value": 0.6619999999999999,
+          "support": 50
+        },
+        "mrr": {
+          "value": 0.8441342405158195,
+          "support": 48
+        },
+        "bpref": {
+          "value": 0.6907428331611571,
+          "support": 48
+        }
+      },
+      "secondary": {
+        "recall_at_20": {
+          "value": 0.879492845117845,
+          "support": 48
+        },
+        "violations_at_10": 17,
+        "no_result_accuracy": 0,
+        "has_result_rate": 1,
+        "latency_ms": {
+          "p50": 139,
+          "p95": 398,
+          "p99": 4073,
+          "mean": 242.64
+        }
+      },
+      "by_query_class": {
+        "capability": {
+          "queries": 15,
+          "rankingQueries": 15,
+          "ndcg": {
+            "1": {
+              "value": 0.8571428571428572,
+              "support": 15
+            },
+            "3": {
+              "value": 0.8231054501480217,
+              "support": 15
+            },
+            "5": {
+              "value": 0.805078099045826,
+              "support": 15
+            },
+            "10": {
+              "value": 0.7986814096283882,
+              "support": 15
+            },
+            "20": {
+              "value": 0.8336601013745862,
+              "support": 15
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.4838383838383838,
+              "support": 15
+            },
+            "3": {
+              "value": 0.695959595959596,
+              "support": 15
+            },
+            "5": {
+              "value": 0.802020202020202,
+              "support": 15
+            },
+            "10": {
+              "value": 0.8469696969696969,
+              "support": 15
+            },
+            "20": {
+              "value": 0.9303030303030303,
+              "support": 15
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 15
+            },
+            "3": {
+              "value": 0.9555555555555555,
+              "support": 15
+            },
+            "5": {
+              "value": 0.8666666666666667,
+              "support": 15
+            },
+            "10": {
+              "value": 0.7733333333333334,
+              "support": 15
+            },
+            "20": {
+              "value": 0.6300000000000001,
+              "support": 15
+            }
+          },
+          "violations": {
+            "1": 1,
+            "3": 2,
+            "5": 4,
+            "10": 6,
+            "20": 16
+          },
+          "mrr": {
+            "value": 0.95,
+            "support": 15
+          },
+          "bpref": {
+            "value": 0.7343816957453321,
+            "support": 15
+          },
+          "noResultAccuracy": null
+        },
+        "semantic": {
+          "queries": 7,
+          "rankingQueries": 7,
+          "ndcg": {
+            "1": {
+              "value": 0.9183673469387755,
+              "support": 7
+            },
+            "3": {
+              "value": 0.6694868350898167,
+              "support": 7
+            },
+            "5": {
+              "value": 0.6672072156642138,
+              "support": 7
+            },
+            "10": {
+              "value": 0.6371701864886986,
+              "support": 7
+            },
+            "20": {
+              "value": 0.6667327376581945,
+              "support": 7
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.4027777777777778,
+              "support": 7
+            },
+            "3": {
+              "value": 0.503968253968254,
+              "support": 7
+            },
+            "5": {
+              "value": 0.6428571428571429,
+              "support": 7
+            },
+            "10": {
+              "value": 0.6964285714285714,
+              "support": 7
+            },
+            "20": {
+              "value": 0.7301587301587302,
+              "support": 7
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 7
+            },
+            "3": {
+              "value": 0.9523809523809524,
+              "support": 7
+            },
+            "5": {
+              "value": 0.8857142857142856,
+              "support": 7
+            },
+            "10": {
+              "value": 0.7,
+              "support": 7
+            },
+            "20": {
+              "value": 0.5857142857142857,
+              "support": 7
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 4,
+            "20": 7
+          },
+          "mrr": {
+            "value": 1,
+            "support": 7
+          },
+          "bpref": {
+            "value": 0.59375,
+            "support": 7
+          },
+          "noResultAccuracy": null
+        },
+        "structured": {
+          "queries": 7,
+          "rankingQueries": 7,
+          "ndcg": {
+            "1": {
+              "value": 0.7142857142857143,
+              "support": 7
+            },
+            "3": {
+              "value": 0.7362296195809671,
+              "support": 7
+            },
+            "5": {
+              "value": 0.727918213164151,
+              "support": 7
+            },
+            "10": {
+              "value": 0.714364715672425,
+              "support": 7
+            },
+            "20": {
+              "value": 0.7304035907784092,
+              "support": 7
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.7142857142857143,
+              "support": 7
+            },
+            "3": {
+              "value": 0.8571428571428571,
+              "support": 7
+            },
+            "5": {
+              "value": 0.8571428571428571,
+              "support": 7
+            },
+            "10": {
+              "value": 0.8571428571428571,
+              "support": 7
+            },
+            "20": {
+              "value": 0.8571428571428571,
+              "support": 7
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 0.7142857142857143,
+              "support": 7
+            },
+            "3": {
+              "value": 0.5714285714285714,
+              "support": 7
+            },
+            "5": {
+              "value": 0.5428571428571429,
+              "support": 7
+            },
+            "10": {
+              "value": 0.39999999999999997,
+              "support": 7
+            },
+            "20": {
+              "value": 0.34285714285714286,
+              "support": 7
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 0,
+            "20": 4
+          },
+          "mrr": {
+            "value": 0.7857142857142857,
+            "support": 7
+          },
+          "bpref": {
+            "value": 0.8571428571428571,
+            "support": 7
+          },
+          "noResultAccuracy": null
+        },
+        "price_category": {
+          "queries": 4,
+          "rankingQueries": 4,
+          "ndcg": {
+            "1": {
+              "value": 0.75,
+              "support": 4
+            },
+            "3": {
+              "value": 0.8592030591045134,
+              "support": 4
+            },
+            "5": {
+              "value": 0.828619421986068,
+              "support": 4
+            },
+            "10": {
+              "value": 0.8365710900110431,
+              "support": 4
+            },
+            "20": {
+              "value": 0.8496184260258994,
+              "support": 4
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.625,
+              "support": 4
+            },
+            "3": {
+              "value": 1,
+              "support": 4
+            },
+            "5": {
+              "value": 1,
+              "support": 4
+            },
+            "10": {
+              "value": 1,
+              "support": 4
+            },
+            "20": {
+              "value": 1,
+              "support": 4
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 0.75,
+              "support": 4
+            },
+            "3": {
+              "value": 0.6666666666666666,
+              "support": 4
+            },
+            "5": {
+              "value": 0.55,
+              "support": 4
+            },
+            "10": {
+              "value": 0.35000000000000003,
+              "support": 4
+            },
+            "20": {
+              "value": 0.30000000000000004,
+              "support": 4
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 1,
+            "10": 2,
+            "20": 3
+          },
+          "mrr": {
+            "value": 0.875,
+            "support": 4
+          },
+          "bpref": {
+            "value": 1,
+            "support": 4
+          },
+          "noResultAccuracy": null
+        },
+        "mcp": {
+          "queries": 5,
+          "rankingQueries": 5,
+          "ndcg": {
+            "1": {
+              "value": 0.8,
+              "support": 5
+            },
+            "3": {
+              "value": 0.8963360499647633,
+              "support": 5
+            },
+            "5": {
+              "value": 0.8868940667927993,
+              "support": 5
+            },
+            "10": {
+              "value": 0.8868940667927993,
+              "support": 5
+            },
+            "20": {
+              "value": 0.8988152213106563,
+              "support": 5
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.8,
+              "support": 5
+            },
+            "3": {
+              "value": 1,
+              "support": 5
+            },
+            "5": {
+              "value": 1,
+              "support": 5
+            },
+            "10": {
+              "value": 1,
+              "support": 5
+            },
+            "20": {
+              "value": 1,
+              "support": 5
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 0.8,
+              "support": 5
+            },
+            "3": {
+              "value": 0.7999999999999999,
+              "support": 5
+            },
+            "5": {
+              "value": 0.8,
+              "support": 5
+            },
+            "10": {
+              "value": 0.68,
+              "support": 5
+            },
+            "20": {
+              "value": 0.51,
+              "support": 5
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 2,
+            "20": 4
+          },
+          "mrr": {
+            "value": 0.9,
+            "support": 5
+          },
+          "bpref": {
+            "value": 1,
+            "support": 5
+          },
+          "noResultAccuracy": null
+        },
+        "adversarial": {
+          "queries": 4,
+          "rankingQueries": 4,
+          "ndcg": {
+            "1": {
+              "value": 0.7857142857142857,
+              "support": 4
+            },
+            "3": {
+              "value": 0.7774202051714909,
+              "support": 4
+            },
+            "5": {
+              "value": 0.7600615092999627,
+              "support": 4
+            },
+            "10": {
+              "value": 0.7290925294122103,
+              "support": 4
+            },
+            "20": {
+              "value": 0.7511080638939478,
+              "support": 4
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.3229166666666667,
+              "support": 4
+            },
+            "3": {
+              "value": 0.4458333333333333,
+              "support": 4
+            },
+            "5": {
+              "value": 0.55,
+              "support": 4
+            },
+            "10": {
+              "value": 0.68125,
+              "support": 4
+            },
+            "20": {
+              "value": 0.7541666666666667,
+              "support": 4
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 4
+            },
+            "3": {
+              "value": 1,
+              "support": 4
+            },
+            "5": {
+              "value": 0.9,
+              "support": 4
+            },
+            "10": {
+              "value": 0.775,
+              "support": 4
+            },
+            "20": {
+              "value": 0.6625,
+              "support": 4
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 2,
+            "20": 3
+          },
+          "mrr": {
+            "value": 0.875,
+            "support": 4
+          },
+          "bpref": {
+            "value": 0.5525868055555556,
+            "support": 4
+          },
+          "noResultAccuracy": null
+        },
+        "cold_start": {
+          "queries": 3,
+          "rankingQueries": 3,
+          "ndcg": {
+            "1": {
+              "value": 0.7777777777777777,
+              "support": 3
+            },
+            "3": {
+              "value": 0.580895197023548,
+              "support": 3
+            },
+            "5": {
+              "value": 0.6391899020575379,
+              "support": 3
+            },
+            "10": {
+              "value": 0.6008781077229232,
+              "support": 3
+            },
+            "20": {
+              "value": 0.6684563232060796,
+              "support": 3
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.17777777777777778,
+              "support": 3
+            },
+            "3": {
+              "value": 0.17777777777777778,
+              "support": 3
+            },
+            "5": {
+              "value": 0.3111111111111111,
+              "support": 3
+            },
+            "10": {
+              "value": 0.3111111111111111,
+              "support": 3
+            },
+            "20": {
+              "value": 0.7111111111111111,
+              "support": 3
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 3
+            },
+            "3": {
+              "value": 1,
+              "support": 3
+            },
+            "5": {
+              "value": 0.9333333333333332,
+              "support": 3
+            },
+            "10": {
+              "value": 0.8333333333333334,
+              "support": 3
+            },
+            "20": {
+              "value": 0.6333333333333333,
+              "support": 3
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 0,
+            "20": 0
+          },
+          "mrr": {
+            "value": 0.6842105263157894,
+            "support": 3
+          },
+          "bpref": {
+            "value": 0.25777777777777783,
+            "support": 3
+          },
+          "noResultAccuracy": null
+        },
+        "no_result": {
+          "queries": 5,
+          "rankingQueries": 3,
+          "ndcg": {
+            "1": {
+              "value": 0.25,
+              "support": 4
+            },
+            "3": {
+              "value": 0.28818327780967334,
+              "support": 4
+            },
+            "5": {
+              "value": 0.28187506142893703,
+              "support": 4
+            },
+            "10": {
+              "value": 0.38474489601427936,
+              "support": 4
+            },
+            "20": {
+              "value": 0.47821964396870764,
+              "support": 4
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0,
+              "support": 3
+            },
+            "3": {
+              "value": 0,
+              "support": 3
+            },
+            "5": {
+              "value": 0,
+              "support": 3
+            },
+            "10": {
+              "value": 0,
+              "support": 3
+            },
+            "20": {
+              "value": 1,
+              "support": 3
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 5
+            },
+            "3": {
+              "value": 0.9333333333333332,
+              "support": 5
+            },
+            "5": {
+              "value": 0.8400000000000001,
+              "support": 5
+            },
+            "10": {
+              "value": 0.6799999999999999,
+              "support": 5
+            },
+            "20": {
+              "value": 0.54,
+              "support": 5
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 1,
+            "20": 1
+          },
+          "mrr": {
+            "value": 0.07193732193732194,
+            "support": 3
+          },
+          "bpref": {
+            "value": 0,
+            "support": 3
+          },
+          "noResultAccuracy": 0
+        }
+      }
+    },
+    "bm25": {
+      "primary": {
+        "ndcg_at_10": {
+          "value": 0.6744173375013968,
+          "support": 49
+        },
+        "judged_at_10": {
+          "value": 1,
+          "support": 50
+        },
+        "mrr": {
+          "value": 0.7397569444444444,
+          "support": 48
+        },
+        "bpref": {
+          "value": 0.5790439578338094,
+          "support": 48
+        }
+      },
+      "secondary": {
+        "recall_at_20": {
+          "value": 0.7943602693602694,
+          "support": 48
+        },
+        "violations_at_10": 34,
+        "no_result_accuracy": 0,
+        "has_result_rate": 1,
+        "latency_ms": {
+          "p50": 0.473156999999901,
+          "p95": 3.4382140000000163,
+          "p99": 4.975445000000036,
+          "mean": 0.7429890399999977
+        }
+      },
+      "by_query_class": {
+        "capability": {
+          "queries": 15,
+          "rankingQueries": 15,
+          "ndcg": {
+            "1": {
+              "value": 0.9238095238095239,
+              "support": 15
+            },
+            "3": {
+              "value": 0.8197653092355035,
+              "support": 15
+            },
+            "5": {
+              "value": 0.8296001840121225,
+              "support": 15
+            },
+            "10": {
+              "value": 0.8273747794857997,
+              "support": 15
+            },
+            "20": {
+              "value": 0.8361808193627858,
+              "support": 15
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.5005050505050505,
+              "support": 15
+            },
+            "3": {
+              "value": 0.6626262626262627,
+              "support": 15
+            },
+            "5": {
+              "value": 0.7853535353535352,
+              "support": 15
+            },
+            "10": {
+              "value": 0.8474747474747474,
+              "support": 15
+            },
+            "20": {
+              "value": 0.8656565656565657,
+              "support": 15
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 15
+            },
+            "3": {
+              "value": 1,
+              "support": 15
+            },
+            "5": {
+              "value": 1,
+              "support": 15
+            },
+            "10": {
+              "value": 1,
+              "support": 15
+            },
+            "20": {
+              "value": 1,
+              "support": 15
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 4,
+            "5": 5,
+            "10": 11,
+            "20": 24
+          },
+          "mrr": {
+            "value": 1,
+            "support": 15
+          },
+          "bpref": {
+            "value": 0.7590029078665442,
+            "support": 15
+          },
+          "noResultAccuracy": null
+        },
+        "semantic": {
+          "queries": 7,
+          "rankingQueries": 7,
+          "ndcg": {
+            "1": {
+              "value": 0.14285714285714285,
+              "support": 7
+            },
+            "3": {
+              "value": 0.24035867028611183,
+              "support": 7
+            },
+            "5": {
+              "value": 0.22133004803304177,
+              "support": 7
+            },
+            "10": {
+              "value": 0.29554114457165814,
+              "support": 7
+            },
+            "20": {
+              "value": 0.31994889029126566,
+              "support": 7
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.14285714285714285,
+              "support": 7
+            },
+            "3": {
+              "value": 0.22420634920634921,
+              "support": 7
+            },
+            "5": {
+              "value": 0.22420634920634921,
+              "support": 7
+            },
+            "10": {
+              "value": 0.4821428571428571,
+              "support": 7
+            },
+            "20": {
+              "value": 0.5813492063492064,
+              "support": 7
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 7
+            },
+            "3": {
+              "value": 1,
+              "support": 7
+            },
+            "5": {
+              "value": 1,
+              "support": 7
+            },
+            "10": {
+              "value": 1,
+              "support": 7
+            },
+            "20": {
+              "value": 1,
+              "support": 7
+            }
+          },
+          "violations": {
+            "1": 1,
+            "3": 2,
+            "5": 6,
+            "10": 8,
+            "20": 19
+          },
+          "mrr": {
+            "value": 0.3988095238095238,
+            "support": 7
+          },
+          "bpref": {
+            "value": 0.2232694003527337,
+            "support": 7
+          },
+          "noResultAccuracy": null
+        },
+        "structured": {
+          "queries": 7,
+          "rankingQueries": 7,
+          "ndcg": {
+            "1": {
+              "value": 0.761904761904762,
+              "support": 7
+            },
+            "3": {
+              "value": 0.8160414883575928,
+              "support": 7
+            },
+            "5": {
+              "value": 0.8160414883575928,
+              "support": 7
+            },
+            "10": {
+              "value": 0.8065927778323047,
+              "support": 7
+            },
+            "20": {
+              "value": 0.8394209065456743,
+              "support": 7
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.7142857142857143,
+              "support": 7
+            },
+            "3": {
+              "value": 0.8571428571428571,
+              "support": 7
+            },
+            "5": {
+              "value": 0.8571428571428571,
+              "support": 7
+            },
+            "10": {
+              "value": 0.8571428571428571,
+              "support": 7
+            },
+            "20": {
+              "value": 1,
+              "support": 7
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 7
+            },
+            "3": {
+              "value": 1,
+              "support": 7
+            },
+            "5": {
+              "value": 1,
+              "support": 7
+            },
+            "10": {
+              "value": 1,
+              "support": 7
+            },
+            "20": {
+              "value": 1,
+              "support": 7
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 1,
+            "20": 12
+          },
+          "mrr": {
+            "value": 0.7738095238095238,
+            "support": 7
+          },
+          "bpref": {
+            "value": 0.7142857142857143,
+            "support": 7
+          },
+          "noResultAccuracy": null
+        },
+        "price_category": {
+          "queries": 4,
+          "rankingQueries": 4,
+          "ndcg": {
+            "1": {
+              "value": 0.5,
+              "support": 4
+            },
+            "3": {
+              "value": 0.7235397601090339,
+              "support": 4
+            },
+            "5": {
+              "value": 0.7194728283775551,
+              "support": 4
+            },
+            "10": {
+              "value": 0.7501338523942811,
+              "support": 4
+            },
+            "20": {
+              "value": 0.759907681922156,
+              "support": 4
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.375,
+              "support": 4
+            },
+            "3": {
+              "value": 0.875,
+              "support": 4
+            },
+            "5": {
+              "value": 0.875,
+              "support": 4
+            },
+            "10": {
+              "value": 1,
+              "support": 4
+            },
+            "20": {
+              "value": 1,
+              "support": 4
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 4
+            },
+            "3": {
+              "value": 1,
+              "support": 4
+            },
+            "5": {
+              "value": 1,
+              "support": 4
+            },
+            "10": {
+              "value": 1,
+              "support": 4
+            },
+            "20": {
+              "value": 1,
+              "support": 4
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 2,
+            "10": 4,
+            "20": 9
+          },
+          "mrr": {
+            "value": 0.75,
+            "support": 4
+          },
+          "bpref": {
+            "value": 0.5625,
+            "support": 4
+          },
+          "noResultAccuracy": null
+        },
+        "mcp": {
+          "queries": 5,
+          "rankingQueries": 5,
+          "ndcg": {
+            "1": {
+              "value": 1,
+              "support": 5
+            },
+            "3": {
+              "value": 0.9566627787832251,
+              "support": 5
+            },
+            "5": {
+              "value": 0.9480014643250734,
+              "support": 5
+            },
+            "10": {
+              "value": 0.9547540482630833,
+              "support": 5
+            },
+            "20": {
+              "value": 0.9738495241502785,
+              "support": 5
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 1,
+              "support": 5
+            },
+            "3": {
+              "value": 1,
+              "support": 5
+            },
+            "5": {
+              "value": 1,
+              "support": 5
+            },
+            "10": {
+              "value": 1,
+              "support": 5
+            },
+            "20": {
+              "value": 1,
+              "support": 5
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 5
+            },
+            "3": {
+              "value": 1,
+              "support": 5
+            },
+            "5": {
+              "value": 1,
+              "support": 5
+            },
+            "10": {
+              "value": 1,
+              "support": 5
+            },
+            "20": {
+              "value": 1,
+              "support": 5
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 1,
+            "10": 2,
+            "20": 5
+          },
+          "mrr": {
+            "value": 1,
+            "support": 5
+          },
+          "bpref": {
+            "value": 1,
+            "support": 5
+          },
+          "noResultAccuracy": null
+        },
+        "adversarial": {
+          "queries": 4,
+          "rankingQueries": 4,
+          "ndcg": {
+            "1": {
+              "value": 0.8571428571428571,
+              "support": 4
+            },
+            "3": {
+              "value": 0.7827368842363619,
+              "support": 4
+            },
+            "5": {
+              "value": 0.7664093925887867,
+              "support": 4
+            },
+            "10": {
+              "value": 0.7360841987756297,
+              "support": 4
+            },
+            "20": {
+              "value": 0.7883882286592786,
+              "support": 4
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0.3729166666666667,
+              "support": 4
+            },
+            "3": {
+              "value": 0.4770833333333333,
+              "support": 4
+            },
+            "5": {
+              "value": 0.6,
+              "support": 4
+            },
+            "10": {
+              "value": 0.6729166666666666,
+              "support": 4
+            },
+            "20": {
+              "value": 0.86875,
+              "support": 4
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 4
+            },
+            "3": {
+              "value": 1,
+              "support": 4
+            },
+            "5": {
+              "value": 1,
+              "support": 4
+            },
+            "10": {
+              "value": 1,
+              "support": 4
+            },
+            "20": {
+              "value": 1,
+              "support": 4
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 1,
+            "10": 3,
+            "20": 5
+          },
+          "mrr": {
+            "value": 1,
+            "support": 4
+          },
+          "bpref": {
+            "value": 0.6190451388888888,
+            "support": 4
+          },
+          "noResultAccuracy": null
+        },
+        "cold_start": {
+          "queries": 3,
+          "rankingQueries": 3,
+          "ndcg": {
+            "1": {
+              "value": 0.2222222222222222,
+              "support": 3
+            },
+            "3": {
+              "value": 0.22409124471466058,
+              "support": 3
+            },
+            "5": {
+              "value": 0.2510199350539235,
+              "support": 3
+            },
+            "10": {
+              "value": 0.3183231957714047,
+              "support": 3
+            },
+            "20": {
+              "value": 0.31557307813998764,
+              "support": 3
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0,
+              "support": 3
+            },
+            "3": {
+              "value": 0,
+              "support": 3
+            },
+            "5": {
+              "value": 0.06666666666666667,
+              "support": 3
+            },
+            "10": {
+              "value": 0.19999999999999998,
+              "support": 3
+            },
+            "20": {
+              "value": 0.19999999999999998,
+              "support": 3
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 3
+            },
+            "3": {
+              "value": 1,
+              "support": 3
+            },
+            "5": {
+              "value": 1,
+              "support": 3
+            },
+            "10": {
+              "value": 1,
+              "support": 3
+            },
+            "20": {
+              "value": 1,
+              "support": 3
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 0,
+            "5": 0,
+            "10": 1,
+            "20": 2
+          },
+          "mrr": {
+            "value": 0.06666666666666667,
+            "support": 3
+          },
+          "bpref": {
+            "value": 0.03999999999999999,
+            "support": 3
+          },
+          "noResultAccuracy": null
+        },
+        "no_result": {
+          "queries": 5,
+          "rankingQueries": 3,
+          "ndcg": {
+            "1": {
+              "value": 0.08333333333333333,
+              "support": 4
+            },
+            "3": {
+              "value": 0.21825150187581485,
+              "support": 4
+            },
+            "5": {
+              "value": 0.2517694442279404,
+              "support": 4
+            },
+            "10": {
+              "value": 0.31181958878611,
+              "support": 4
+            },
+            "20": {
+              "value": 0.3269427079197576,
+              "support": 4
+            }
+          },
+          "recall": {
+            "1": {
+              "value": 0,
+              "support": 3
+            },
+            "3": {
+              "value": 0,
+              "support": 3
+            },
+            "5": {
+              "value": 0,
+              "support": 3
+            },
+            "10": {
+              "value": 0.3333333333333333,
+              "support": 3
+            },
+            "20": {
+              "value": 0.3333333333333333,
+              "support": 3
+            }
+          },
+          "judged": {
+            "1": {
+              "value": 1,
+              "support": 5
+            },
+            "3": {
+              "value": 1,
+              "support": 5
+            },
+            "5": {
+              "value": 1,
+              "support": 5
+            },
+            "10": {
+              "value": 1,
+              "support": 5
+            },
+            "20": {
+              "value": 1,
+              "support": 5
+            }
+          },
+          "violations": {
+            "1": 0,
+            "3": 1,
+            "5": 2,
+            "10": 4,
+            "20": 7
+          },
+          "mrr": {
+            "value": 0.03333333333333333,
+            "support": 3
+          },
+          "bpref": {
+            "value": 0,
+            "support": 3
+          },
+          "noResultAccuracy": 0
+        }
+      }
+    }
+  },
+  "significance": {
+    "semantic": {
+      "ndcg_at_10": {
+        "metric": "semantic vs baseline ndcg_at_10",
+        "n": 49,
+        "baselineMean": 0.5333790845443516,
+        "candidateMean": 0.715954156486589,
+        "baselineCI": {
+          "point": 0.5333790845443516,
+          "lower": 0.4417628870170624,
+          "upper": 0.6230640781929866,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 49,
+          "bias": -0.000011720044603258373,
+          "standardError": 0.04656387008396955
+        },
+        "candidateCI": {
+          "point": 0.715954156486589,
+          "lower": 0.6437995526209674,
+          "upper": 0.7826778534055521,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 49,
+          "bias": -0.00009391297955407829,
+          "standardError": 0.035449395803422566
+        },
+        "difference": {
+          "point": 0.18257507194223754,
+          "lower": 0.09508239313020996,
+          "upper": 0.2733472882483843,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 49,
+          "bias": -0.00026299349314384823,
+          "standardError": 0.04554796100793691
+        },
+        "permutation": {
+          "observedDiff": 0.18257507194223754,
+          "meanBaseline": 0.5333790845443516,
+          "meanCandidate": 0.715954156486589,
+          "pValue": 0.00029997000299970003,
+          "n": 49,
+          "exact": false,
+          "iterations": 10000,
+          "alternative": "two-sided",
+          "ties": 4
+        },
+        "significant": true,
+        "alpha": 0.05,
+        "summary": "semantic vs baseline ndcg_at_10: 0.7160 vs 0.5334, diff 0.1826 (95% CI 0.0951 to 0.2733), p=0.0003, n=49. Significant."
+      },
+      "mrr": {
+        "metric": "semantic vs baseline mrr",
+        "n": 48,
+        "baselineMean": 0.6120881433381433,
+        "candidateMean": 0.8324784301346803,
+        "baselineCI": {
+          "point": 0.6120881433381433,
+          "lower": 0.487203884078884,
+          "upper": 0.7287878787878787,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": -0.0010655378186618103,
+          "standardError": 0.06157616394969237
+        },
+        "candidateCI": {
+          "point": 0.8324784301346803,
+          "lower": 0.7373079755892255,
+          "upper": 0.9178240740740741,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": -0.0010821614583194084,
+          "standardError": 0.046553190138012866
+        },
+        "difference": {
+          "point": 0.22039028679653686,
+          "lower": 0.11259995791245793,
+          "upper": 0.3323521675084175,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": -0.00030031272546912624,
+          "standardError": 0.056590118882853854
+        },
+        "permutation": {
+          "observedDiff": 0.22039028679653686,
+          "meanBaseline": 0.6120881433381433,
+          "meanCandidate": 0.8324784301346803,
+          "pValue": 0.0004999500049995,
+          "n": 48,
+          "exact": false,
+          "iterations": 10000,
+          "alternative": "two-sided",
+          "ties": 24
+        },
+        "significant": true,
+        "alpha": 0.05,
+        "summary": "semantic vs baseline mrr: 0.8325 vs 0.6121, diff 0.2204 (95% CI 0.1126 to 0.3324), p=0.0005, n=48. Significant."
+      },
+      "bpref": {
+        "metric": "semantic vs baseline bpref",
+        "n": 48,
+        "baselineMean": 0.506837703104275,
+        "candidateMean": 0.6837347193526172,
+        "baselineCI": {
+          "point": 0.506837703104275,
+          "lower": 0.38500256670237726,
+          "upper": 0.625690905264769,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": 0.0006553940414247839,
+          "standardError": 0.06131202089134854
+        },
+        "candidateCI": {
+          "point": 0.6837347193526172,
+          "lower": 0.5828377286118763,
+          "upper": 0.7835900434266913,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": 0.001494543936046644,
+          "standardError": 0.051510117227062134
+        },
+        "difference": {
+          "point": 0.17689701624834198,
+          "lower": 0.0718600302265075,
+          "upper": 0.29251929012345684,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": 0.0009270321284182426,
+          "standardError": 0.05641413324977386
+        },
+        "permutation": {
+          "observedDiff": 0.17689701624834198,
+          "meanBaseline": 0.506837703104275,
+          "meanCandidate": 0.6837347193526172,
+          "pValue": 0.0027997200279972004,
+          "n": 48,
+          "exact": false,
+          "iterations": 10000,
+          "alternative": "two-sided",
+          "ties": 22
+        },
+        "significant": true,
+        "alpha": 0.05,
+        "summary": "semantic vs baseline bpref: 0.6837 vs 0.5068, diff 0.1769 (95% CI 0.0719 to 0.2925), p=0.0028, n=48. Significant."
+      }
+    },
+    "hybrid": {
+      "ndcg_at_10": {
+        "metric": "hybrid vs baseline ndcg_at_10",
+        "n": 49,
+        "baselineMean": 0.5333790845443516,
+        "candidateMean": 0.7240755954782977,
+        "baselineCI": {
+          "point": 0.5333790845443516,
+          "lower": 0.4417628870170624,
+          "upper": 0.6230640781929866,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 49,
+          "bias": -0.000011720044603258373,
+          "standardError": 0.04656387008396955
+        },
+        "candidateCI": {
+          "point": 0.7240755954782977,
+          "lower": 0.6529468731735997,
+          "upper": 0.7889033672191137,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 49,
+          "bias": -0.00010182468469466244,
+          "standardError": 0.034863368939225224
+        },
+        "difference": {
+          "point": 0.19069651093394618,
+          "lower": 0.10482048722781077,
+          "upper": 0.2791057762724396,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 49,
+          "bias": -0.0002086910691182775,
+          "standardError": 0.04450697505582363
+        },
+        "permutation": {
+          "observedDiff": 0.19069651093394618,
+          "meanBaseline": 0.5333790845443516,
+          "meanCandidate": 0.7240755954782977,
+          "pValue": 0.00009999000099990002,
+          "n": 49,
+          "exact": false,
+          "iterations": 10000,
+          "alternative": "two-sided",
+          "ties": 5
+        },
+        "significant": true,
+        "alpha": 0.05,
+        "summary": "hybrid vs baseline ndcg_at_10: 0.7241 vs 0.5334, diff 0.1907 (95% CI 0.1048 to 0.2791), p=0.0001, n=49. Significant."
+      },
+      "mrr": {
+        "metric": "hybrid vs baseline mrr",
+        "n": 48,
+        "baselineMean": 0.6120881433381433,
+        "candidateMean": 0.8441342405158195,
+        "baselineCI": {
+          "point": 0.6120881433381433,
+          "lower": 0.487203884078884,
+          "upper": 0.7287878787878787,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": -0.0010655378186618103,
+          "standardError": 0.06157616394969237
+        },
+        "candidateCI": {
+          "point": 0.8441342405158195,
+          "lower": 0.7503842405158195,
+          "upper": 0.9282407407407408,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": -0.0011077968023708307,
+          "standardError": 0.045724060579066375
+        },
+        "difference": {
+          "point": 0.23204609717767619,
+          "lower": 0.128652500034079,
+          "upper": 0.3406083864965444,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": -0.00020891090573701976,
+          "standardError": 0.05456645606586855
+        },
+        "permutation": {
+          "observedDiff": 0.23204609717767619,
+          "meanBaseline": 0.6120881433381433,
+          "meanCandidate": 0.8441342405158195,
+          "pValue": 0.00039996000399960006,
+          "n": 48,
+          "exact": false,
+          "iterations": 10000,
+          "alternative": "two-sided",
+          "ties": 25
+        },
+        "significant": true,
+        "alpha": 0.05,
+        "summary": "hybrid vs baseline mrr: 0.8441 vs 0.6121, diff 0.2320 (95% CI 0.1287 to 0.3406), p=0.0004, n=48. Significant."
+      },
+      "bpref": {
+        "metric": "hybrid vs baseline bpref",
+        "n": 48,
+        "baselineMean": 0.506837703104275,
+        "candidateMean": 0.6907428331611571,
+        "baselineCI": {
+          "point": 0.506837703104275,
+          "lower": 0.38500256670237726,
+          "upper": 0.625690905264769,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": 0.0006553940414247839,
+          "standardError": 0.06131202089134854
+        },
+        "candidateCI": {
+          "point": 0.6907428331611571,
+          "lower": 0.5898074255815734,
+          "upper": 0.7903284143518517,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": 0.001505370610698109,
+          "standardError": 0.05150922690196247
+        },
+        "difference": {
+          "point": 0.18390513005688192,
+          "lower": 0.08116336582364043,
+          "upper": 0.298278045607591,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": 0.0009029623180990265,
+          "standardError": 0.05516668590094434
+        },
+        "permutation": {
+          "observedDiff": 0.18390513005688192,
+          "meanBaseline": 0.506837703104275,
+          "meanCandidate": 0.6907428331611571,
+          "pValue": 0.0010998900109989002,
+          "n": 48,
+          "exact": false,
+          "iterations": 10000,
+          "alternative": "two-sided",
+          "ties": 23
+        },
+        "significant": true,
+        "alpha": 0.05,
+        "summary": "hybrid vs baseline bpref: 0.6907 vs 0.5068, diff 0.1839 (95% CI 0.0812 to 0.2983), p=0.0011, n=48. Significant."
+      }
+    },
+    "bm25": {
+      "ndcg_at_10": {
+        "metric": "bm25 vs baseline ndcg_at_10",
+        "n": 49,
+        "baselineMean": 0.5333790845443516,
+        "candidateMean": 0.6744173375013968,
+        "baselineCI": {
+          "point": 0.5333790845443516,
+          "lower": 0.4417628870170624,
+          "upper": 0.6230640781929866,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 49,
+          "bias": -0.000011720044603258373,
+          "standardError": 0.04656387008396955
+        },
+        "candidateCI": {
+          "point": 0.6744173375013968,
+          "lower": 0.5869695820149853,
+          "upper": 0.7580008041371626,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 49,
+          "bias": 0.000009720554957293182,
+          "standardError": 0.04361936073417695
+        },
+        "difference": {
+          "point": 0.14103825295704533,
+          "lower": 0.0754909003060135,
+          "upper": 0.2172861730167818,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 49,
+          "bias": -0.00022079320083423504,
+          "standardError": 0.03653543552541739
+        },
+        "permutation": {
+          "observedDiff": 0.14103825295704533,
+          "meanBaseline": 0.5333790845443516,
+          "meanCandidate": 0.6744173375013968,
+          "pValue": 0.00009999000099990002,
+          "n": 49,
+          "exact": false,
+          "iterations": 10000,
+          "alternative": "two-sided",
+          "ties": 8
+        },
+        "significant": true,
+        "alpha": 0.05,
+        "summary": "bm25 vs baseline ndcg_at_10: 0.6744 vs 0.5334, diff 0.1410 (95% CI 0.0755 to 0.2173), p=0.0001, n=49. Significant."
+      },
+      "mrr": {
+        "metric": "bm25 vs baseline mrr",
+        "n": 48,
+        "baselineMean": 0.6120881433381433,
+        "candidateMean": 0.7397569444444444,
+        "baselineCI": {
+          "point": 0.6120881433381433,
+          "lower": 0.487203884078884,
+          "upper": 0.7287878787878787,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": -0.0010655378186618103,
+          "standardError": 0.06157616394969237
+        },
+        "candidateCI": {
+          "point": 0.7397569444444444,
+          "lower": 0.6282986111111111,
+          "upper": 0.8449652777777777,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": -0.00013598958333338462,
+          "standardError": 0.054862371809983504
+        },
+        "difference": {
+          "point": 0.12766880110630113,
+          "lower": 0.03390151515151515,
+          "upper": 0.22843689874939876,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": -0.00008336722883603431,
+          "standardError": 0.049652832962156994
+        },
+        "permutation": {
+          "observedDiff": 0.12766880110630113,
+          "meanBaseline": 0.6120881433381433,
+          "meanCandidate": 0.7397569444444444,
+          "pValue": 0.0124987501249875,
+          "n": 48,
+          "exact": false,
+          "iterations": 10000,
+          "alternative": "two-sided",
+          "ties": 30
+        },
+        "significant": true,
+        "alpha": 0.05,
+        "summary": "bm25 vs baseline mrr: 0.7398 vs 0.6121, diff 0.1277 (95% CI 0.0339 to 0.2284), p=0.0125, n=48. Significant."
+      },
+      "bpref": {
+        "metric": "bm25 vs baseline bpref",
+        "n": 48,
+        "baselineMean": 0.506837703104275,
+        "candidateMean": 0.5790439578338094,
+        "baselineCI": {
+          "point": 0.506837703104275,
+          "lower": 0.38500256670237726,
+          "upper": 0.625690905264769,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": 0.0006553940414247839,
+          "standardError": 0.06131202089134854
+        },
+        "candidateCI": {
+          "point": 0.5790439578338094,
+          "lower": 0.45953494727366256,
+          "upper": 0.698795115241217,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": 0.0016376262223740667,
+          "standardError": 0.061039569589838714
+        },
+        "difference": {
+          "point": 0.0722062547295344,
+          "lower": -0.023035622427983554,
+          "upper": 0.18042095380360848,
+          "level": 0.95,
+          "iterations": 10000,
+          "n": 48,
+          "bias": 0.0008056686464283508,
+          "standardError": 0.05157049077792231
+        },
+        "permutation": {
+          "observedDiff": 0.0722062547295344,
+          "meanBaseline": 0.506837703104275,
+          "meanCandidate": 0.5790439578338094,
+          "pValue": 0.17948205179482052,
+          "n": 48,
+          "exact": false,
+          "iterations": 10000,
+          "alternative": "two-sided",
+          "ties": 28
+        },
+        "significant": false,
+        "alpha": 0.05,
+        "summary": "bm25 vs baseline bpref: 0.5790 vs 0.5068, diff 0.0722 (95% CI -0.0230 to 0.1804), p=0.1795, n=48. NOT significant at alpha=0.05; the interval includes 0."
+      }
+    }
+  },
+  "significance_reported": true,
+  "bm25_baseline": true,
+  "judged_at_10": {
+    "threshold": null,
+    "minimum_observed": 0.642,
+    "gate_passed": false
+  },
+  "judged_at_10_gate_passed": false,
+  "owner_rates": {
+    "reviewed": 1442,
+    "corrected": 0,
+    "rejected": 0,
+    "correction_rate": 0,
+    "rejection_rate": 0
+  },
+  "owner_rates_reported": true,
+  "limitations": [
+    "Synthetic corpus: resources and queries are agent-authored and human-reviewed, not live listings.",
+    "Shared-model limitation: most authors, graders, critics, and adjudicators may share one model family; fresh contexts do not eliminate correlated model bias or create independent human ground truth.",
+    "Single-ecosystem limitation: the benchmark covers Stellar, while real x402 traffic is predominantly EVM and Solana.",
+    "The `upto` payment scheme is deliberately oversampled by roughly 50× relative to the sampled live ecosystem.",
+    "MCP resources are deliberately overrepresented: 15 benchmark resources versus zero in the 14,669-listing live sample.",
+    "Judgments are incomplete; recall is understated, judged@k is reported, and bpref is preferred.",
+    "The release set has 50 queries, so small effects may not reach statistical significance.",
+    "There is no click or conversion validation until production traffic accrues."
+  ],
+  "status": "draft_pending_owner_review"
+}
