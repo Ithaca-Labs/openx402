@@ -6,7 +6,13 @@ import * as THREE from "three";
 import styles from "./initia-landing.module.css";
 
 const GLYPHS = " .:xX|0#";
-const MAX_LINKS = 16;
+const LINK_LAYOUT = [
+  { position: [-4.3, -0.65, 0.35], rotation: [0.45, -0.08] },
+  { position: [-2.15, 0.25, -0.5], rotation: [-0.58, 0.05] },
+  { position: [0, -0.45, 0.55], rotation: [0.52, -0.03] },
+  { position: [2.15, 0.4, -0.48], rotation: [-0.55, 0.06] },
+  { position: [4.3, -0.2, 0.35], rotation: [0.48, -0.04] },
+] as const;
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -77,28 +83,19 @@ function createGlyphAtlas() {
 
 function createChain() {
   const group = new THREE.Group();
-  const geometry = new THREE.TorusGeometry(0.65, 0.14, 8, 20);
-  geometry.scale(1.45, 1, 1);
+  const geometry = new THREE.TorusGeometry(0.65, 0.21, 8, 20);
+  geometry.scale(1.55, 1, 1);
 
   const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
-  const links: THREE.Mesh[] = [];
-  const midpoint = (MAX_LINKS - 1) / 2;
-
-  for (let index = 0; index < MAX_LINKS; index += 1) {
-    const offset = index - midpoint;
+  LINK_LAYOUT.forEach(({ position, rotation }) => {
     const link = new THREE.Mesh(geometry, material);
-    link.position.set(
-      offset * 1.54,
-      Math.sin(offset * 0.78) * 0.42 + offset * 0.055,
-      Math.sin(offset * 0.64) * 0.24,
-    );
-    link.rotation.set(index % 2 ? Math.PI / 2 : 0, 0, Math.sin(offset * 0.4) * 0.07);
+    link.position.set(position[0], position[1], position[2]);
+    link.rotation.set(rotation[0], 0, rotation[1]);
     group.add(link);
-    links.push(link);
-  }
+  });
 
   group.rotation.z = -0.08;
-  return { geometry, group, links, material };
+  return { geometry, group, material };
 }
 
 export function AsciiChainBackground() {
@@ -134,7 +131,7 @@ export function AsciiChainBackground() {
     rimLight.position.set(7, -3, -5);
     scene.add(ambientLight, keyLight, rimLight);
 
-    const { geometry, group: chain, links, material } = createChain();
+    const { geometry, group: chain, material } = createChain();
     scene.add(chain);
 
     const atlas = createGlyphAtlas();
@@ -189,8 +186,7 @@ export function AsciiChainBackground() {
 
       const mobile = window.innerWidth < 640;
       const tablet = !mobile && window.innerWidth < 1024;
-      const cellSize = mobile ? 10 : tablet ? 8 : 7;
-      const linkCount = mobile ? 10 : tablet ? 13 : MAX_LINKS;
+      const cellSize = mobile ? 10 : 9;
       const pixelRatio = mobile
         ? 1
         : tablet
@@ -210,13 +206,8 @@ export function AsciiChainBackground() {
 
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      chain.scale.setScalar(mobile ? 1.8 : tablet ? 2.1 : 2.7);
-      chain.position.x = mobile ? -1.2 : -0.7;
-
-      const firstVisible = Math.floor((MAX_LINKS - linkCount) / 2);
-      links.forEach((link, index) => {
-        link.visible = index >= firstVisible && index < firstVisible + linkCount;
-      });
+      chain.scale.setScalar(mobile ? 1.9 : tablet ? 2.25 : 2.5);
+      chain.position.x = mobile ? -0.8 : -0.3;
 
       render(performance.now(), false);
     };
@@ -231,9 +222,9 @@ export function AsciiChainBackground() {
         pointerCurrent.lerp(pointerTarget, 0.03);
       }
 
-      chain.rotation.y = -0.24 + motionTime * 0.12 + pointerCurrent.y;
-      chain.rotation.x = -0.06 + Math.sin(motionTime * 0.25) * 0.08 + pointerCurrent.x;
-      chain.position.y = -1.25 + Math.sin(motionTime * 0.3) * 0.08;
+      chain.rotation.x = -0.12 + motionTime * 0.1 + pointerCurrent.x;
+      chain.rotation.y = -0.08;
+      chain.position.y = -0.9 + Math.sin(motionTime * 0.3) * 0.08;
 
       renderer.setRenderTarget(renderTarget);
       renderer.setClearColor(0x000000, 1);
