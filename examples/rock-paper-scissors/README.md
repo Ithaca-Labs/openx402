@@ -1,7 +1,7 @@
-# Fifteen cyclic Stellar x402 APIs
+# Seventeen cyclic Stellar x402 APIs
 
-One Express server exposes fifteen paid GET endpoints. Wallet `N` owns endpoint `N`;
-wallet `N-1` buys it, with wallet 15 buying wallet 1's endpoint. Payments use
+One Express server exposes seventeen paid GET endpoints. Wallet `N` owns endpoint `N`;
+wallet `N-1` buys it, with wallet 17 buying wallet 1's endpoint. Payments use
 canonical Circle USDC on Stellar testnet. Stable per-service prices range from
 `750` to `6600` atomic units (0.000075 to 0.00066 USDC).
 
@@ -14,7 +14,7 @@ npm run wallets:setup
 Secrets are written with owner-only permissions to gitignored
 `wallets.private.json`. The API server reads only `wallets.public.json`.
 
-Fund all fifteen addresses with testnet USDC using the Circle faucet, or distribute
+Fund all seventeen addresses with testnet USDC using the Circle faucet, or distribute
 one USDC to each from a disposable testnet wallet that already holds USDC:
 
 ```bash
@@ -54,7 +54,7 @@ SELLER_ORIGIN=https://YOUR-NGROK-DOMAIN.ngrok-free.app npm run client
 The client waits six seconds between successful settlements so facilitator
 channel sequences can advance. Set `INTER_REQUEST_DELAY_MS=0` for burst testing.
 
-The client requires all fifteen local secrets because each generated wallet signs one
+The client requires all seventeen local secrets because each generated wallet signs one
 purchase. It validates each advertised pay-to address, canonical USDC contract,
 amount, HTTP 200 response, and 64-character settlement transaction hash.
 
@@ -72,7 +72,7 @@ proofs and a persistent random target of 3–9 distinct buyers per service:
 SELLER_ORIGIN=https://YOUR-NGROK-DOMAIN.ngrok-free.app npm run stress
 ```
 
-The stress runner uses fifteen distinct per-service transaction targets totaling
-245. It picks each next endpoint randomly while guaranteeing the same endpoint
-never appears twice in a row. The persisted proof log makes the run resumable and
-keeps the successful order auditable.
+The current stress run uses varied per-service transaction targets totaling 92
+across all seventeen services. It picks each next endpoint randomly while
+guaranteeing the same endpoint never appears twice in a row. The persisted proof
+log makes the run resumable and keeps the successful order auditable.

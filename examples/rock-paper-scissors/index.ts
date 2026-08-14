@@ -17,8 +17,8 @@ const WALLETS_FILE = fileURLToPath(new URL("./wallets.public.json", import.meta.
 type PublicWallet = { id: number; address: string };
 
 const wallets = JSON.parse(readFileSync(WALLETS_FILE, "utf8")) as PublicWallet[];
-if (wallets.length !== 15 || new Set(wallets.map(wallet => wallet.address)).size !== 15) {
-  throw new Error("wallets.public.json must contain fifteen distinct wallets; run npm run wallets:setup");
+if (wallets.length !== 17 || new Set(wallets.map(wallet => wallet.address)).size !== 17) {
+  throw new Error("wallets.public.json must contain seventeen distinct wallets; run npm run wallets:setup");
 }
 
 const definitions = [
@@ -37,6 +37,8 @@ const definitions = [
   ["/api/coordinate", "Atlas Point", "4600"],
   ["/api/mood", "Sentiment Echo", "2900"],
   ["/api/word", "Lexicon Drift", "6100"],
+  ["/api/gradient", "Spectrum Blend", "3400"],
+  ["/api/countdown", "Countdown Relay", "4800"],
 ] as const;
 
 const seller = createX402Seller({
@@ -105,6 +107,8 @@ const results: ReadonlyArray<() => unknown> = [
   () => ({ latitude: randomInt(-9000, 9001) / 100, longitude: randomInt(-18000, 18001) / 100 }),
   () => ["calm", "curious", "focused", "bright", "restless"][randomInt(5)]!,
   () => ["ember", "harbor", "lattice", "orbit", "willow"][randomInt(5)]!,
+  () => `linear-gradient(${randomInt(360)}deg, #${randomBytes(3).toString("hex")}, #${randomBytes(3).toString("hex")})`,
+  () => ({ seconds: randomInt(30, 3601), startedAt: new Date().toISOString() }),
 ];
 
 routes.forEach((route, index) => {

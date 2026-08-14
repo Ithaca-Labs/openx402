@@ -8,7 +8,8 @@ import { ShortAuthExactStellarScheme } from "./short-auth-exact.js";
 const NETWORK = "stellar:testnet" as const;
 const FACILITATOR_URL = "https://facilitator.stellarx402.xyz";
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
-const RUN_ID = "hosted-usdc-245-v1";
+const RUN_ID = "hosted-usdc-92-v1";
+const RUN_STARTED_AT = "2026-08-14T14:10:14Z";
 const SELLER_ORIGIN = process.env.SELLER_ORIGIN?.replace(/\/$/, "");
 const INTER_REQUEST_DELAY_MS = Number(process.env.INTER_REQUEST_DELAY_MS ?? 6_000);
 const WALLETS_FILE = fileURLToPath(new URL("./wallets.private.json", import.meta.url));
@@ -26,6 +27,7 @@ const paths = [
   "time", "uuid", "dice", "coin", "number",
   "color", "quote", "token", "status", "version",
   "entropy", "temperature", "coordinate", "mood", "word",
+  "gradient", "countdown",
 ] as const;
 type Path = typeof paths[number];
 const AMOUNTS: Record<Path, string> = {
@@ -44,28 +46,32 @@ const AMOUNTS: Record<Path, string> = {
   coordinate: "4600",
   mood: "2900",
   word: "6100",
+  gradient: "3400",
+  countdown: "4800",
 };
 const TARGETS: Record<Path, number> = {
-  time: 8,
-  uuid: 17,
-  dice: 16,
-  coin: 24,
-  number: 26,
-  color: 15,
-  quote: 11,
-  token: 9,
-  status: 28,
-  version: 22,
-  entropy: 10,
-  temperature: 21,
-  coordinate: 13,
-  mood: 7,
-  word: 18,
+  time: 6,
+  uuid: 7,
+  dice: 3,
+  coin: 8,
+  number: 5,
+  color: 6,
+  quote: 5,
+  token: 3,
+  status: 3,
+  version: 8,
+  entropy: 5,
+  temperature: 7,
+  coordinate: 4,
+  mood: 5,
+  word: 6,
+  gradient: 4,
+  countdown: 7,
 };
 const TOTAL_TRANSACTIONS = Object.values(TARGETS).reduce((sum, target) => sum + target, 0);
-if (TOTAL_TRANSACTIONS !== 245 || new Set(Object.values(TARGETS)).size !== paths.length ||
+if (TOTAL_TRANSACTIONS !== 92 || new Set(Object.values(TARGETS)).size < 4 ||
     Object.values(TARGETS).some(target => target < 3)) {
-  throw new Error("transaction targets must be fifteen distinct positive counts totaling 245");
+  throw new Error("transaction targets must be varied positive counts totaling 92");
 }
 type PrivateWallet = { id: number; address: string; secret: string };
 type Proof = {
@@ -92,9 +98,10 @@ type Inflight = {
 };
 type BuyerPlan = Record<Path, { target: number; buyers: string[] }>;
 type BuyerPlanFile = { runId: typeof RUN_ID; services: BuyerPlan };
+let previousRunPath: Path | undefined;
 
 const wallets = JSON.parse(await readFile(WALLETS_FILE, "utf8")) as PrivateWallet[];
-if (wallets.length !== paths.length) throw new Error("wallets.private.json must contain fifteen wallets");
+if (wallets.length !== paths.length) throw new Error("wallets.private.json must contain seventeen wallets");
 
 const wait = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
 
@@ -136,9 +143,11 @@ async function confirm(transaction: string): Promise<{ ledger: number; createdAt
 async function readProofs(): Promise<Proof[]> {
   try {
     const text = await readFile(PROOF_FILE, "utf8");
-    return text.split(/\r?\n/).filter(Boolean)
-      .map(line => JSON.parse(line) as Proof)
-      .filter(proof => proof.runId === RUN_ID);
+    const records = text.split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line) as Proof);
+    const firstCurrent = records.findIndex(proof => proof.runId === RUN_ID);
+    const previous = firstCurrent > 0 ? records[firstCurrent - 1] : firstCurrent === -1 ? records.at(-1) : undefined;
+    previousRunPath = paths.find(path => path === previous?.path);
+    return records.filter(proof => proof.runId === RUN_ID);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
     throw error;
@@ -185,6 +194,7 @@ async function importAnalytics(proofs: Proof[]): Promise<Proof[]> {
   const body = await response.json() as { items?: Array<Record<string, unknown>> };
   for (const event of body.items ?? []) {
     if (event.status !== "success" || typeof event.resource_url !== "string" || typeof event.transaction_hash !== "string") continue;
+    if (typeof event.occurred_at !== "string" || Date.parse(event.occurred_at) < Date.parse(RUN_STARTED_AT)) continue;
     const path = pathFromUrl(event.resource_url);
     if (!path || known.has(event.transaction_hash)) continue;
     const endpointIndex = paths.indexOf(path);
@@ -367,7 +377,7 @@ async function recoverSettled(inflight: Inflight): Promise<string | undefined> {
   }
 }
 
-async function createInflight(path: Path, buyerAddress: string): Promise<{ inflight: Inflight; httpClient: x402HTTPClient }> {
+async function createInflightAttempt(path: Path, buyerAddress: string): Promise<{ inflight: Inflight; httpClient: x402HTTPClient }> {
   const endpointIndex = paths.indexOf(path);
   const owner = wallets[endpointIndex]!;
   const buyer = wallets.find(wallet => wallet.address === buyerAddress);
@@ -391,6 +401,20 @@ async function createInflight(path: Path, buyerAddress: string): Promise<{ infli
   };
   await saveInflight(inflight);
   return { inflight, httpClient };
+}
+
+async function createInflight(path: Path, buyerAddress: string): Promise<{ inflight: Inflight; httpClient: x402HTTPClient }> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    try {
+      return await createInflightAttempt(path, buyerAddress);
+    } catch (error) {
+      lastError = error;
+      console.warn(JSON.stringify({ path, attempt, retrying: "payment_payload", error: String(error) }));
+      await wait(Math.min(attempt * 2_000, 10_000));
+    }
+  }
+  throw new Error(`${path}: could not create payment payload`, { cause: lastError });
 }
 
 async function clientForInflight(inflight: Inflight): Promise<x402HTTPClient> {
@@ -441,7 +465,7 @@ if (pending && imported.some(proof => proof.path === pending!.path && proof.buye
 }
 
 while (proofs.length < TOTAL_TRANSACTIONS) {
-  const path = pending?.path ?? chooseNextPath(counts, proofs.at(-1)?.path);
+  const path = pending?.path ?? chooseNextPath(counts, proofs.at(-1)?.path ?? previousRunPath);
   let httpClient: x402HTTPClient;
   if (pending) {
     httpClient = await clientForInflight(pending);
@@ -487,12 +511,15 @@ while (proofs.length < TOTAL_TRANSACTIONS) {
 }
 
 counts = validateProofs(proofs);
-if (proofs.length !== 245 || paths.some(path => (counts.get(path) ?? 0) !== TARGETS[path]) ||
+if (proofs.length !== 92 || paths.some(path => (counts.get(path) ?? 0) !== TARGETS[path]) ||
     paths.some(path => buyerCounts(proofs, path).size !== plan[path].target || !hasCurrentPriceProof(proofs, path))) {
   throw new Error("stress run did not reach its transaction and buyer targets");
 }
 if (proofs.some((proof, index) => index > 0 && proof.path === proofs[index - 1]!.path)) {
   throw new Error("stress run contains adjacent payments to the same endpoint");
+}
+if (previousRunPath && proofs[0]?.path === previousRunPath) {
+  throw new Error("stress run repeats the previous run's final endpoint");
 }
 console.log(JSON.stringify({
   status: "complete",

@@ -18,7 +18,7 @@ const FRIENDBOT_URL = "https://friendbot.stellar.org";
 const USDC_ISSUER = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5";
 const PRIVATE_FILE = fileURLToPath(new URL("./wallets.private.json", import.meta.url));
 const PUBLIC_FILE = fileURLToPath(new URL("./wallets.public.json", import.meta.url));
-const WALLET_COUNT = 15;
+const WALLET_COUNT = 17;
 const server = new Horizon.Server(HORIZON_URL);
 const usdc = new Asset("USDC", USDC_ISSUER);
 
