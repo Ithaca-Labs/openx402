@@ -8,8 +8,8 @@ import { ShortAuthExactStellarScheme } from "./short-auth-exact.js";
 const NETWORK = "stellar:testnet" as const;
 const FACILITATOR_URL = "https://facilitator.stellarx402.xyz";
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
-const RUN_ID = "hosted-usdc-92-v1";
-const RUN_STARTED_AT = "2026-08-14T14:10:14Z";
+const RUN_ID = "hosted-usdc-119-v1";
+const RUN_STARTED_AT = "2026-08-15T13:47:23Z";
 const SELLER_ORIGIN = process.env.SELLER_ORIGIN?.replace(/\/$/, "");
 const INTER_REQUEST_DELAY_MS = Number(process.env.INTER_REQUEST_DELAY_MS ?? 6_000);
 const WALLETS_FILE = fileURLToPath(new URL("./wallets.private.json", import.meta.url));
@@ -24,54 +24,54 @@ if (!Number.isInteger(INTER_REQUEST_DELAY_MS) || INTER_REQUEST_DELAY_MS < 0 || I
 }
 
 const paths = [
-  "time", "uuid", "dice", "coin", "number",
-  "color", "quote", "token", "status", "version",
-  "entropy", "temperature", "coordinate", "mood", "word",
+  "sunrise", "slug", "lottery", "boolean", "sequence",
+  "palette", "proverb", "nonce", "heartbeat", "semver",
+  "noise", "climate", "geopoint", "feeling", "vocabulary",
   "gradient", "countdown",
 ] as const;
 type Path = typeof paths[number];
 const AMOUNTS: Record<Path, string> = {
-  time: "1200",
-  uuid: "2700",
-  dice: "4300",
-  coin: "900",
-  number: "3100",
-  color: "1800",
-  quote: "5200",
-  token: "2400",
-  status: "3700",
-  version: "1500",
-  entropy: "6600",
-  temperature: "750",
-  coordinate: "4600",
-  mood: "2900",
-  word: "6100",
+  sunrise: "1200",
+  slug: "2700",
+  lottery: "4300",
+  boolean: "900",
+  sequence: "3100",
+  palette: "1800",
+  proverb: "5200",
+  nonce: "2400",
+  heartbeat: "3700",
+  semver: "1500",
+  noise: "6600",
+  climate: "750",
+  geopoint: "4600",
+  feeling: "2900",
+  vocabulary: "6100",
   gradient: "3400",
   countdown: "4800",
 };
 const TARGETS: Record<Path, number> = {
-  time: 6,
-  uuid: 7,
-  dice: 3,
-  coin: 8,
-  number: 5,
-  color: 6,
-  quote: 5,
-  token: 3,
-  status: 3,
-  version: 8,
-  entropy: 5,
-  temperature: 7,
-  coordinate: 4,
-  mood: 5,
-  word: 6,
-  gradient: 4,
-  countdown: 7,
+  sunrise: 7,
+  slug: 5,
+  lottery: 6,
+  boolean: 5,
+  sequence: 5,
+  palette: 9,
+  proverb: 9,
+  nonce: 8,
+  heartbeat: 4,
+  semver: 9,
+  noise: 10,
+  climate: 7,
+  geopoint: 7,
+  feeling: 4,
+  vocabulary: 6,
+  gradient: 8,
+  countdown: 10,
 };
 const TOTAL_TRANSACTIONS = Object.values(TARGETS).reduce((sum, target) => sum + target, 0);
-if (TOTAL_TRANSACTIONS !== 92 || new Set(Object.values(TARGETS)).size < 4 ||
+if (TOTAL_TRANSACTIONS !== 119 || new Set(Object.values(TARGETS)).size < 4 ||
     Object.values(TARGETS).some(target => target < 3)) {
-  throw new Error("transaction targets must be varied positive counts totaling 92");
+  throw new Error("transaction targets must be varied positive counts totaling 119");
 }
 type PrivateWallet = { id: number; address: string; secret: string };
 type Proof = {
@@ -511,7 +511,7 @@ while (proofs.length < TOTAL_TRANSACTIONS) {
 }
 
 counts = validateProofs(proofs);
-if (proofs.length !== 92 || paths.some(path => (counts.get(path) ?? 0) !== TARGETS[path]) ||
+if (proofs.length !== 119 || paths.some(path => (counts.get(path) ?? 0) !== TARGETS[path]) ||
     paths.some(path => buyerCounts(proofs, path).size !== plan[path].target || !hasCurrentPriceProof(proofs, path))) {
   throw new Error("stress run did not reach its transaction and buyer targets");
 }

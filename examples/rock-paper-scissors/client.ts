@@ -21,9 +21,9 @@ if (!Number.isInteger(INTER_REQUEST_DELAY_MS) || INTER_REQUEST_DELAY_MS < 0 || I
 type PrivateWallet = { id: number; address: string; secret: string };
 
 const paths = [
-  "time", "uuid", "dice", "coin", "number",
-  "color", "quote", "token", "status", "version",
-  "entropy", "temperature", "coordinate", "mood", "word",
+  "sunrise", "slug", "lottery", "boolean", "sequence",
+  "palette", "proverb", "nonce", "heartbeat", "semver",
+  "noise", "climate", "geopoint", "feeling", "vocabulary",
   "gradient", "countdown",
 ] as const;
 const amounts = [
