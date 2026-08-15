@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useId, useState, useSyncExternalStore, type ReactNode } from "react";
 
 import {
   ActivityIcon,
@@ -319,9 +319,6 @@ export function Sparkline({
   );
 }
 
-/** Kept 1:1 with the CSS height so vertical user units are device pixels. */
-const CHART_HEIGHT = 54;
-
 /**
  * Values sit at band centres rather than spanning edge to edge, so each bar has
  * room either side and the curve passes through the middle of its own bar.
@@ -350,9 +347,9 @@ function metricPoints(values: number[], width: number, height: number, padTop: n
  * overshoots a data point. A plain Catmull-Rom spline would invent peaks the
  * underlying series does not contain, which on a metric chart reads as data.
  */
-function smoothPath(points: Array<{ x: number; y: number }>): string {
+function smoothPath(points: Array<{ x: number; y: number }>, width: number): string {
   if (points.length === 0) return "";
-  if (points.length === 1) return `M0 ${points[0]!.y.toFixed(2)} L100 ${points[0]!.y.toFixed(2)}`;
+  if (points.length === 1) return `M0 ${points[0]!.y.toFixed(2)} L${width} ${points[0]!.y.toFixed(2)}`;
   if (points.length === 2) return `M${points[0]!.x.toFixed(2)} ${points[0]!.y.toFixed(2)} L${points[1]!.x.toFixed(2)} ${points[1]!.y.toFixed(2)}`;
 
   const slopes = points.map((point, index) => {
@@ -388,43 +385,123 @@ function smoothPath(points: Array<{ x: number; y: number }>): string {
  * whichever box happens to lack a chart.
  */
 export function MetricSparkline({ points, label }: { points: number[]; label: string }) {
-  if (points.length === 0) return <div aria-hidden="true" className="metric-sparkline metric-sparkline--empty" />;
-  const width = 100;
-  const height = CHART_HEIGHT;
-  const { points: plotted } = metricPoints(points, width, height, 6, 4);
-  const line = smoothPath(plotted);
+  const gradientId = `metric-${useId().replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  if (points.length === 0) {
+    return (
+      <div aria-label={`${label} is a current snapshot without a time series`} className="metric-sparkline metric-sparkline--empty" role="img">
+        <span /><span /><span /><span /><span /><span />
+        <em>Snapshot</em>
+      </div>
+    );
+  }
+
+  const width = 320;
+  const height = 112;
+  const { baseline, band, points: plotted } = metricPoints(points, width, height, 10, 11);
+  const line = smoothPath(plotted, width);
+  const first = plotted[0]!;
+  const last = plotted.at(-1)!;
+  const area = `${line} L${last.x.toFixed(2)} ${baseline} L${first.x.toFixed(2)} ${baseline} Z`;
   const max = Math.max(...points, 0);
+  const latest = points.at(-1) ?? 0;
+  const selected = activeIndex === null ? null : plotted[activeIndex];
+  const selectedValue = activeIndex === null ? null : points[activeIndex];
+  const selectedLabel = activeIndex === null ? "" : activeIndex === points.length - 1 ? "Now" : `${points.length - activeIndex - 1}d ago`;
+
+  function moveSelection(clientX: number, bounds: DOMRect) {
+    const fraction = Math.min(0.999, Math.max(0, (clientX - bounds.left) / bounds.width));
+    setActiveIndex(Math.min(points.length - 1, Math.floor(fraction * points.length)));
+  }
+
+  function formatValue(value: number) {
+    return new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 2,
+      notation: Math.abs(value) >= 10_000 ? "compact" : "standard",
+    }).format(value);
+  }
 
   return (
-    <div aria-label={`${label} trend`} className="metric-sparkline" role="img">
+    <div
+      aria-label={`${label}, 30-day trend. Peak ${formatValue(max)}; latest ${formatValue(latest)}. Use left and right arrow keys to inspect.`}
+      className="metric-sparkline"
+      onBlur={() => setActiveIndex(null)}
+      onFocus={() => setActiveIndex(points.length - 1)}
+      onKeyDown={(event) => {
+        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+        event.preventDefault();
+        const current = activeIndex ?? points.length - 1;
+        setActiveIndex(Math.min(points.length - 1, Math.max(0, current + (event.key === "ArrowRight" ? 1 : -1))));
+      }}
+      onPointerLeave={() => setActiveIndex(null)}
+      onPointerMove={(event) => moveSelection(event.clientX, event.currentTarget.getBoundingClientRect())}
+      role="img"
+      tabIndex={0}
+    >
       <svg
         aria-hidden="true"
         className="metric-sparkline__curve"
         preserveAspectRatio="none"
         viewBox={`0 0 ${width} ${height}`}
       >
+        <defs>
+          <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.34" />
+            <stop offset="72%" stopColor="var(--color-accent)" stopOpacity="0.07" />
+            <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {[0.25, 0.5, 0.75, 1].map(fraction => (
+          <line className="metric-sparkline__grid" key={fraction} x1="0" x2={width} y1={height * fraction} y2={height * fraction} />
+        ))}
+        <path className="metric-sparkline__area" d={area} fill={`url(#${gradientId})`} />
         <path className="metric-sparkline__line" d={line} />
+        {selected ? (
+          <>
+            <rect className="metric-sparkline__selection" height={height} width={band} x={selected.x - band / 2} y="0" />
+            <line className="metric-sparkline__crosshair" x1={selected.x} x2={selected.x} y1="0" y2={height} />
+          </>
+        ) : null}
       </svg>
-      {/*
-        Bars are laid out by flexbox rather than drawn in the SVG. The viewBox is
-        stretched horizontally to fill a box of unknown width, which squashes a
-        corner radius into an oval and makes a rect's width impossible to pin in
-        device units. CSS gives proportional widths and a true radius for free.
-      */}
       <div aria-hidden="true" className="metric-sparkline__bars">
         {points.map((value, index) => (
           <span
-            className="metric-sparkline__bar"
+            className={cn("metric-sparkline__bar", index === activeIndex && "metric-sparkline__bar--active")}
             key={index}
             style={{
-              height: max > 0 ? `${(value / max) * 100}%` : "0%",
-              // Stagger tightens as the series grows so a full month still
-              // finishes rising in about the same beat as a couple of days.
-              animationDelay: `${index * Math.min(70, 240 / points.length)}ms`,
+              height: max > 0 ? `${Math.max(2, (value / max) * 100)}%` : "2%",
+              animationDelay: `${index * Math.min(55, 180 / points.length)}ms`,
             }}
           />
         ))}
       </div>
+      <span
+        aria-hidden="true"
+        className="metric-sparkline__latest"
+        style={{ left: `${(last.x / width) * 100}%`, top: `${(last.y / height) * 100}%` }}
+      />
+      {selected ? (
+        <span
+          aria-hidden="true"
+          className="metric-sparkline__active-dot"
+          style={{ left: `${(selected.x / width) * 100}%`, top: `${(selected.y / height) * 100}%` }}
+        />
+      ) : null}
+      {selected && selectedValue !== null ? (
+        <span
+          aria-live="polite"
+          className={cn(
+            "metric-sparkline__tooltip",
+            activeIndex === 0 && "metric-sparkline__tooltip--start",
+            activeIndex === points.length - 1 && "metric-sparkline__tooltip--end",
+          )}
+          style={{ left: `${(selected.x / width) * 100}%` }}
+        >
+          <small>{selectedLabel}</small>
+          <strong>{formatValue(selectedValue)}</strong>
+        </span>
+      ) : null}
     </div>
   );
 }

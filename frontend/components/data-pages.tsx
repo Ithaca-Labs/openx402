@@ -34,21 +34,19 @@ export function AllPage({ data, search }: { data: DashboardData; search: Dashboa
   return (
     <AppShell>
       <PageContainer className="data-page directory-page directory-page--all">
-        {/* Sits above both the header and the metrics so the CSS-only toggle can
-            style the labels in one and the charts in the other. */}
-        <input className="metric-view-input" id="metric-view-curve" name="metric-view" type="radio" value="curve" />
         <input className="metric-view-input" defaultChecked id="metric-view-bars" name="metric-view" type="radio" value="bars" />
+        <input className="metric-view-input" id="metric-view-curve" name="metric-view" type="radio" value="curve" />
         <PageHeader
-          actions={
+          actions={(
             <div className="metric-view-toggle" role="group" aria-label="Chart style">
-              <label className="metric-view-button" htmlFor="metric-view-bars" title="Bars">
-                <BarsIcon size={15} /><span className="sr-only">Bars</span>
+              <label className="metric-view-button" htmlFor="metric-view-bars">
+                <BarsIcon size={14} /><span>Bars</span>
               </label>
-              <label className="metric-view-button" htmlFor="metric-view-curve" title="Curve">
-                <CurveIcon size={15} /><span className="sr-only">Curve</span>
+              <label className="metric-view-button" htmlFor="metric-view-curve">
+                <CurveIcon size={14} /><span>Curve</span>
               </label>
             </div>
-          }
+          )}
           description="Aggregate activity across services, payments, facilitators, and networks."
           pixelTitle
           title="All activity"
@@ -65,7 +63,20 @@ function AllActivityLayout({ data, search }: { data: DashboardData; search: Dash
       <section aria-label="Activity summary" className="all-activity-main">
         <div className="all-activity-summary">
           <div className="all-activity-summary__metrics">
-            {data.metrics.map(metric => <article key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong><MetricSparkline label={metric.label} points={metric.bars} /><small>{metric.context}</small></article>)}
+            {data.metrics.map(metric => (
+              <article key={metric.label}>
+                <header>
+                  <span>{metric.label}</span>
+                  <small>{metric.context}</small>
+                </header>
+                <strong>{metric.value}</strong>
+                <MetricSparkline label={metric.label} points={metric.bars} />
+                <footer aria-hidden="true">
+                  <span>{metric.bars.length ? "30 days ago" : "Point-in-time"}</span>
+                  <span>{metric.bars.length ? "Now" : metric.delta}</span>
+                </footer>
+              </article>
+            ))}
           </div>
         </div>
         <section className="all-activity-ledger" aria-labelledby="indexed-services-title">
