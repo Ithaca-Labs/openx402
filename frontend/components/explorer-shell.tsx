@@ -384,7 +384,7 @@ function smoothPath(points: Array<{ x: number; y: number }>, width: number): str
  * slot, so numbers stay on one baseline across the row instead of drifting in
  * whichever box happens to lack a chart.
  */
-export function MetricSparkline({ points, label }: { points: number[]; label: string }) {
+export function MetricSparkline({ points, label, unit }: { points: number[]; label: string; unit?: string }) {
   const gradientId = `metric-${useId().replace(/[^a-zA-Z0-9_-]/g, "-")}`;
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
@@ -417,14 +417,18 @@ export function MetricSparkline({ points, label }: { points: number[]; label: st
 
   function formatValue(value: number) {
     return new Intl.NumberFormat("en-US", {
-      maximumFractionDigits: 2,
+      maximumFractionDigits: unit ? 7 : 2,
       notation: Math.abs(value) >= 10_000 ? "compact" : "standard",
     }).format(value);
   }
 
+  function formatPointValue(value: number) {
+    return `${formatValue(value)}${unit ? ` ${unit}` : ""}`;
+  }
+
   return (
     <div
-      aria-label={`${label}, 30-day trend. Peak ${formatValue(max)}; latest ${formatValue(latest)}. Use left and right arrow keys to inspect.`}
+      aria-label={`${label}, 30-day trend. Peak ${formatPointValue(max)}; latest ${formatPointValue(latest)}. Use left and right arrow keys to inspect.`}
       className="metric-sparkline"
       onBlur={() => setActiveIndex(null)}
       onFocus={() => setActiveIndex(points.length - 1)}
@@ -499,7 +503,7 @@ export function MetricSparkline({ points, label }: { points: number[]; label: st
           style={{ left: `${(selected.x / width) * 100}%` }}
         >
           <small>{selectedLabel}</small>
-          <strong>{formatValue(selectedValue)}</strong>
+          <strong>{formatPointValue(selectedValue)}</strong>
         </span>
       ) : null}
     </div>

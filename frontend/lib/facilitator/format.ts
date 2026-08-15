@@ -45,6 +45,17 @@ export function formatAtomicAmount(amount: string | undefined, asset: string | u
   return `${amount} atomic units${asset ? ` · ${shortIdentifier(asset)}` : ""}`;
 }
 
+export function chartAtomicAmount(amount: string | undefined, asset: string | undefined, decimals?: number): number | undefined {
+  if (amount === undefined || !/^\d+$/.test(amount)) return undefined;
+  const known = asset ? KNOWN_ASSETS[asset] : undefined;
+  const resolvedDecimals = decimals ?? known?.decimals;
+  if (resolvedDecimals === undefined) return chartNumber(amount);
+  const decimal = decimalAmount(amount, resolvedDecimals);
+  if (decimal === undefined) return undefined;
+  const parsed = Number(decimal);
+  return Number.isFinite(parsed) ? parsed : Number.MAX_SAFE_INTEGER;
+}
+
 export function formatPaymentOption(option: PaymentOption): string {
   const amount = formatAtomicAmount(option.amount, option.asset);
   const network = humanNetwork(option.network);

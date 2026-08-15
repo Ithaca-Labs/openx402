@@ -12,6 +12,7 @@ export type Metric = {
   value: string;
   delta: string;
   context: string;
+  unit?: string;
   trend: Trend;
   bars: number[];
 };

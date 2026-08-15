@@ -70,7 +70,7 @@ function AllActivityLayout({ data, search }: { data: DashboardData; search: Dash
                   <small>{metric.context}</small>
                 </header>
                 <strong>{metric.value}</strong>
-                <MetricSparkline label={metric.label} points={metric.bars} />
+                <MetricSparkline label={metric.label} points={metric.bars} unit={metric.unit} />
                 <footer aria-hidden="true">
                   <span>{metric.bars.length ? "30 days ago" : "Point-in-time"}</span>
                   <span>{metric.bars.length ? "Now" : metric.delta}</span>

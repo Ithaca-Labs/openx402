@@ -19,6 +19,7 @@ import type {
   TransactionRow,
 } from "./contracts";
 import {
+  chartAtomicAmount,
   chartNumber,
   compactDecimalString,
   formatAtomicAmount,
@@ -83,11 +84,25 @@ export function adaptMetrics(overview?: OverviewResponse, timeseries?: Timeserie
   const observed = { delta: "observed", context: "last 30 days", trend: "flat" as const };
   const snapshot = { delta: "current", context: "catalog snapshot", trend: "flat" as const, bars: [] };
   const volume = assetTotalParts(overview.total_amount, breakdowns);
+  const volumeAssets = (breakdowns?.assets ?? []).filter(asset => asset.total_amount !== undefined);
+  const volumeBars = volumeAssets.length === 1
+    ? (timeseries?.series ?? []).flatMap(row => {
+        const value = chartAtomicAmount(row.total_amount, volumeAssets[0]!.key);
+        return value === undefined ? [] : [value];
+      })
+    : [];
   return [
     { label: "Payments observed", value: compactDecimalString(overview.total_transactions), ...observed, bars: seriesValues("total_transactions") },
     { label: "Unique buyers", value: compactDecimalString(overview.unique_buyers), ...observed, bars: seriesValues("unique_buyers") },
     { label: "Active services", value: compactDecimalString(overview.active_resources), ...snapshot },
-    { label: "Volume", value: volume.value, ...observed, context: volume.unit ? `${volume.unit} · last 30 days` : observed.context, bars: seriesValues("total_amount") },
+    {
+      label: "Volume",
+      value: volume.value,
+      ...observed,
+      context: volume.unit ? `${volume.unit} · last 30 days` : observed.context,
+      ...(volume.unit ? { unit: volume.unit } : {}),
+      bars: volumeBars,
+    },
   ];
 }
 

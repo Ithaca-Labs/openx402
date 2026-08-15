@@ -118,6 +118,29 @@ describe("amount and count formatting", () => {
     expect(adaptEntity(baseResource, { analyticsState: "unavailable" }).transactions).toBe("Unavailable");
   });
 
+  it("plots USDC volume in decimal units instead of atomic units", () => {
+    const metrics = adaptMetrics(
+      { total_amount: "5199850", total_transactions: "4", unique_buyers: "3", active_resources: "1" },
+      {
+        bucket: "day",
+        series: [
+          { bucket_start: "2026-08-14T00:00:00.000Z", total_amount: "1000000" },
+          { bucket_start: "2026-08-15T00:00:00.000Z", total_amount: "1919850" },
+          { bucket_start: "2026-08-16T00:00:00.000Z", total_amount: "2280000" },
+        ],
+      },
+      { networks: [], schemes: [], assets: [{ key: TESTNET_USDC, total_amount: "5199850" }], statuses: [] },
+    );
+
+    expect(metrics[3]).toMatchObject({
+      label: "Volume",
+      value: "0.519985",
+      unit: "USDC",
+      context: "USDC · last 30 days",
+      bars: [0.1, 0.191985, 0.228],
+    });
+  });
+
   it("exposes all payment options without claiming one is cheapest", () => {
     const entity = adaptEntity({
       ...baseResource,
