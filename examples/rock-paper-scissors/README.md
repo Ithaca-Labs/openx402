@@ -72,7 +72,7 @@ proofs and a persistent random target of 3–9 distinct buyers per service:
 SELLER_ORIGIN=https://YOUR-NGROK-DOMAIN.ngrok-free.app npm run stress
 ```
 
-The current stress run uses varied per-service transaction targets totaling 119
+The current stress run uses varied per-service transaction targets totaling 367
 across all seventeen services. It picks each next endpoint randomly while
 guaranteeing the same endpoint never appears twice in a row. The persisted proof
 log makes the run resumable and keeps the successful order auditable.

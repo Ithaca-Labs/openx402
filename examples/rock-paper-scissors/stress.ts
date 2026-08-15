@@ -8,8 +8,8 @@ import { ShortAuthExactStellarScheme } from "./short-auth-exact.js";
 const NETWORK = "stellar:testnet" as const;
 const FACILITATOR_URL = "https://facilitator.stellarx402.xyz";
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
-const RUN_ID = "hosted-usdc-119-v1";
-const RUN_STARTED_AT = "2026-08-15T13:47:23Z";
+const RUN_ID = "hosted-usdc-367-v1";
+const RUN_STARTED_AT = "2026-08-15T14:29:48Z";
 const SELLER_ORIGIN = process.env.SELLER_ORIGIN?.replace(/\/$/, "");
 const INTER_REQUEST_DELAY_MS = Number(process.env.INTER_REQUEST_DELAY_MS ?? 6_000);
 const WALLETS_FILE = fileURLToPath(new URL("./wallets.private.json", import.meta.url));
@@ -50,28 +50,28 @@ const AMOUNTS: Record<Path, string> = {
   countdown: "4800",
 };
 const TARGETS: Record<Path, number> = {
-  sunrise: 7,
-  slug: 5,
-  lottery: 6,
-  boolean: 5,
-  sequence: 5,
-  palette: 9,
-  proverb: 9,
-  nonce: 8,
-  heartbeat: 4,
-  semver: 9,
-  noise: 10,
-  climate: 7,
-  geopoint: 7,
-  feeling: 4,
-  vocabulary: 6,
-  gradient: 8,
-  countdown: 10,
+  sunrise: 31,
+  slug: 16,
+  lottery: 17,
+  boolean: 15,
+  sequence: 28,
+  palette: 21,
+  proverb: 24,
+  nonce: 18,
+  heartbeat: 22,
+  semver: 21,
+  noise: 26,
+  climate: 20,
+  geopoint: 23,
+  feeling: 19,
+  vocabulary: 14,
+  gradient: 27,
+  countdown: 25,
 };
 const TOTAL_TRANSACTIONS = Object.values(TARGETS).reduce((sum, target) => sum + target, 0);
-if (TOTAL_TRANSACTIONS !== 119 || new Set(Object.values(TARGETS)).size < 4 ||
+if (TOTAL_TRANSACTIONS !== 367 || new Set(Object.values(TARGETS)).size < 4 ||
     Object.values(TARGETS).some(target => target < 3)) {
-  throw new Error("transaction targets must be varied positive counts totaling 119");
+  throw new Error("transaction targets must be varied positive counts totaling 367");
 }
 type PrivateWallet = { id: number; address: string; secret: string };
 type Proof = {
@@ -511,7 +511,7 @@ while (proofs.length < TOTAL_TRANSACTIONS) {
 }
 
 counts = validateProofs(proofs);
-if (proofs.length !== 119 || paths.some(path => (counts.get(path) ?? 0) !== TARGETS[path]) ||
+if (proofs.length !== 367 || paths.some(path => (counts.get(path) ?? 0) !== TARGETS[path]) ||
     paths.some(path => buyerCounts(proofs, path).size !== plan[path].target || !hasCurrentPriceProof(proofs, path))) {
   throw new Error("stress run did not reach its transaction and buyer targets");
 }
