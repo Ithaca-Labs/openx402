@@ -6135,9 +6135,8 @@ html[data-theme="dark"] .directory-page {
   inset: 0;
   display: flex;
   align-items: flex-end;
-  justify-content: space-around;
   gap: clamp(2px, 1.1vw, 5px);
-  padding: 10px 3px 11px;
+  padding: 10px 3px 1px;
   background: repeating-linear-gradient(
     to bottom,
     transparent 0,
@@ -6148,8 +6147,7 @@ html[data-theme="dark"] .directory-page {
 }
 
 .metric-sparkline__bar {
-  min-width: 2px;
-  max-width: 32px;
+  min-width: 0;
   flex: 1 1 0;
   border: 1px solid color-mix(in srgb, var(--color-accent) 62%, transparent);
   border-bottom: 0;

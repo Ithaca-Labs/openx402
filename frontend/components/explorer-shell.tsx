@@ -399,7 +399,7 @@ export function MetricSparkline({ points, label }: { points: number[]; label: st
 
   const width = 320;
   const height = 112;
-  const { baseline, band, points: plotted } = metricPoints(points, width, height, 10, 11);
+  const { baseline, band, points: plotted } = metricPoints(points, width, height, 10, 1);
   const line = smoothPath(plotted, width);
   const first = plotted[0]!;
   const last = plotted.at(-1)!;
@@ -453,7 +453,7 @@ export function MetricSparkline({ points, label }: { points: number[]; label: st
           </linearGradient>
         </defs>
         {[0.25, 0.5, 0.75, 1].map(fraction => (
-          <line className="metric-sparkline__grid" key={fraction} x1="0" x2={width} y1={height * fraction} y2={height * fraction} />
+          <line className="metric-sparkline__grid" key={fraction} x1="0" x2={width} y1={(height - 1) * fraction} y2={(height - 1) * fraction} />
         ))}
         <path className="metric-sparkline__area" d={area} fill={`url(#${gradientId})`} />
         <path className="metric-sparkline__line" d={line} />
