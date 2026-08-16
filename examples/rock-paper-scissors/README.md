@@ -66,13 +66,20 @@ the facilitator's 300-second testnet maximum.
 `purchases.public.json` records one Horizon-confirmed transaction per endpoint.
 
 For a resumable hosted-facilitator stress run with Horizon-confirmed public
-proofs and a persistent random target of 3–9 distinct buyers per service:
+proofs and a persistent random target of 3–9 distinct buyers per service, first
+create four additional disposable buyers (21 buyers total):
+
+```bash
+USDC_FUNDER_IDENTITY=openx402-testnet-treasury npm run stress-buyers:setup
+```
+
+Then run:
 
 ```bash
 SELLER_ORIGIN=https://YOUR-NGROK-DOMAIN.ngrok-free.app npm run stress
 ```
 
-The current stress run uses varied per-service transaction targets totaling 514
+The current stress run uses varied per-service transaction targets totaling 237
 across all seventeen services. It picks each next endpoint randomly while
 guaranteeing the same endpoint never appears twice in a row. The persisted proof
 log makes the run resumable and keeps the successful order auditable.
