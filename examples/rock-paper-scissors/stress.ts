@@ -8,8 +8,8 @@ import { ShortAuthExactStellarScheme } from "./short-auth-exact.js";
 const NETWORK = "stellar:testnet" as const;
 const FACILITATOR_URL = "https://facilitator.stellarx402.xyz";
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
-const RUN_ID = "hosted-usdc-237-v1";
-const RUN_STARTED_AT = "2026-08-16T15:31:41Z";
+const RUN_ID = "hosted-usdc-543-v1";
+const RUN_STARTED_AT = "2026-08-17T18:27:19Z";
 const SELLER_ORIGIN = process.env.SELLER_ORIGIN?.replace(/\/$/, "");
 const INTER_REQUEST_DELAY_MS = Number(process.env.INTER_REQUEST_DELAY_MS ?? 6_000);
 const SELLER_WALLETS_FILE = fileURLToPath(new URL("./wallets.private.json", import.meta.url));
@@ -51,28 +51,28 @@ const AMOUNTS: Record<Path, string> = {
   countdown: "4800",
 };
 const TARGETS: Record<Path, number> = {
-  sunrise: 10,
-  slug: 11,
-  lottery: 12,
-  boolean: 13,
-  sequence: 14,
-  palette: 15,
-  proverb: 16,
-  nonce: 17,
-  heartbeat: 18,
-  semver: 19,
-  noise: 20,
-  climate: 21,
-  geopoint: 8,
-  feeling: 9,
-  vocabulary: 10,
-  gradient: 11,
-  countdown: 13,
+  sunrise: 28,
+  slug: 31,
+  lottery: 35,
+  boolean: 27,
+  sequence: 33,
+  palette: 39,
+  proverb: 24,
+  nonce: 36,
+  heartbeat: 30,
+  semver: 22,
+  noise: 41,
+  climate: 26,
+  geopoint: 34,
+  feeling: 29,
+  vocabulary: 37,
+  gradient: 32,
+  countdown: 39,
 };
 const TOTAL_TRANSACTIONS = Object.values(TARGETS).reduce((sum, target) => sum + target, 0);
-if (TOTAL_TRANSACTIONS !== 237 || new Set(Object.values(TARGETS)).size < 4 ||
+if (TOTAL_TRANSACTIONS !== 543 || new Set(Object.values(TARGETS)).size < 4 ||
     Object.values(TARGETS).some(target => target < 3)) {
-  throw new Error("transaction targets must be varied positive counts totaling 237");
+  throw new Error("transaction targets must be varied positive counts totaling 543");
 }
 type PrivateWallet = { id: number; address: string; secret: string };
 type Proof = {
@@ -115,9 +115,11 @@ try {
 if (extraBuyers.length !== 4 || new Set(extraBuyers.map(wallet => wallet.address)).size !== 4) {
   throw new Error("stress-buyers.private.json must contain four extra buyers");
 }
-const buyerWallets = [...sellerWallets, ...extraBuyers];
-if (buyerWallets.length !== 21 || new Set(buyerWallets.map(wallet => wallet.address)).size !== 21) {
-  throw new Error("stress run requires twenty-one distinct buyer wallets");
+const allBuyerWallets = [...sellerWallets, ...extraBuyers];
+const ACTIVE_BUYER_IDS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 18, 19, 20, 21]);
+const buyerWallets = allBuyerWallets.filter(wallet => ACTIVE_BUYER_IDS.has(wallet.id));
+if (buyerWallets.length !== 15 || new Set(buyerWallets.map(wallet => wallet.address)).size !== 15) {
+  throw new Error("stress run requires fifteen distinct buyer wallets");
 }
 
 const wait = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
@@ -532,7 +534,7 @@ while (proofs.length < TOTAL_TRANSACTIONS) {
 }
 
 counts = validateProofs(proofs);
-if (proofs.length !== 237 || paths.some(path => (counts.get(path) ?? 0) !== TARGETS[path]) ||
+if (proofs.length !== 543 || paths.some(path => (counts.get(path) ?? 0) !== TARGETS[path]) ||
     paths.some(path => buyerCounts(proofs, path).size !== plan[path].target || !hasCurrentPriceProof(proofs, path))) {
   throw new Error("stress run did not reach its transaction and buyer targets");
 }
