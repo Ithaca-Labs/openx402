@@ -79,8 +79,8 @@ Then run:
 SELLER_ORIGIN=https://YOUR-NGROK-DOMAIN.ngrok-free.app npm run stress
 ```
 
-The current stress run uses varied per-service transaction targets totaling 543
-across all seventeen services and selects fifteen buyers from the funded pool.
+The current stress run uses varied per-service transaction targets totaling 437
+across all seventeen services and selects seventeen buyers from the funded pool.
 It picks each next endpoint randomly while
 guaranteeing the same endpoint never appears twice in a row. The persisted proof
 log makes the run resumable and keeps the successful order auditable.
