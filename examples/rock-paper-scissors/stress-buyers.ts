@@ -15,7 +15,7 @@ import {
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
 const FRIENDBOT_URL = "https://friendbot.stellar.org";
 const USDC_ISSUER = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5";
-const EXTRA_BUYERS = 4;
+const EXTRA_BUYERS = 55;
 const PRIVATE_FILE = fileURLToPath(new URL("./stress-buyers.private.json", import.meta.url));
 const server = new Horizon.Server(HORIZON_URL);
 const usdc = new Asset("USDC", USDC_ISSUER);

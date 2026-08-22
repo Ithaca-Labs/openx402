@@ -8,9 +8,12 @@ import { ShortAuthExactStellarScheme } from "./short-auth-exact.js";
 const NETWORK = "stellar:testnet" as const;
 const FACILITATOR_URL = "https://facilitator.stellarx402.xyz";
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
-const RUN_ID = "hosted-usdc-514-v2";
-const RUN_STARTED_AT = "2026-08-20T21:49:54Z";
-const SELLER_ORIGIN = process.env.SELLER_ORIGIN?.replace(/\/$/, "");
+const RUN_ID = "hosted-usdc-1034-v1";
+const RUN_STARTED_AT = "2026-08-22T07:04:00Z";
+const SELLER_ORIGINS = [...new Set((process.env.SELLER_ORIGINS ?? process.env.SELLER_ORIGIN ?? "")
+  .split(",").map(origin => origin.trim().replace(/\/$/, "")).filter(Boolean))];
+const ACTIVE_SELLER_ORIGINS = [...new Set((process.env.SELLER_ACTIVE_ORIGINS ?? process.env.SELLER_ORIGINS ?? process.env.SELLER_ORIGIN ?? "")
+  .split(",").map(origin => origin.trim().replace(/\/$/, "")).filter(Boolean))];
 const INTER_REQUEST_DELAY_MS = Number(process.env.INTER_REQUEST_DELAY_MS ?? 6_000);
 const SELLER_WALLETS_FILE = fileURLToPath(new URL("./wallets.private.json", import.meta.url));
 const EXTRA_BUYERS_FILE = fileURLToPath(new URL("./stress-buyers.private.json", import.meta.url));
@@ -19,7 +22,8 @@ const BUYER_PLAN_FILE = fileURLToPath(new URL("./stress-buyers.public.json", imp
 const INFLIGHT_FILE = fileURLToPath(new URL("./.stress-inflight.private.json", import.meta.url));
 const INFLIGHT_TEMP_FILE = `${INFLIGHT_FILE}.tmp`;
 
-if (!SELLER_ORIGIN) throw new Error("SELLER_ORIGIN is required");
+if (SELLER_ORIGINS.length === 0) throw new Error("SELLER_ORIGINS or SELLER_ORIGIN is required");
+if (ACTIVE_SELLER_ORIGINS.length === 0) throw new Error("SELLER_ACTIVE_ORIGINS must contain at least one live origin");
 if (!Number.isInteger(INTER_REQUEST_DELAY_MS) || INTER_REQUEST_DELAY_MS < 0 || INTER_REQUEST_DELAY_MS > 60_000) {
   throw new Error("INTER_REQUEST_DELAY_MS must be an integer from 0 through 60000");
 }
@@ -51,32 +55,33 @@ const AMOUNTS: Record<Path, string> = {
   countdown: "4800",
 };
 const TARGETS: Record<Path, number> = {
-  sunrise: 26,
-  slug: 29,
-  lottery: 33,
-  boolean: 25,
-  sequence: 30,
-  palette: 36,
-  proverb: 22,
-  nonce: 33,
-  heartbeat: 28,
-  semver: 21,
-  noise: 38,
-  climate: 25,
-  geopoint: 33,
-  feeling: 28,
-  vocabulary: 35,
-  gradient: 32,
-  countdown: 40,
+  sunrise: 56,
+  slug: 61,
+  lottery: 68,
+  boolean: 49,
+  sequence: 63,
+  palette: 72,
+  proverb: 44,
+  nonce: 67,
+  heartbeat: 58,
+  semver: 41,
+  noise: 75,
+  climate: 47,
+  geopoint: 66,
+  feeling: 57,
+  vocabulary: 71,
+  gradient: 64,
+  countdown: 75,
 };
 const TOTAL_TRANSACTIONS = Object.values(TARGETS).reduce((sum, target) => sum + target, 0);
-if (TOTAL_TRANSACTIONS !== 514 || new Set(Object.values(TARGETS)).size < 4 ||
+if (TOTAL_TRANSACTIONS !== 1034 || new Set(Object.values(TARGETS)).size < 4 ||
     Object.values(TARGETS).some(target => target < 3)) {
-  throw new Error("transaction targets must be varied positive counts totaling 514");
+  throw new Error("transaction targets must be varied positive counts totaling 1034");
 }
 type PrivateWallet = { id: number; address: string; secret: string };
 type Proof = {
   runId: typeof RUN_ID;
+  origin: string;
   path: Path;
   buyer: string;
   payTo: string;
@@ -91,6 +96,7 @@ type Proof = {
 type Inflight = {
   runId: typeof RUN_ID;
   createdAt?: string;
+  origin: string;
   path: Path;
   buyer: string;
   payTo: string;
@@ -108,19 +114,20 @@ try {
   extraBuyers = JSON.parse(await readFile(EXTRA_BUYERS_FILE, "utf8")) as PrivateWallet[];
 } catch (error) {
   if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-    throw new Error("run npm run stress-buyers:setup first to create four extra buyer wallets");
+    throw new Error("run npm run stress-buyers:setup first to create fifty-five extra buyer wallets");
   }
   throw error;
 }
-if (extraBuyers.length !== 4 || new Set(extraBuyers.map(wallet => wallet.address)).size !== 4) {
-  throw new Error("stress-buyers.private.json must contain four extra buyers");
+if (extraBuyers.length !== 55 || new Set(extraBuyers.map(wallet => wallet.address)).size !== 55) {
+  throw new Error("stress-buyers.private.json must contain fifty-five extra buyers");
 }
 const allBuyerWallets = [...sellerWallets, ...extraBuyers];
-const ACTIVE_BUYER_IDS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 18, 19, 20, 21]);
+const ACTIVE_BUYER_IDS = new Set(allBuyerWallets.map(wallet => wallet.id));
 const buyerWallets = allBuyerWallets.filter(wallet => ACTIVE_BUYER_IDS.has(wallet.id));
-if (buyerWallets.length !== 19 || new Set(buyerWallets.map(wallet => wallet.address)).size !== 19) {
-  throw new Error("stress run requires nineteen distinct buyer wallets");
+if (buyerWallets.length !== 72 || new Set(buyerWallets.map(wallet => wallet.address)).size !== 72) {
+  throw new Error("stress run requires seventy-two distinct buyer wallets");
 }
+const MIN_BUYERS_PER_SERVICE = buyerWallets.length >= 72 ? 5 : 3;
 
 const wait = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
 
@@ -198,24 +205,39 @@ async function clearInflight(): Promise<void> {
   });
 }
 
-function pathFromUrl(value: string): Path | undefined {
-  const prefix = `${SELLER_ORIGIN}/api/`;
-  if (!value.startsWith(prefix)) return undefined;
-  const candidate = value.slice(prefix.length);
-  return paths.find(path => path === candidate);
+function pathFromUrl(value: string): { origin: string; path: Path } | undefined {
+  for (const origin of SELLER_ORIGINS) {
+    const prefix = `${origin}/api/`;
+    if (!value.startsWith(prefix)) continue;
+    const candidate = value.slice(prefix.length);
+    const path = paths.find(path => path === candidate);
+    if (path) return { origin, path };
+  }
+  return undefined;
+}
+
+async function analyticsEvents(): Promise<Array<Record<string, unknown>>> {
+  const events: Array<Record<string, unknown>> = [];
+  for (let offset = 0; ; ) {
+    const response = await fetchTimed(`${FACILITATOR_URL}/analytics/v1/transactions?limit=200&offset=${offset}`);
+    if (!response.ok) throw new Error(`analytics lookup failed: HTTP ${response.status}`);
+    const body = await response.json() as { items?: Array<Record<string, unknown>> };
+    const items = body.items ?? [];
+    events.push(...items);
+    if (items.length < 200) return events;
+    offset += items.length;
+  }
 }
 
 async function importAnalytics(proofs: Proof[]): Promise<Proof[]> {
   const known = new Set(proofs.map(proof => proof.transaction));
   const imported: Proof[] = [];
-  const response = await fetchTimed(`${FACILITATOR_URL}/analytics/v1/transactions?limit=200&offset=0`);
-  if (!response.ok) throw new Error(`analytics lookup failed: HTTP ${response.status}`);
-  const body = await response.json() as { items?: Array<Record<string, unknown>> };
-  for (const event of body.items ?? []) {
+  for (const event of await analyticsEvents()) {
     if (event.status !== "success" || typeof event.resource_url !== "string" || typeof event.transaction_hash !== "string") continue;
     if (typeof event.occurred_at !== "string" || Date.parse(event.occurred_at) < Date.parse(RUN_STARTED_AT)) continue;
-    const path = pathFromUrl(event.resource_url);
-    if (!path || known.has(event.transaction_hash)) continue;
+    const resource = pathFromUrl(event.resource_url);
+    if (!resource || known.has(event.transaction_hash)) continue;
+    const path = resource.path;
     const endpointIndex = paths.indexOf(path);
     const owner = sellerWallets[endpointIndex]!;
     const buyer = buyerWallets.find(wallet => wallet.address === event.payer);
@@ -224,7 +246,7 @@ async function importAnalytics(proofs: Proof[]): Promise<Proof[]> {
         event.max_amount !== AMOUNTS[path] || event.asset !== USDC_TESTNET_ADDRESS) continue;
     const chain = await confirm(event.transaction_hash);
     const proof: Proof = {
-      runId: RUN_ID, path, buyer: buyer.address, payTo: owner.address,
+      runId: RUN_ID, origin: resource.origin, path, buyer: buyer.address, payTo: owner.address,
       amount: AMOUNTS[path], asset: USDC_TESTNET_ADDRESS, transaction: event.transaction_hash,
       ...chain, source: "analytics",
     };
@@ -240,7 +262,9 @@ function validateProofs(proofs: Proof[]): Map<Path, number> {
   const hashes = new Set<string>();
   const counts = new Map(paths.map(path => [path, 0]));
   for (const proof of proofs) {
-    if (proof.runId !== RUN_ID || !paths.includes(proof.path) || proof.successful !== true) throw new Error("invalid proof record");
+    if (proof.runId !== RUN_ID || !SELLER_ORIGINS.includes(proof.origin) || !paths.includes(proof.path) || proof.successful !== true) {
+      throw new Error("invalid proof record");
+    }
     if (hashes.has(proof.transaction)) throw new Error(`duplicate proof hash ${proof.transaction}`);
     hashes.add(proof.transaction);
     counts.set(proof.path, (counts.get(proof.path) ?? 0) + 1);
@@ -302,7 +326,7 @@ async function loadBuyerPlan(proofs: Proof[]): Promise<BuyerPlan> {
     const existing = [...buyerCounts(proofs, path).keys()]
       .filter(address => buyerWallets.some(wallet => wallet.address === address));
     if (existing.length > 9) throw new Error(`${path} already has more than nine buyers`);
-    const target = randomInt(Math.max(3, existing.length), Math.min(9, TARGETS[path]) + 1);
+    const target = randomInt(Math.max(MIN_BUYERS_PER_SERVICE, existing.length), Math.min(9, TARGETS[path]) + 1);
     const candidates = shuffled(buyerWallets
       .map(wallet => wallet.address)
       .filter(address => address !== owner.address && !existing.includes(address)));
@@ -327,7 +351,7 @@ async function loadBuyerPlan(proofs: Proof[]): Promise<BuyerPlan> {
       }
       const entry = plan[path];
       const owner = sellerWallets[paths.indexOf(path)]!;
-      if (!entry || entry.target < 3 || entry.target > Math.min(9, TARGETS[path]) || entry.buyers.length !== entry.target ||
+      if (!entry || entry.target < MIN_BUYERS_PER_SERVICE || entry.target > Math.min(9, TARGETS[path]) || entry.buyers.length !== entry.target ||
           new Set(entry.buyers).size !== entry.target || entry.buyers.includes(owner.address) ||
           entry.buyers.some(address => !buyerWallets.some(wallet => wallet.address === address))) {
         invalid = true;
@@ -415,11 +439,8 @@ async function pay(inflight: Inflight, httpClient: x402HTTPClient): Promise<{ tr
 async function recoverSettled(inflight: Inflight): Promise<string | undefined> {
   if (!inflight.createdAt) return undefined;
   try {
-    const response = await fetchTimed(`${FACILITATOR_URL}/analytics/v1/transactions?limit=200&offset=0`);
-    if (!response.ok) return undefined;
-    const body = await response.json() as { items?: Array<Record<string, unknown>> };
     const started = Date.parse(inflight.createdAt) - 5_000;
-    const event = (body.items ?? []).find(item =>
+    const event = (await analyticsEvents()).find(item =>
       item.status === "success" && item.resource_url === inflight.url && item.payer === inflight.buyer &&
       typeof item.occurred_at === "string" && Date.parse(item.occurred_at) >= started &&
       typeof item.transaction_hash === "string");
@@ -430,7 +451,7 @@ async function recoverSettled(inflight: Inflight): Promise<string | undefined> {
   }
 }
 
-async function createInflightAttempt(path: Path, buyerAddress: string): Promise<{ inflight: Inflight; httpClient: x402HTTPClient }> {
+async function createInflightAttempt(path: Path, buyerAddress: string, origin: string): Promise<{ inflight: Inflight; httpClient: x402HTTPClient }> {
   const endpointIndex = paths.indexOf(path);
   const owner = sellerWallets[endpointIndex]!;
   const buyer = buyerWallets.find(wallet => wallet.address === buyerAddress);
@@ -438,7 +459,7 @@ async function createInflightAttempt(path: Path, buyerAddress: string): Promise<
   const signer = createEd25519Signer(buyer.secret, NETWORK);
   const paymentClient = new x402Client().register(NETWORK, new ShortAuthExactStellarScheme(signer));
   const httpClient = new x402HTTPClient(paymentClient);
-  const url = `${SELLER_ORIGIN}/api/${path}`;
+  const url = `${origin}/api/${path}`;
   const { response: unpaid, body: unpaidBody } = await paymentRequired(url, path);
   const required = httpClient.getPaymentRequiredResponse(name => unpaid.headers.get(name), unpaidBody);
   const accepted = required.accepts[0];
@@ -449,18 +470,18 @@ async function createInflightAttempt(path: Path, buyerAddress: string): Promise<
   const payload = await httpClient.createPaymentPayload(required);
   const headers = Object.fromEntries(Object.entries(httpClient.encodePaymentSignatureHeader(payload)));
   const inflight: Inflight = {
-    runId: RUN_ID, createdAt: new Date().toISOString(), path,
+    runId: RUN_ID, createdAt: new Date().toISOString(), origin, path,
     buyer: buyer.address, payTo: owner.address, url, headers,
   };
   await saveInflight(inflight);
   return { inflight, httpClient };
 }
 
-async function createInflight(path: Path, buyerAddress: string): Promise<{ inflight: Inflight; httpClient: x402HTTPClient }> {
+async function createInflight(path: Path, buyerAddress: string, origin: string): Promise<{ inflight: Inflight; httpClient: x402HTTPClient }> {
   let lastError: unknown;
   for (let attempt = 1; attempt <= 6; attempt++) {
     try {
-      return await createInflightAttempt(path, buyerAddress);
+      return await createInflightAttempt(path, buyerAddress, origin);
     } catch (error) {
       lastError = error;
       console.warn(JSON.stringify({ path, attempt, retrying: "payment_payload", error: String(error) }));
@@ -509,7 +530,7 @@ console.log(JSON.stringify({
 }));
 
 let pending = await readInflight();
-if (pending && pending.runId !== RUN_ID) throw new Error("in-flight state belongs to another run");
+  if (pending && pending.runId !== RUN_ID) throw new Error("in-flight state belongs to another run");
 if (pending && imported.some(proof => proof.path === pending!.path && proof.buyer === pending!.buyer)) {
   console.log(JSON.stringify({
     status: "recovered",
@@ -523,6 +544,7 @@ if (pending && imported.some(proof => proof.path === pending!.path && proof.buye
 
 while (proofs.length < TOTAL_TRANSACTIONS) {
   const path = pending?.path ?? chooseNextPath(counts, proofs.at(-1)?.path ?? previousRunPath);
+  const origin = pending?.origin ?? ACTIVE_SELLER_ORIGINS[randomInt(ACTIVE_SELLER_ORIGINS.length)]!;
   let httpClient: x402HTTPClient;
   if (pending) {
     httpClient = await clientForInflight(pending);
@@ -530,7 +552,7 @@ while (proofs.length < TOTAL_TRANSACTIONS) {
     const usage = buyerCounts(proofs, path);
     const buyer = [...plan[path].buyers].sort((left, right) =>
       (usage.get(left) ?? 0) - (usage.get(right) ?? 0))[0]!;
-    ({ inflight: pending, httpClient } = await createInflight(path, buyer));
+    ({ inflight: pending, httpClient } = await createInflight(path, buyer, origin));
   }
   try {
     const paid = await pay(pending, httpClient);
@@ -543,7 +565,7 @@ while (proofs.length < TOTAL_TRANSACTIONS) {
       continue;
     }
     const proof: Proof = {
-      runId: RUN_ID, path, buyer: pending.buyer, payTo: pending.payTo,
+      runId: RUN_ID, origin: pending.origin, path, buyer: pending.buyer, payTo: pending.payTo,
       amount: AMOUNTS[path], asset: USDC_TESTNET_ADDRESS, transaction: paid.transaction,
       ...chain, source: "stress",
     };
@@ -568,7 +590,7 @@ while (proofs.length < TOTAL_TRANSACTIONS) {
 }
 
 counts = validateProofs(proofs);
-if (proofs.length !== 514 || paths.some(path => (counts.get(path) ?? 0) !== TARGETS[path]) ||
+if (proofs.length !== 1034 || paths.some(path => (counts.get(path) ?? 0) !== TARGETS[path]) ||
     paths.some(path => buyerCounts(proofs, path).size !== plan[path].target || !hasCurrentPriceProof(proofs, path))) {
   throw new Error("stress run did not reach its transaction and buyer targets");
 }
