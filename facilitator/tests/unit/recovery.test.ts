@@ -72,12 +72,14 @@ describe("unresolved settlement recovery", () => {
     const { complete, internals } = recoveryHarness();
     internals.horizonStatus = vi.fn().mockResolvedValue("SUCCESS");
     await internals.pollRecordWithoutRequest(record);
+    // Horizon reporting SUCCESS means the transaction reached a ledger, so the
+    // channel sequence it consumed is confirmed and may be recorded.
     expect(complete).toHaveBeenCalledWith(record.id, {
       success: true,
       transaction: record.transactionHash,
       network: record.network,
       payer: record.payer,
-    }, "success");
+    }, "success", true);
   });
 
   it("reads the inner transaction timeout from a fee-bump envelope", () => {

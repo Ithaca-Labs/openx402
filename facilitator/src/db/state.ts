@@ -15,6 +15,7 @@ export interface SettlementRecord {
   actualAmount?: bigint;
   payer?: string;
   channelAddress?: string;
+  channelSequence?: bigint;
   fencingToken?: bigint;
   envelopeXdr?: string;
   transactionHash?: string;
@@ -39,6 +40,9 @@ function mapRecord(row: Record<string, unknown>): SettlementRecord {
   if (row.actual_amount !== null && row.actual_amount !== undefined) record.actualAmount = BigInt(String(row.actual_amount));
   if (typeof row.payer === "string") record.payer = row.payer;
   if (typeof row.channel_address === "string") record.channelAddress = row.channel_address;
+  if (row.channel_sequence !== null && row.channel_sequence !== undefined) {
+    record.channelSequence = BigInt(String(row.channel_sequence));
+  }
   if (row.fencing_token !== null && row.fencing_token !== undefined) record.fencingToken = BigInt(String(row.fencing_token));
   if (typeof row.envelope_xdr === "string") record.envelopeXdr = row.envelope_xdr;
   if (typeof row.transaction_hash === "string") record.transactionHash = row.transaction_hash;
@@ -207,18 +211,25 @@ export class StateStore {
   async storePreparedAndReserve(args: {
     recordId: number; lease: ChannelLease; prepared: PreparedSettlement; scope: string;
     perScopeDailyLimit: bigint; globalDailyLimit: bigint;
-  }): Promise<"stored" | "budget_exceeded" | "fence_lost"> {
+  }): Promise<"stored" | "budget_exceeded" | "fence_lost" | "stale_sequence"> {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
-      const channel = await client.query(
-        `SELECT 1 FROM channel_accounts WHERE network = $1 AND address = $2
+      const channel = await client.query<{ last_sequence: string | null }>(
+        `SELECT last_sequence FROM channel_accounts WHERE network = $1 AND address = $2
          AND fencing_token = $3 AND status = 'leased' FOR UPDATE`,
         [args.lease.network, args.lease.address, args.lease.fencingToken.toString()],
       );
       if (channel.rowCount !== 1) {
         await client.query("ROLLBACK");
         return "fence_lost";
+      }
+      // A sequence at or below the last ledger-confirmed one was read from an RPC
+      // node behind the ledger; submitting it can only produce tx_bad_seq.
+      const applied = channel.rows[0]!.last_sequence;
+      if (applied !== null && args.prepared.channelSequence <= BigInt(applied)) {
+        await client.query("ROLLBACK");
+        return "stale_sequence";
       }
       const allowed = await this.reserveBudget(
         client, args.scope, args.prepared.estimatedTotalFee,
@@ -231,17 +242,21 @@ export class StateStore {
       await client.query(
         `UPDATE idempotency_records SET status = 'submitting', payer = $2, channel_address = $3,
            fencing_token = $4, envelope_xdr = $5, transaction_hash = $6,
-           estimated_fee_stroops = $7, updated_at = now()
+           estimated_fee_stroops = $7, channel_sequence = $8, updated_at = now()
          WHERE id = $1`,
         [args.recordId, args.prepared.payer, args.lease.address, args.lease.fencingToken.toString(),
-          args.prepared.envelopeXdr, args.prepared.transactionHash, args.prepared.estimatedTotalFee.toString()],
+          args.prepared.envelopeXdr, args.prepared.transactionHash, args.prepared.estimatedTotalFee.toString(),
+          args.prepared.channelSequence.toString()],
       );
       await client.query(
         `UPDATE channel_accounts SET status = 'unresolved', settlement_record_id = $4, updated_at = now()
          WHERE network = $1 AND address = $2 AND fencing_token = $3`,
         [args.lease.network, args.lease.address, args.lease.fencingToken.toString(), args.recordId],
       );
-      await this.audit(client, args.recordId, "prepared", { transactionHash: args.prepared.transactionHash });
+      await this.audit(client, args.recordId, "prepared", {
+        transactionHash: args.prepared.transactionHash,
+        channelSequence: args.prepared.channelSequence.toString(),
+      });
       await client.query("COMMIT");
       return "stored";
     } catch (error) {
@@ -277,22 +292,40 @@ export class StateStore {
     await this.pool.query("UPDATE idempotency_records SET status = 'pending', updated_at = now() WHERE id = $1", [recordId]);
   }
 
-  async complete(recordId: number, outcome: SettlementOutcome, status: "success" | "failed"): Promise<void> {
+  /**
+   * Finalizes a settlement and releases its channel.
+   *
+   * `ledgerApplied` must be true only when an RPC lookup reported the
+   * transaction SUCCESS or FAILED, both of which mean it was included in a
+   * ledger and consumed the channel sequence. Submission errors and every
+   * pre-submission failure leave the sequence unconsumed and must pass false.
+   */
+  async complete(
+    recordId: number,
+    outcome: SettlementOutcome,
+    status: "success" | "failed",
+    ledgerApplied = false,
+  ): Promise<void> {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
-      const result = await client.query<{ channel_address: string | null; network: StellarNetwork }>(
+      const result = await client.query<{
+        channel_address: string | null; network: StellarNetwork; channel_sequence: string | null;
+      }>(
         `UPDATE idempotency_records SET status = $2, response_json = $3, updated_at = now()
-         WHERE id = $1 RETURNING channel_address, network`,
+         WHERE id = $1 RETURNING channel_address, network, channel_sequence`,
         [recordId, status, JSON.stringify(outcome)],
       );
       const row = result.rows[0];
       if (row?.channel_address) {
         await client.query(
           `UPDATE channel_accounts SET status = 'idle', lease_owner = NULL, lease_until = NULL,
-             settlement_record_id = NULL, updated_at = now()
+             settlement_record_id = NULL,
+             last_sequence = CASE WHEN $4::bigint IS NULL THEN last_sequence
+               ELSE GREATEST(COALESCE(last_sequence, 0), $4::bigint) END,
+             updated_at = now()
            WHERE network = $1 AND address = $2 AND settlement_record_id = $3`,
-          [row.network, row.channel_address, recordId],
+          [row.network, row.channel_address, recordId, ledgerApplied ? row.channel_sequence : null],
         );
       }
       await this.audit(client, recordId, status, {});

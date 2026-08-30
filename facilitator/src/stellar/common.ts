@@ -326,7 +326,7 @@ export function finalizeSponsoredTransaction(args: {
   channel: ChannelSigner;
   sponsor: ChannelSigner;
   passphrase: string;
-}): { transaction: FeeBumpTransaction; xdr: string; hash: string } {
+}): { transaction: FeeBumpTransaction; xdr: string; hash: string; sequence: bigint } {
   const assembled = rpc.assembleTransaction(args.sourceTransaction, args.enforcing).build();
   assembled.sign(Keypair.fromSecret(args.channel.secret));
   const feeBump = TransactionBuilder.buildFeeBumpTransaction(
@@ -336,13 +336,18 @@ export function finalizeSponsoredTransaction(args: {
     args.passphrase,
   );
   feeBump.sign(Keypair.fromSecret(args.sponsor.secret));
-  return { transaction: feeBump, xdr: feeBump.toXDR(), hash: feeBump.hash().toString("hex") };
+  return {
+    transaction: feeBump,
+    xdr: feeBump.toXDR(),
+    hash: feeBump.hash().toString("hex"),
+    sequence: BigInt(assembled.sequence),
+  };
 }
 
 export function preparedFrom(
   parsed: ParsedPayment,
   channel: ChannelSigner,
-  envelope: { xdr: string; hash: string },
+  envelope: { xdr: string; hash: string; sequence: bigint },
   simulation: Api.SimulateTransactionSuccessResponse,
 ): PreparedSettlement {
   const resource = BigInt(simulation.minResourceFee);
@@ -350,6 +355,7 @@ export function preparedFrom(
   return {
     ...parsed,
     channelAddress: channel.address,
+    channelSequence: envelope.sequence,
     envelopeXdr: envelope.xdr,
     transactionHash: envelope.hash,
     estimatedResourceFee: resource,
