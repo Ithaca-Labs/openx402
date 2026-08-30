@@ -186,6 +186,8 @@ export interface VerificationResult {
 
 export interface PreparedSettlement extends ParsedPayment {
   channelAddress: string;
+  /** Source-account sequence the inner transaction consumes when it is applied. */
+  channelSequence: bigint;
   envelopeXdr: string;
   transactionHash: string;
   estimatedResourceFee: bigint;

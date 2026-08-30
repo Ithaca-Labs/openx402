@@ -6,13 +6,15 @@ import { buildCalibrationSample } from "../../src/search/release/calibration.js"
 import { evaluateReleaseGates, type ReleaseProfileGateInput } from "../../src/search/release/gates.js";
 import { validateReleaseDataset } from "../../src/search/release/validate.js";
 
-describe("release search benchmark", () => {
-  // The 7 MB eval-dataset/ fixture is tracked on full-stack only; on branches without it
-  // this case is skipped. Probing the manifest (not the directory) keeps a partial
-  // dataset failing loudly instead of silently skipping.
-  const datasetRoot = resolve("eval-dataset");
-  const datasetPresent = existsSync(resolve(datasetRoot, "manifests/dataset-v1.json"));
+// The 300 x 100 release dataset is a ~7 MB branch-local artifact carried by
+// `full-stack`, and it cannot be rebuilt from a services-only checkout: the
+// generator reads raw provider snapshots that stay out of version control. A
+// checkout without it skips this case rather than failing on a fixture it is
+// not meant to hold; the gate and agreement cases below need no dataset.
+const datasetRoot = resolve("eval-dataset");
+const datasetPresent = existsSync(resolve(datasetRoot, "manifests/dataset-v1.json"));
 
+describe("release search benchmark", () => {
   it.skipIf(!datasetPresent)("validates the checked-in 300 x 100 dataset and complete pair matrix", async () => {
     const dataset = await validateReleaseDataset(datasetRoot);
     expect(dataset.catalog).toHaveLength(300);

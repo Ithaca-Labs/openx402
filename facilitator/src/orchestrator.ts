@@ -198,6 +198,11 @@ export class FacilitatorCore {
     });
     if (stored !== "stored") {
       await this.state.releaseChannel(lease);
+      if (stored === "stale_sequence") {
+        // The account view used to build this envelope is behind the ledger.
+        // Nothing was submitted, so the claim stays open for a later retry.
+        throw new BusyError("channel account sequence is behind the ledger");
+      }
       const reason = stored === "budget_exceeded" ? "settle_stellar_sponsor_budget_exceeded" : "settle_stellar_channel_fence_lost";
       const outcome = failed(request, reason, prepared.payer);
       await this.state.complete(claim.record.id, outcome, "failed");
@@ -332,12 +337,12 @@ export class FacilitatorCore {
         ...(record.payer ? { payer: record.payer } : {}),
         ...(request.paymentRequirements.scheme === "upto" ? { amount: request.paymentRequirements.amount } : {}),
       };
-      await this.state.complete(record.id, outcome, "success");
+      await this.state.complete(record.id, outcome, "success", true);
       return outcome;
     }
     if (result === "FAILED") {
       const outcome = failed(request, "settle_stellar_transaction_failed", record.payer, record.transactionHash);
-      await this.state.complete(record.id, outcome, "failed");
+      await this.state.complete(record.id, outcome, "failed", true);
       return outcome;
     }
     await this.state.markUnknown(record.id, "transaction was not resolved before polling deadline");
@@ -407,7 +412,7 @@ export class FacilitatorCore {
           ...payer,
           errorReason: "settle_stellar_transaction_failed",
         };
-    await this.state.complete(record.id, outcome, result === "SUCCESS" ? "success" : "failed");
+    await this.state.complete(record.id, outcome, result === "SUCCESS" ? "success" : "failed", true);
   }
 
   private async horizonStatus(
