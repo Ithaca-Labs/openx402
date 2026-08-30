@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { agreement } from "../../src/search/release/agreement.js";
@@ -6,8 +7,14 @@ import { evaluateReleaseGates, type ReleaseProfileGateInput } from "../../src/se
 import { validateReleaseDataset } from "../../src/search/release/validate.js";
 
 describe("release search benchmark", () => {
-  it("validates the checked-in 300 x 100 dataset and complete pair matrix", async () => {
-    const dataset = await validateReleaseDataset(resolve("eval-dataset"));
+  // The 7 MB eval-dataset/ fixture is tracked on full-stack only; on branches without it
+  // this case is skipped. Probing the manifest (not the directory) keeps a partial
+  // dataset failing loudly instead of silently skipping.
+  const datasetRoot = resolve("eval-dataset");
+  const datasetPresent = existsSync(resolve(datasetRoot, "manifests/dataset-v1.json"));
+
+  it.skipIf(!datasetPresent)("validates the checked-in 300 x 100 dataset and complete pair matrix", async () => {
+    const dataset = await validateReleaseDataset(datasetRoot);
     expect(dataset.catalog).toHaveLength(300);
     expect(dataset.queries).toHaveLength(100);
     expect(dataset.qrels).toHaveLength(30_000);
